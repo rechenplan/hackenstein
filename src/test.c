@@ -37,11 +37,23 @@ int main(int argc, char** argv) {
 
 void test_client() {
   client_t client;
+  render_t render;
+  map_t map;
+  int i, j;
 
   printf("testing client...");
-  client_init(&client);
-  while (!client_update(&client)) {}
+  render = render_init();
+  map_init(&map, 16, 16, 1);
+  for (j = 0; j < map.height; j++) {
+    for (i = 0; i < map.width; i++) {
+      map_set_cell(&map, i, j, 0);
+    }
+  }
+  client_init(&client, &map);
+  while (!client_update(&client, render)) {}
   client_cleanup(&client);
+  map_cleanup(&map);
+  render_cleanup(render);
   printf("ok\n");
 }
 
@@ -80,6 +92,7 @@ void test_caster() {
   render_t render;
   lfb_t lfb;
   map_t map;
+  phy_t camera, camera_plane;
   int frame, i, j, t;
 
   printf("testing caster...");
@@ -91,15 +104,22 @@ void test_caster() {
       map_set_cell(&map, i, j, 0);
     }
   }
-  caster_init(&caster, &lfb, 0, 0, 1, 0);
+  caster_init(&caster, &lfb);
+  camera.pos_x = 8;
+  camera.pos_y = 8;
+  camera.dir_x = 1;
+  camera.dir_y = 0;
+  camera_plane.dir_x = 0;
+  camera_plane.dir_y = 2.0 / 3.0;
+
 #ifdef SDL
   t = SDL_GetTicks();
 #else
   t = 0;
 #endif
   for (frame = 0; frame < 500; frame++) {
-    phy_rel_move(&caster.camera, 0, 0.01);
-    caster_draw_map(&caster, &map);
+    phy_rel_move(&camera, &map, 0, 0.01);
+    caster_draw_map(&caster, &map, &camera, &camera_plane);
     render_update(render, &lfb);
   }
 #ifdef SDL

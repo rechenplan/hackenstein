@@ -4,14 +4,7 @@
 #include <math.h>
 #include <stdlib.h>
 
-
-void caster_init(caster_t* caster, lfb_t* lfb, double pos_x, double pos_y, double dir_x, double dir_y) {
-  caster->camera.pos_x = pos_x;
-  caster->camera.pos_y = pos_y;
-  caster->camera.dir_x = dir_x;
-  caster->camera.dir_y = dir_y;
-  caster->camera_plane.dir_x = 0;
-  caster->camera_plane.dir_y = 2.0 / 3.0;
+void caster_init(caster_t* caster, lfb_t* lfb) {
   caster->z_buffer = malloc(lfb->width * sizeof(double));
   caster->lfb = lfb;
   return;
@@ -21,11 +14,11 @@ void caster_cleanup(caster_t* caster) {
   free(caster->z_buffer);
 }
 
-void caster_draw_map(caster_t* caster, map_t* map) {
+void caster_draw_map(caster_t* caster, map_t* map, phy_t* camera, phy_t* camera_plane) {
   pixel_t* buffer;
   int x, y, map_x, map_y, step_x, step_y, hit, side;
   int line_start, line_end, line_height;
-  double camera_x, ray_x, ray_y;
+  double rel_x, ray_x, ray_y;
   double side_dist_x, side_dist_y;
   double delta_dist_x, delta_dist_y;
   double perp_wall_dist;
@@ -34,32 +27,32 @@ void caster_draw_map(caster_t* caster, map_t* map) {
   lfb = caster->lfb;
   buffer = lfb_get_buffer(lfb);
   for (x = 0; x < lfb->width; x++) {
-    camera_x = 2.0 * x / lfb->width - 1;
-    ray_x = caster->camera.dir_x + caster->camera_plane.dir_x * camera_x;
-    ray_y = caster->camera.dir_y + caster->camera_plane.dir_y * camera_x;
-    map_x = (int) caster->camera.pos_x;
-    map_y = (int) caster->camera.pos_y;
+    rel_x = 2.0 * x / lfb->width - 1;
+    ray_x = camera->dir_x + camera_plane->dir_x * rel_x;
+    ray_y = camera->dir_y + camera_plane->dir_y * rel_x;
+    map_x = (int) camera->pos_x;
+    map_y = (int) camera->pos_y;
     delta_dist_x = fabs(1.0 / ray_x);
     delta_dist_y = fabs(1.0 / ray_y);
     if (ray_x < 0)
     {
       step_x = -1;
-      side_dist_x = (caster->camera.pos_x - map_x) * delta_dist_x;
+      side_dist_x = (camera->pos_x - map_x) * delta_dist_x;
     }
     else
     {
       step_x = 1;
-      side_dist_x = (map_x + 1.0 - caster->camera.pos_x) * delta_dist_x;
+      side_dist_x = (map_x + 1.0 - camera->pos_x) * delta_dist_x;
     }
     if (ray_y < 0)
     {
       step_y = -1;
-      side_dist_y = (caster->camera.pos_y - map_y) * delta_dist_y;
+      side_dist_y = (camera->pos_y - map_y) * delta_dist_y;
     }
     else
     {
       step_y = 1;
-      side_dist_y = (map_y + 1.0 - caster->camera.pos_y) * delta_dist_y;
+      side_dist_y = (map_y + 1.0 - camera->pos_y) * delta_dist_y;
     }
     hit = 0;
     while (!hit)
@@ -90,6 +83,12 @@ void caster_draw_map(caster_t* caster, map_t* map) {
     line_end = (lfb->height + line_height) / 2;
     if (line_start < 0) {
       line_start = 0;
+    }
+    if (line_end < 0) {
+      line_end = 0;
+    }
+    if (line_start > lfb->height - 1) {
+      line_start = lfb->height - 1;
     }
     if (line_end > lfb->height - 1) {
       line_end = lfb->height - 1;
