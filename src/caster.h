@@ -4,6 +4,7 @@
 #include "map.h"
 #include "lfb.h"
 #include "phy.h"
+#include "sprite.h"
 
 typedef struct _caster_t {
   lfb_t* lfb;
@@ -13,5 +14,6 @@ typedef struct _caster_t {
 void caster_init(caster_t* cast, lfb_t* lfb);
 void caster_cleanup(caster_t* caster);
 void caster_draw_map(caster_t* caster, map_t* map, phy_t* camera, phy_t* camera_plane);
+void caster_draw_sprites(caster_t* caster, sprite_bank_t* sprites, phy_t* camera, phy_t* camera_plane);
 
 #endif

@@ -1,17 +1,24 @@
 #include "phy.h"
 #include <math.h>
 
-void phy_rel_move(phy_t* phy, map_t* map, double x, double y) {
+int phy_rel_move(phy_t* phy, map_t* map, double x, double y) {
   double new_x, new_y;
+  int collision;
 
+  collision = 0;
   new_x = phy->pos_x + phy->dir_x * y - phy->dir_y * x;
   new_y = phy->pos_y + phy->dir_y * y + phy->dir_x * x;
   if (!map_get_cell(map, phy->pos_x, new_y)) {
     phy->pos_y = new_y;
+  } else {
+    collision = 1;
   }
   if (!map_get_cell(map, new_x, phy->pos_y)) {
     phy->pos_x = new_x;
+  } else {
+    collision = 1;
   }
+  return collision;
 }
 
 void phy_rotate(phy_t* phy, double phi) {

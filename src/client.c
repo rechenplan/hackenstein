@@ -6,24 +6,27 @@
 #include "phy.h"
 #include <math.h>
 
-void client_init(client_t* client, map_t* map) {
-  lfb_init(&client->lfb, 512, 288);
-  client->map = map;
+static void client_respawn(client_t* client) {
   client->camera.pos_x = 8;
   client->camera.pos_y = 8;
   client->camera.dir_x = 1;
   client->camera.dir_y = 0;
   client->camera_plane.dir_x = 0;
   client->camera_plane.dir_y = 2.0 / 3.0;
+}
+
+void client_init(client_t* client, map_t* map) {
+  lfb_init(&client->lfb, 512, 288);
+  client->map = map;
   caster_init(&client->caster, &client->lfb);
   input_init(&client->input);
+  client_respawn(client);
 }
 
 int client_update(client_t* client, render_t render) {
   double move_speed = 0.1, rot_speed = 0.1;
 
   input_update(&client->input);
-  /* input */
   if (input_is_pressed(&client->input, INPUT_FORWARD)) {
     phy_rel_move(&client->camera, client->map, 0, move_speed);
   }

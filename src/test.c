@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include "sprite.h"
 #include "phy.h"
 #include "client.h"
 #include "input.h"
@@ -27,12 +28,30 @@ int main(int argc, char** argv) {
   test_render();
   test_caster();
   test_input();
-*/
   test_client();
+*/
+  test_sprite();
 #ifdef SDL
   SDL_Quit();
 #endif
   return 0;
+}
+
+void test_sprite() {
+  sprite_bank_t sprites;
+  phy_t phy;
+  int sprite_idx;
+
+  printf("testing sprite...");
+  phy.pos_x = 8;
+  phy.pos_y = 8;
+  sprite_init(&sprites, 10);
+  sprite_idx = sprite_create(&sprites, phy, 1.0, 1.0, 64);
+  sprite_sort_by_dist(&sprites, &phy);
+  sprite_destroy(&sprites, sprite_idx);
+  sprite_cleanup(&sprites);
+  printf("ok\n");
+  return;
 }
 
 void test_client() {
