@@ -11,7 +11,7 @@ void sprite_init(sprite_bank_t* sprites, int size) {
   memset(sprites->bank, 0, size * sizeof(sprite_t));
 }
 
-int sprite_create(sprite_bank_t* sprites, phy_t phy, double vel, double vert, double height, double width, pixel_t color) {
+int sprite_create(sprite_bank_t* sprites, phy_t phy, double vel, double vert, double height, double width, pixel_t color, int harm) {
   int i;
   for (i = 0; i < sprites->size; i++) {
     if (!sprites->bank[i].active)
@@ -27,6 +27,8 @@ int sprite_create(sprite_bank_t* sprites, phy_t phy, double vel, double vert, do
   sprites->bank[i].height = height;
   sprites->bank[i].width = width;
   sprites->bank[i].color = color;
+  sprites->bank[i].harm = harm;
+  sprites->bank[i].boom = 0;
   return i;
 }
 
@@ -62,6 +64,9 @@ void sprite_sort_by_dist(sprite_bank_t* sprites, phy_t* from) {
     sprite = sprite_get(sprites, i);
     sprites->order[i] = i;
     sprites->distance[i] = (sprite->phy.pos_x - from->pos_x) * (sprite->phy.pos_x - from->pos_x) + (sprite->phy.pos_y - from->pos_y) * (sprite->phy.pos_y - from->pos_y);
+    if (sprites->distance[i] < 1.0 && !sprites->bank[i].boom) {
+      sprites->bank[i].boom = 1;
+    }
   }
   SORT_BANK = sprites;
   qsort(sprites->order, sprites->size, sizeof(int), sprite_dist_comp);
@@ -78,7 +83,14 @@ void sprite_update(sprite_bank_t* sprites, map_t* map) {
       continue;
     }
     if (phy_rel_move(&sprite->phy, map, 0, sprite->vel)) {
+        sprite->boom = 1;
+        sprite->vel = 0;
+    }
+    if (sprite->boom) {
+      sprite->boom++;
+      if (sprite->boom >= sprite->harm) {
         sprite->active = 0;
+      }
     }
   }
 }

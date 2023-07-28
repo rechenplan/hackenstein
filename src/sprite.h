@@ -13,6 +13,8 @@ typedef struct _sprite_t {
   double height;
   double width;
   pixel_t color;
+  int harm;
+  int boom;
 } sprite_t;
 
 typedef struct _sprite_bank_t {
@@ -23,7 +25,7 @@ typedef struct _sprite_bank_t {
 } sprite_bank_t;
 
 void sprite_init(sprite_bank_t* sprites, int size);
-int sprite_create(sprite_bank_t* sprites, phy_t phy, double vel, double vert, double height, double width, pixel_t color);
+int sprite_create(sprite_bank_t* sprites, phy_t phy, double vel, double vert, double height, double width, pixel_t color, int harm);
 void sprite_destroy(sprite_bank_t* sprites, int i);
 sprite_t* sprite_get(sprite_bank_t* sprites, int i);
 void sprite_update(sprite_bank_t* sprites, map_t* map);

@@ -7,10 +7,9 @@
 #include <math.h>
 
 static void client_respawn(client_t* client) {
-  int i;
   client->shooting = 0;
-  client->camera.pos_x = 8;
-  client->camera.pos_y = 8;
+  client->camera.pos_x = 8.5;
+  client->camera.pos_y = 8.5;
   client->camera.dir_x = 1;
   client->camera.dir_y = 0;
   client->camera_plane.dir_x = 0;
@@ -28,6 +27,7 @@ void client_init(client_t* client, map_t* map, sprite_bank_t* sprites) {
 
 int client_update(client_t* client, render_t render) {
   double move_speed = 0.1, rot_speed = 0.1;
+  phy_t bullet;
 
   input_update(&client->input);
   if (input_is_pressed(&client->input, INPUT_FORWARD)) {
@@ -53,7 +53,9 @@ int client_update(client_t* client, render_t render) {
   if (input_is_pressed(&client->input, INPUT_SHOOT)) {
     if (!client->shooting) {
       client->shooting = 1;
-      sprite_create(client->sprites, client->camera, 0.5, 0.3, 0.1, 0.1, 100);
+      bullet = client->camera;
+      phy_rel_move(&bullet, client->map, 0, 1.5);
+      sprite_create(client->sprites, bullet, 0.5, 0.3, 0.1, 0.1, 100, 10);
     }
   } else {
     client->shooting = 0;

@@ -114,7 +114,7 @@ void caster_draw_sprites(caster_t* caster, sprite_bank_t* sprites, phy_t* camera
   lfb_t* lfb;
   pixel_t* buffer;
   sprite_t* sprite;
-  double sprite_x, sprite_y, inv_det, transform_x, transform_y, sprite_size, screen_x;
+  double sprite_x, sprite_y, inv_det, transform_x, transform_y, sprite_size, screen_x, boom;
   int draw_start_x, draw_end_x, draw_start_y, draw_end_y;
 
   lfb = caster->lfb;
@@ -133,10 +133,11 @@ void caster_draw_sprites(caster_t* caster, sprite_bank_t* sprites, phy_t* camera
     transform_y = inv_det * (camera_plane->dir_x * sprite_y - camera_plane->dir_y * sprite_x);
     screen_x = (lfb->width / 2) * (1 + transform_x / transform_y);
     sprite_size = WALL_HEIGHT / transform_y;
-    draw_end_x = screen_x + sprite->width * sprite_size / 2;
-    draw_start_x = screen_x - sprite->width * sprite_size / 2;
-    draw_end_y = (sprite_size + lfb->height) / 2 - sprite_size * sprite->vert;
-    draw_start_y = draw_end_y - sprite_size * sprite->height;
+    boom = 1.0 + sprite->boom / 5.0;
+    draw_end_x = screen_x + sprite->width * sprite_size * boom / 2;
+    draw_start_x = screen_x - sprite->width * sprite_size * boom / 2;
+    draw_end_y = (lfb->height + sprite->height * sprite_size * boom) / 2 - sprite_size * (sprite->vert - 0.5);
+    draw_start_y = (lfb->height - sprite->height * sprite_size * boom) / 2 - sprite_size * (sprite->vert - 0.5);
     /* clamp */
     if (draw_end_x < 0) {
       draw_end_x = 0;
@@ -165,8 +166,8 @@ void caster_draw_sprites(caster_t* caster, sprite_bank_t* sprites, phy_t* camera
     /* draw */
     for (y = draw_start_y; y < draw_end_y; y++) {
       for (x = draw_start_x; x < draw_end_x; x++) {
-        if (transform_y > 0 && transform_y < caster->z_buffer[x]) {
-          buffer[x + y * lfb->width] = sprite->color;
+        if (transform_y > 0 && transform_y < caster->z_buffer[x] + 1.0) {
+          buffer[x + y * lfb->width] = sprite->boom ? 0 : sprite->color;
         }
       }
     }
