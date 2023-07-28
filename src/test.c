@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include "input.h"
 #include "caster.h"
 #include "render.h"
 #include "lfb.h"
@@ -22,10 +23,41 @@ int main(int argc, char** argv) {
   test_lfb();
   test_render();
   test_caster();
+  test_input();
 #ifdef SDL
   SDL_Quit();
 #endif
   return 0;
+}
+
+void test_input() {
+  render_t render;
+  lfb_t lfb;
+  input_t input;
+  pixel_t* buffer;
+  int buffer_size;
+  int i, done;
+
+  printf("testing input...");
+  render = render_init();
+  lfb_init(&lfb, 512, 288);
+  input_init(&input);
+  buffer = lfb_get_buffer(&lfb);
+  buffer_size = lfb.height * lfb.width;
+  done = 0;
+  while (!done) {
+    render_update(render, &lfb);
+    input_update(&input);
+    for (i = 0; i < buffer_size; i++) {
+      buffer[i] = input.state != 0 ? 255 : 0;
+    }
+    if (input_is_pressed(&input, INPUT_EXIT))
+      done = 1;
+  }
+  lfb_cleanup(&lfb);
+  input_cleanup(&input);
+  render_cleanup(render);
+  printf("ok\n");
 }
 
 void test_caster() {
