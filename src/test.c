@@ -47,7 +47,7 @@ void test_sprite() {
   phy.pos_x = 8;
   phy.pos_y = 8;
   sprite_init(&sprites, 10);
-  sprite_idx = sprite_create(&sprites, phy, 1.0, 1.0, 64);
+  sprite_idx = sprite_create(&sprites, phy, 0, 0, 1.0, 1.0, 64);
   sprite_sort_by_dist(&sprites, &phy);
   sprite_destroy(&sprites, sprite_idx);
   sprite_cleanup(&sprites);
@@ -75,12 +75,16 @@ void test_client() {
   map_set_cell(&map, 7, 7, 1);
   phy.pos_x = 16;
   phy.pos_y = 16;
-  sprite_init(&sprites, 10);
-  sprite_idx = sprite_create(&sprites, phy, 0.5, 1.0, 64);
+  sprite_init(&sprites, 16);
+  sprite_idx = sprite_create(&sprites, phy, 0, 0, 0.1, 0.2, 64);
   phy.pos_x = 8;
-  sprite_idx2 = sprite_create(&sprites, phy, 0.5, 1.0, 96);
+  phy.dir_x = 1;
+  phy.dir_y = 0;
+  sprite_idx2 = sprite_create(&sprites, phy, 0.01, 0, 0.75, 0.5, 96);
   client_init(&client, &map, &sprites);
-  while (!client_update(&client, render)) {}
+  while (!client_update(&client, render)) {
+    sprite_update(&sprites, &map);
+  }
   client_cleanup(&client);
   map_cleanup(&map);
   sprite_destroy(&sprites, sprite_idx);

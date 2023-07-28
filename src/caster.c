@@ -135,7 +135,7 @@ void caster_draw_sprites(caster_t* caster, sprite_bank_t* sprites, phy_t* camera
     sprite_size = WALL_HEIGHT / transform_y;
     draw_end_x = screen_x + sprite->width * sprite_size / 2;
     draw_start_x = screen_x - sprite->width * sprite_size / 2;
-    draw_end_y = (sprite_size + lfb->height) / 2;
+    draw_end_y = (sprite_size + lfb->height) / 2 - sprite_size * sprite->vert;
     draw_start_y = draw_end_y - sprite_size * sprite->height;
     /* clamp */
     if (draw_end_x < 0) {

@@ -7,6 +7,8 @@
 #include <math.h>
 
 static void client_respawn(client_t* client) {
+  int i;
+  client->shooting = 0;
   client->camera.pos_x = 8;
   client->camera.pos_y = 8;
   client->camera.dir_x = 1;
@@ -49,6 +51,12 @@ int client_update(client_t* client, render_t render) {
     phy_rotate(&client->camera_plane, -rot_speed);
   }
   if (input_is_pressed(&client->input, INPUT_SHOOT)) {
+    if (!client->shooting) {
+      client->shooting = 1;
+      sprite_create(client->sprites, client->camera, 0.5, 0.3, 0.1, 0.1, 100);
+    }
+  } else {
+    client->shooting = 0;
   }
   caster_draw_map(&client->caster, client->map, &client->camera, &client->camera_plane);
   caster_draw_sprites(&client->caster, client->sprites, &client->camera, &client->camera_plane);

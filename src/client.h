@@ -9,6 +9,8 @@
 #include "caster.h"
 #include "phy.h"
 
+#define MAX_BULLETS 4
+
 typedef struct _client_t {
   render_t render;
   lfb_t    lfb;
@@ -18,6 +20,7 @@ typedef struct _client_t {
   caster_t caster;
   phy_t    camera;
   phy_t    camera_plane;
+  int      shooting;
 } client_t;
 
 void client_init(client_t* client, map_t* map, sprite_bank_t* sprites);
