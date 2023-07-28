@@ -5,6 +5,8 @@
 #include <math.h>
 #include <stdlib.h>
 
+#define WALL_HEIGHT 1000.0
+
 void caster_init(caster_t* caster, lfb_t* lfb) {
   caster->z_buffer = malloc(lfb->width * sizeof(double));
   caster->lfb = lfb;
@@ -79,7 +81,7 @@ void caster_draw_map(caster_t* caster, map_t* map, phy_t* camera, phy_t* camera_
     } else {
       perp_wall_dist = side_dist_y - delta_dist_y;
     }
-    line_height = 1000 / perp_wall_dist;
+    line_height = WALL_HEIGHT / perp_wall_dist;
     line_start = (lfb->height - line_height) / 2;
     line_end = (lfb->height + line_height) / 2;
     if (line_start < 0) {
@@ -108,10 +110,12 @@ void caster_draw_map(caster_t* caster, map_t* map, phy_t* camera, phy_t* camera_
 }
 
 void caster_draw_sprites(caster_t* caster, sprite_bank_t* sprites, phy_t* camera, phy_t* camera_plane) {
-  int i;
+  int i, x, y;
   lfb_t* lfb;
   pixel_t* buffer;
   sprite_t* sprite;
+  double sprite_x, sprite_y, inv_det, transform_x, transform_y, sprite_size, screen_x;
+  int draw_start_x, draw_end_x, draw_start_y, draw_end_y;
 
   lfb = caster->lfb;
   buffer = lfb_get_buffer(lfb);
@@ -120,6 +124,51 @@ void caster_draw_sprites(caster_t* caster, sprite_bank_t* sprites, phy_t* camera
     sprite = sprite_get(sprites, sprites->order[i]);
     if (!sprite->active) {
       continue;
+    }
+    /* compute */
+    sprite_x = sprite->phy.pos_x - camera->pos_x;
+    sprite_y = sprite->phy.pos_y - camera->pos_y;
+    inv_det = 1.0 / (camera_plane->dir_x * camera->dir_y - camera->dir_x * camera_plane->dir_y);
+    transform_x = inv_det * (camera->dir_y * sprite_x - camera->dir_x * sprite_y);
+    transform_y = inv_det * (camera_plane->dir_x * sprite_y - camera_plane->dir_y * sprite_x);
+    screen_x = (lfb->width / 2) * (1 + transform_x / transform_y);
+    sprite_size = WALL_HEIGHT / transform_y;
+    draw_end_x = screen_x + sprite->width * sprite_size / 2;
+    draw_start_x = screen_x - sprite->width * sprite_size / 2;
+    draw_end_y = (sprite_size + lfb->height) / 2;
+    draw_start_y = draw_end_y - sprite_size * sprite->height;
+    /* clamp */
+    if (draw_end_x < 0) {
+      draw_end_x = 0;
+    }
+    if (draw_end_x > lfb->width - 1) {
+      draw_end_x = lfb->width - 1;
+    }
+    if (draw_end_y < 0) {
+      draw_end_y = 0;
+    }
+    if (draw_end_y > lfb->height - 1) {
+      draw_end_y = lfb->height - 1;
+    }
+    if (draw_start_x < 0) {
+      draw_start_x = 0;
+    }
+    if (draw_start_x > lfb->width - 1) {
+      draw_start_x = lfb->width - 1;
+    }
+    if (draw_start_y < 0) {
+      draw_start_y = 0;
+    }
+    if (draw_start_y > lfb->height - 1) {
+      draw_start_y = lfb->height - 1;
+    }
+    /* draw */
+    for (y = draw_start_y; y < draw_end_y; y++) {
+      for (x = draw_start_x; x < draw_end_x; x++) {
+        if (transform_y > 0 && transform_y < caster->z_buffer[x]) {
+          buffer[x + y * lfb->width] = sprite->color;
+        }
+      }
     }
   }
 }

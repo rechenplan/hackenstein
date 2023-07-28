@@ -48,7 +48,7 @@ static int sprite_dist_comp(const void *a, const void *b) {
   int i, j;
   i = *((int*) a);
   j = *((int*) b);
-  return SORT_BANK->distance[i] > SORT_BANK->distance[j];
+  return SORT_BANK->distance[i] < SORT_BANK->distance[j];
 }
 
 void sprite_sort_by_dist(sprite_bank_t* sprites, phy_t* from) {

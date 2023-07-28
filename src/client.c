@@ -15,9 +15,10 @@ static void client_respawn(client_t* client) {
   client->camera_plane.dir_y = 2.0 / 3.0;
 }
 
-void client_init(client_t* client, map_t* map) {
+void client_init(client_t* client, map_t* map, sprite_bank_t* sprites) {
   lfb_init(&client->lfb, 512, 288);
   client->map = map;
+  client->sprites = sprites;
   caster_init(&client->caster, &client->lfb);
   input_init(&client->input);
   client_respawn(client);
@@ -50,6 +51,7 @@ int client_update(client_t* client, render_t render) {
   if (input_is_pressed(&client->input, INPUT_SHOOT)) {
   }
   caster_draw_map(&client->caster, client->map, &client->camera, &client->camera_plane);
+  caster_draw_sprites(&client->caster, client->sprites, &client->camera, &client->camera_plane);
   render_update(render, &client->lfb);
   return input_is_pressed(&client->input, INPUT_EXIT);
 }

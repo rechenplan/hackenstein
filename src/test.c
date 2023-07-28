@@ -28,9 +28,10 @@ int main(int argc, char** argv) {
   test_render();
   test_caster();
   test_input();
-  test_client();
-*/
   test_sprite();
+*/
+  test_client();
+
 #ifdef SDL
   SDL_Quit();
 #endif
@@ -59,19 +60,32 @@ void test_client() {
   render_t render;
   map_t map;
   int i, j;
+  sprite_bank_t sprites;
+  phy_t phy;
+  int sprite_idx, sprite_idx2;
 
   printf("testing client...");
   render = render_init();
-  map_init(&map, 16, 16, 1);
+  map_init(&map, 32, 32, 1);
   for (j = 0; j < map.height; j++) {
     for (i = 0; i < map.width; i++) {
       map_set_cell(&map, i, j, 0);
     }
   }
-  client_init(&client, &map);
+  map_set_cell(&map, 7, 7, 1);
+  phy.pos_x = 16;
+  phy.pos_y = 16;
+  sprite_init(&sprites, 10);
+  sprite_idx = sprite_create(&sprites, phy, 0.5, 1.0, 64);
+  phy.pos_x = 8;
+  sprite_idx2 = sprite_create(&sprites, phy, 0.5, 1.0, 96);
+  client_init(&client, &map, &sprites);
   while (!client_update(&client, render)) {}
   client_cleanup(&client);
   map_cleanup(&map);
+  sprite_destroy(&sprites, sprite_idx);
+  sprite_destroy(&sprites, sprite_idx2);
+  sprite_cleanup(&sprites);
   render_cleanup(render);
   printf("ok\n");
 }
