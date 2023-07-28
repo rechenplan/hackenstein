@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "mapcast.h"
+#include "caster.h"
 #include "render.h"
 #include "lfb.h"
 #include "map.h"
@@ -21,21 +21,21 @@ int main(int argc, char** argv) {
   test_map();
   test_lfb();
   test_render();
-  test_mapcast();
+  test_caster();
 #ifdef SDL
   SDL_Quit();
 #endif
   return 0;
 }
 
-void test_mapcast() {
-  camera_t cam;
+void test_caster() {
+  caster_t caster;
   render_t render;
   lfb_t lfb;
   map_t map;
   int frame, i, j, t;
 
-  printf("testing mapcast...");
+  printf("testing caster...");
   render = render_init();
   lfb_init(&lfb, 512, 288);
   map_init(&map, 16, 16, 1);
@@ -44,15 +44,15 @@ void test_mapcast() {
       map_set_cell(&map, i, j, 0);
     }
   }
-  cam = mapcast_create_camera(0, 0, 1, 0);
+  caster_init(&caster, &lfb, 0, 0, 1, 0);
 #ifdef SDL
   t = SDL_GetTicks();
 #else
   t = 0;
 #endif
   for (frame = 0; frame < 500; frame++) {
-    cam.pos_x += 0.01;
-    mapcast_draw_map(&map, &lfb, &cam);
+    caster.pos_x += 0.01;
+    caster_draw_map(&caster, &map);
     render_update(render, &lfb);
   }
 #ifdef SDL
@@ -60,6 +60,7 @@ void test_mapcast() {
 #endif
   map_cleanup(&map);
   lfb_cleanup(&lfb);
+  caster_cleanup(&caster);
   render_cleanup(render);
   printf("ok\n");
   printf("render took %d ms per frame (%f fps)\n", t / 500, 1000.0 / (t / 500.0));
