@@ -3,14 +3,11 @@
 
 #include "map.h"
 #include "lfb.h"
+#include "phy.h"
 
 typedef struct _caster_t {
-  double pos_x;
-  double pos_y;
-  double dir_x;
-  double dir_y;
-  double plane_x;
-  double plane_y;
+  phy_t camera;
+  phy_t camera_plane;
   lfb_t* lfb;
   double *z_buffer;
 } caster_t;

@@ -6,12 +6,12 @@
 
 
 void caster_init(caster_t* caster, lfb_t* lfb, double pos_x, double pos_y, double dir_x, double dir_y) {
-  caster->pos_x = pos_x;
-  caster->pos_y = pos_y;
-  caster->dir_x = dir_x;
-  caster->dir_y = dir_y;
-  caster->plane_x = 0;
-  caster->plane_y = 2.0 / 3.0;
+  caster->camera.pos_x = pos_x;
+  caster->camera.pos_y = pos_y;
+  caster->camera.dir_x = dir_x;
+  caster->camera.dir_y = dir_y;
+  caster->camera_plane.dir_x = 0;
+  caster->camera_plane.dir_y = 2.0 / 3.0;
   caster->z_buffer = malloc(lfb->width * sizeof(double));
   caster->lfb = lfb;
   return;
@@ -34,32 +34,32 @@ void caster_draw_map(caster_t* caster, map_t* map) {
   lfb = caster->lfb;
   buffer = lfb_get_buffer(lfb);
   for (x = 0; x < lfb->width; x++) {
-    camera_x = 2.0 * x / lfb->width;
-    ray_x = caster->dir_x + caster->plane_x * camera_x;
-    ray_y = caster->dir_y + caster->plane_y * camera_x;
-    map_x = (int) caster->pos_x;
-    map_y = (int) caster->pos_y;
+    camera_x = 2.0 * x / lfb->width - 1;
+    ray_x = caster->camera.dir_x + caster->camera_plane.dir_x * camera_x;
+    ray_y = caster->camera.dir_y + caster->camera_plane.dir_y * camera_x;
+    map_x = (int) caster->camera.pos_x;
+    map_y = (int) caster->camera.pos_y;
     delta_dist_x = fabs(1.0 / ray_x);
     delta_dist_y = fabs(1.0 / ray_y);
     if (ray_x < 0)
     {
       step_x = -1;
-      side_dist_x = (caster->pos_x - map_x) * delta_dist_x;
+      side_dist_x = (caster->camera.pos_x - map_x) * delta_dist_x;
     }
     else
     {
       step_x = 1;
-      side_dist_x = (map_x + 1.0 - caster->pos_x) * delta_dist_x;
+      side_dist_x = (map_x + 1.0 - caster->camera.pos_x) * delta_dist_x;
     }
     if (ray_y < 0)
     {
       step_y = -1;
-      side_dist_y = (caster->pos_y - map_y) * delta_dist_y;
+      side_dist_y = (caster->camera.pos_y - map_y) * delta_dist_y;
     }
     else
     {
       step_y = 1;
-      side_dist_y = (map_y + 1.0 - caster->pos_y) * delta_dist_y;
+      side_dist_y = (map_y + 1.0 - caster->camera.pos_y) * delta_dist_y;
     }
     hit = 0;
     while (!hit)

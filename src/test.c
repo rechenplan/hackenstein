@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include "phy.h"
+#include "client.h"
 #include "input.h"
 #include "caster.h"
 #include "render.h"
@@ -19,15 +21,28 @@ int WinMain() {
 #else
 int main(int argc, char** argv) {
 #endif
+/*
   test_map();
   test_lfb();
   test_render();
   test_caster();
   test_input();
+*/
+  test_client();
 #ifdef SDL
   SDL_Quit();
 #endif
   return 0;
+}
+
+void test_client() {
+  client_t client;
+
+  printf("testing client...");
+  client_init(&client);
+  while (!client_update(&client)) {}
+  client_cleanup(&client);
+  printf("ok\n");
 }
 
 void test_input() {
@@ -83,7 +98,7 @@ void test_caster() {
   t = 0;
 #endif
   for (frame = 0; frame < 500; frame++) {
-    caster.pos_x += 0.01;
+    phy_rel_move(&caster.camera, 0, 0.01);
     caster_draw_map(&caster, &map);
     render_update(render, &lfb);
   }
