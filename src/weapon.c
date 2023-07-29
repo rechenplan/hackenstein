@@ -45,7 +45,7 @@ weapon_t weapon_get(int i) {
       weapon.proj.harm = 200;
       weapon.proj.harm_radius = 2.5;
       weapon.proj.boom = 0;
-      weapon.proj.friction = 0.98;
+      weapon.proj.friction = 0.99;
       weapon.proj.bounce = -1;
       break;
     case WEAPON_RIFLE:

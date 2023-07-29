@@ -1,5 +1,5 @@
-#ifndef CLIENT_H
-#define CLIENT_H
+#ifndef PLAYER_H
+#define PLAYER_H
 
 #include "sprite.h"
 #include "render.h"
@@ -9,22 +9,18 @@
 #include "caster.h"
 #include "phy.h"
 
-#define MAX_BULLETS 4
-
-typedef struct _client_t {
-  render_t render;
-  lfb_t    lfb;
-  input_t  input;
-  map_t*   map;
-  sprite_bank_t* sprites;
-  caster_t caster;
-  phy_t    camera;
+typedef struct _player_t {
+  uint8_t  id;
+  phy_t    me;
   phy_t    camera_plane;
-  int      shot_timer;
-} client_t;
+  uint16_t shot_timer;
+  uint8_t  weapon;
+  uint8_t  shooting;
+} player_t;
 
-void client_init(client_t* client, map_t* map, sprite_bank_t* sprites);
-int client_update(client_t* client, render_t render);
-void client_cleanup(client_t* client);
+void player_init(player_t* player);
+void player_shoot(player_t* player, sprite_bank_t* sprites, double random_double);
+int  player_update(player_t* player, input_t* input, map_t* map, sprite_bank_t* sprites);
+void player_cleanup(player_t* player);
 
 #endif

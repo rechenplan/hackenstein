@@ -6,6 +6,6 @@ void test_lfb();
 void test_render();
 void test_caster();
 void test_input();
-void test_client();
+void test_player();
 void test_sprite();
 #endif

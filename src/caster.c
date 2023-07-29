@@ -109,8 +109,8 @@ void caster_draw_map(caster_t* caster, map_t* map, phy_t* camera, phy_t* camera_
   }
 }
 
-void caster_draw_sprites(caster_t* caster, sprite_bank_t* sprites, phy_t* camera, phy_t* camera_plane) {
-  int i, x, y;
+int caster_draw_sprites(caster_t* caster, sprite_bank_t* sprites, phy_t* camera, phy_t* camera_plane) {
+  int i, x, y, hurt_me;
   lfb_t* lfb;
   pixel_t* buffer;
   sprite_t* sprite;
@@ -119,7 +119,7 @@ void caster_draw_sprites(caster_t* caster, sprite_bank_t* sprites, phy_t* camera
 
   lfb = caster->lfb;
   buffer = lfb_get_buffer(lfb);
-  sprite_sort_by_dist(sprites, camera);
+  hurt_me = sprite_sort_by_dist(sprites, camera);
   for (i = 0; i < sprites->size; i++) {
     sprite = sprite_get(sprites, sprites->order[i]);
     if (!sprite->active) {
@@ -172,4 +172,5 @@ void caster_draw_sprites(caster_t* caster, sprite_bank_t* sprites, phy_t* camera
       }
     }
   }
+  return hurt_me;
 }

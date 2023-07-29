@@ -8,7 +8,7 @@
 #include <assert.h>
 #include "sprite.h"
 #include "phy.h"
-#include "client.h"
+#include "player.h"
 #include "input.h"
 #include "caster.h"
 #include "render.h"
@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
   test_input();
   test_sprite();
 */
-  test_client();
+  test_player();
 
 #ifdef SDL
   SDL_Quit();
@@ -73,16 +73,17 @@ void test_sprite() {
   return;
 }
 
-void test_client() {
-  client_t client;
+void test_player() {
+  player_t player;
   render_t render;
   map_t map;
-  int i, j;
+  int i, j, hurt_me;
   sprite_bank_t sprites;
-  int sprite_idx, sprite_idx2;
-  sprite_t mine;
+  input_t input;
+  lfb_t lfb;
+  caster_t caster;
 
-  printf("testing client...");
+  printf("testing player...");
   render = render_init();
   map_init(&map, 32, 32, 1);
   for (j = 0; j < map.height; j++) {
@@ -91,20 +92,30 @@ void test_client() {
     }
   }
   map_set_cell(&map, 7, 7, 1);
+  input_init(&input);
   sprite_init(&sprites, 128);
-  mine = test_make_sprite();
-  sprite_idx = sprite_create(&sprites, &mine);
-  sprite_idx2 = sprite_create(&sprites, &mine);
-  client_init(&client, &map, &sprites);
-  while (!client_update(&client, render)) {
+  player_init(&player);
+  lfb_init(&lfb, 512, 288);
+  caster_init(&caster, &lfb);
+  /* net_init(&net, "localhost", 26000); */
+  while (!player_update(&player, &input, &map, &sprites)) {
+    /* net_update(&net, &players, &sprites, &map); */
     sprite_update(&sprites, &map);
+    caster_draw_map(&caster, &map, &player.me, &player.camera_plane);
+    hurt_me = caster_draw_sprites(&caster, &sprites, &player.me, &player.camera_plane);
+    render_update(render, &lfb);
+    if (hurt_me) {
+      printf("hurt: %d\n", hurt_me);
+    }
+    /* net_player_send(&net, &player); */
   }
-  client_cleanup(&client);
-  map_cleanup(&map);
-  sprite_destroy(&sprites, sprite_idx);
-  sprite_destroy(&sprites, sprite_idx2);
-  sprite_cleanup(&sprites);
   render_cleanup(render);
+  map_cleanup(&map);
+  input_cleanup(&input);
+  sprite_cleanup(&sprites);
+  player_cleanup(&player);
+  lfb_cleanup(&lfb);
+  caster_cleanup(&caster);
   printf("ok\n");
 }
 
