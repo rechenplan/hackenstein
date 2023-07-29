@@ -31,7 +31,7 @@ weapon_t weapon_get(int i) {
       weapon.proj.harm_radius = 1;
       weapon.proj.boom = 0;
       weapon.proj.friction = 1.0;
-      weapon.proj.bounce = 0;
+      weapon.proj.bounce = 1;
       break;
     case WEAPON_MINE:
       weapon.spray = 1.0;

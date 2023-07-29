@@ -97,15 +97,21 @@ void test_player() {
   player_init(&player);
   lfb_init(&lfb, 512, 288);
   caster_init(&caster, &lfb);
+
   /* net_init(&net, "localhost", 26000); */
-  while (!player_update(&player, &input, &map, &sprites)) {
+  player_respawn(&player);
+  while (!player_local_update(&player, &input, &map, &sprites)) {
     /* net_update(&net, &players, &sprites, &map); */
+    player_shot_update(&player, &sprites);
     sprite_update(&sprites, &map);
     caster_draw_map(&caster, &map, &player.me, &player.camera_plane);
     hurt_me = caster_draw_sprites(&caster, &sprites, &player.me, &player.camera_plane);
     render_update(render, &lfb);
     if (hurt_me) {
-      printf("hurt: %d\n", hurt_me);
+      player.health -= hurt_me;
+      if (player.health <= 0) {
+        player_respawn(&player);
+      }
     }
     /* net_player_send(&net, &player); */
   }
