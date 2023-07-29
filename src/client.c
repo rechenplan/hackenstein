@@ -20,13 +20,13 @@ static void client_respawn(client_t* client) {
 }
 
 static void client_shoot(client_t* client) {
+  int i;
+  double phi;
   sprite_t projectile;
   double random_double;
   weapon_t weapon;
 
-  weapon = weapon_get(WEAPON_SMG);
-  projectile = weapon.proj;
-  projectile.phy = client->camera;
+  weapon = weapon_get(WEAPON_MINE);
 
   /* debug */
   /*
@@ -36,12 +36,19 @@ static void client_shoot(client_t* client) {
     projectile.phy.dir_y = 0;
   */
   if (!client->shot_timer) {
-    random_double = (rand() / (double) RAND_MAX) / 100.0;
-    projectile.phy.dir_x += random_double * weapon.spray;
-    projectile.phy.dir_y += random_double * weapon.spray;
-    projectile.vert += random_double * weapon.spray;
-    phy_rel_move(&projectile.phy, client->map, 0, projectile.harm_radius + 0.25, projectile.bounce);
-    sprite_create(client->sprites, &projectile);
+    for (i = 0; i < weapon.proj_cnt; i++) {
+      projectile = weapon.proj;
+      projectile.phy = client->camera;
+      random_double = (rand() / (double) RAND_MAX) / 100.0;
+      phi = atan2(projectile.phy.dir_y, projectile.phy.dir_x);
+      phi += random_double * weapon.spray - weapon.spray / 200.0;
+      projectile.phy.dir_x = cos(phi);
+      projectile.phy.dir_y = sin(phi);
+      random_double = (rand() / (double) RAND_MAX) / 50.0;
+      projectile.vert += random_double * weapon.spray - weapon.spray / 100.0;
+      phy_rel_move(&projectile.phy, client->map, 0, projectile.harm_radius + 0.01, projectile.bounce);
+      sprite_create(client->sprites, &projectile);
+    }
     client->shot_timer = weapon.repeat_rate;
   }
 }

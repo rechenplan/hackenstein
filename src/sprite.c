@@ -84,7 +84,7 @@ void sprite_update(sprite_bank_t* sprites, map_t* map) {
       }
     }
     if (sprite->boom) {
-      sprite->boom = sprite->boom + (sprite->harm - sprite->boom) / 4 + 1;
+      sprite->boom = sprite->boom + (sprite->harm - sprite->boom) / 8 + 1;
       if (sprite->boom >= sprite->harm) {
         sprite->active = 0;
       }

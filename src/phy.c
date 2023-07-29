@@ -2,7 +2,7 @@
 #include <math.h>
 
 int phy_rel_move(phy_t* phy, map_t* map, double x, double y, int bounce) {
-  double new_x, new_y, phi;
+  double new_x, new_y;
   int collision;
 
   collision = 0;

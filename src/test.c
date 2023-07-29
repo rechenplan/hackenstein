@@ -92,7 +92,7 @@ void test_client() {
     }
   }
   map_set_cell(&map, 7, 7, 1);
-  sprite_init(&sprites, 16);
+  sprite_init(&sprites, 128);
   mine = test_make_sprite();
   sprite_idx = sprite_create(&sprites, &mine);
   sprite_idx2 = sprite_create(&sprites, &mine);
