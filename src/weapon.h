@@ -15,7 +15,7 @@ typedef struct _weapon_t {
 #define WEAPON_MINE 2
 #define WEAPON_RIFLE 3
 #define WEAPON_SHOTGUN 4
-#define WEAPON_MAX 5
+#define MAX_WEAPON 5
 
 weapon_t weapon_get(int i);
 

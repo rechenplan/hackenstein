@@ -27,12 +27,15 @@ void game_init(game_t* game) {
   input_init(&game->input);
   sprite_init(&game->sprites, MAX_SPRITES);
   for (i = 0; i < MAX_PLAYERS; i++) {
-    player_init(&game->players[i]);
+    player_init(&game->players[i], &game->sprites);
+    /* TODO: remove this. it's for debugging */
+    player_respawn(&game->players[i], &game->sprites);
   }
   lfb_init(&game->lfb, LFB_WIDTH, LFB_HEIGHT);
   caster_init(&game->caster, &game->lfb);
   net_init(&game->net, "localhost", 26000);
-  player_respawn(&game->players[game->my_id]);
+  player_respawn(&game->players[game->my_id], &game->sprites);
+
 }
 
 int game_update(game_t* game) {
@@ -49,7 +52,7 @@ int game_update(game_t* game) {
   if (abuser > 0) {
     myself->health -= hurt_me;
     if (myself->health <= 0) {
-      player_respawn(myself);
+      player_respawn(myself, &game->sprites);
     }
   }
   return done;

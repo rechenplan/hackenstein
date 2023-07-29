@@ -9,8 +9,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-void player_respawn(player_t* player) {
-  player->id = 2;
+void player_respawn(player_t* player, sprite_bank_t* sprites) {
+  sprite_t* player_sprite;
+
   player->weapon = WEAPON_SHOTGUN;
   player->health = 100;
   player->shot_timer = 0;
@@ -23,6 +24,8 @@ void player_respawn(player_t* player) {
   player->me.vel_z = 0;
   player->camera_plane.dir_x = 0;
   player->camera_plane.dir_y = 2.0 / 3.0;
+  player_sprite = sprite_get(sprites, player->sprite);
+  player_sprite->phy = player->me;
 }
 
 void player_update(player_t* player, sprite_bank_t* sprites, map_t* map) {
@@ -34,6 +37,8 @@ void player_update(player_t* player, sprite_bank_t* sprites, map_t* map) {
   weapon_t weapon;
   double random_double;
   int prng = 125;
+  sprite_t* player_sprite;
+
   weapon = weapon_get(player->weapon);
   if (player->shooting > 0) {
     random_double = player->shooting;
@@ -65,10 +70,30 @@ void player_update(player_t* player, sprite_bank_t* sprites, map_t* map) {
   }
   player->me.vel_x *= friction;
   player->me.vel_y *= friction;
-  phy_rel_move(&player->me, map, 0, 1, 0);
+  player_sprite = sprite_get(sprites, player->sprite);
+  phy_rel_move(&player->me, map, 0, 1, 0, player_sprite->height);
+  /* update sprite position */
+  player_sprite->phy = player->me;
 }
 
-void player_init(player_t* player) {
+void player_init(player_t* player, sprite_bank_t* sprites) {
+  sprite_t player_sprite;
+
+  player_sprite.active = 1;
+  player_sprite.owner = 0;
+  /* player_sprite.phy */
+  player_sprite.phy.pos_z = 0.4;
+  player_sprite.vel = 0;
+  /* player_sprite.friction */
+  player_sprite.height = 0.8;
+  player_sprite.width = 0.5;
+  player_sprite.color = 64;
+  player_sprite.harm = 0;
+  player_sprite.harm_radius = 0;
+  player_sprite.boom = 0;
+  player_sprite.bounce = -1;
+
+  player->sprite = sprite_create(sprites, &player_sprite);
 }
 
 int player_process_input(player_t* player, input_t* input) {
@@ -99,6 +124,12 @@ int player_process_input(player_t* player, input_t* input) {
     phy_rotate(&player->me, -rot_speed);
     phy_rotate(&player->camera_plane, -rot_speed);
   }
+  if (input_is_pressed(input, INPUT_CHANGE_GUN)) {
+    if (!player->swap_timer) {
+      player->weapon = (player->weapon + 1) % MAX_WEAPON;
+      player->swap_timer = 30;
+    }
+  }
   player->shooting = -1.0;
   if (input_is_pressed(input, INPUT_SHOOT)) {
     if (!player->shot_timer) {
@@ -107,6 +138,9 @@ int player_process_input(player_t* player, input_t* input) {
   }
   if (player->shot_timer > 0) {
     player->shot_timer--;
+  }
+  if (player->swap_timer > 0) {
+    player->swap_timer--;
   }
   return input_is_pressed(input, INPUT_EXIT);
 }

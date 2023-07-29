@@ -13,8 +13,8 @@
 #include "lfb.h"
 #include "map.h"
 #include "net.h"
+#include "global.h"
 
-#define MAX_PLAYERS (4)
 #define MAX_SPRITES (128)
 #define LFB_WIDTH   (512)
 #define LFB_HEIGHT  (288)

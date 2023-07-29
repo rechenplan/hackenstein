@@ -11,7 +11,7 @@ weapon_t weapon_get(int i) {
       weapon.proj.vel = 0.4;
       weapon.proj.height = 0.1;
       weapon.proj.width = 0.1;
-      weapon.proj.color = 48;
+      weapon.proj.color = 32;
       weapon.proj.harm = 200;
       weapon.proj.harm_radius = 2.5;
       weapon.proj.boom = 0;
@@ -26,7 +26,7 @@ weapon_t weapon_get(int i) {
       weapon.proj.vel = 0.4;
       weapon.proj.height = 0.1;
       weapon.proj.width = 0.1;
-      weapon.proj.color = 64;
+      weapon.proj.color = 32;
       weapon.proj.harm = 5;
       weapon.proj.harm_radius = 1;
       weapon.proj.boom = 0;
@@ -41,7 +41,7 @@ weapon_t weapon_get(int i) {
       weapon.proj.vel = 0.1;
       weapon.proj.height = 0.1;
       weapon.proj.width = 0.2;
-      weapon.proj.color = 190;
+      weapon.proj.color = 32;
       weapon.proj.harm = 200;
       weapon.proj.harm_radius = 2.5;
       weapon.proj.boom = 0;
@@ -56,7 +56,7 @@ weapon_t weapon_get(int i) {
       weapon.proj.vel = 0.75;
       weapon.proj.height = 0.1;
       weapon.proj.width = 0.1;
-      weapon.proj.color = 100;
+      weapon.proj.color = 32;
       weapon.proj.harm = 50;
       weapon.proj.harm_radius = 0.5;
       weapon.proj.boom = 0;

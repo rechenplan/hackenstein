@@ -14,7 +14,7 @@ typedef struct _phy_t {
   float dir_y;
 } phy_t;
 
-int phy_rel_move(phy_t* phy, map_t* map, double x, double y, int bounce);
+int phy_rel_move(phy_t* phy, map_t* map, double x, double y, int bounce, double height);
 void phy_rotate(phy_t* phy, double phi);
 
 #endif

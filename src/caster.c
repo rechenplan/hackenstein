@@ -171,7 +171,7 @@ void caster_draw_sprites(caster_t* caster, sprite_bank_t* sprites, phy_t* camera
     /* draw */
     for (y = draw_start_y; y < draw_end_y; y++) {
       for (x = draw_start_x; x < draw_end_x; x++) {
-        if (transform_y > 0 && transform_y < caster->z_buffer[x] + 5) {
+        if (transform_y > 0 && transform_y < caster->z_buffer[x]) {
           buffer[x + y * lfb->width] = sprite->boom ? 0 : sprite->color;
         }
       }

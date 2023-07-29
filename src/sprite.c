@@ -80,7 +80,7 @@ void sprite_update(sprite_bank_t* sprites, map_t* map) {
     sprite->vel *= sprite->friction;
     /* gravity */
     sprite->phy.vel_z -= 1.0 / 5000.0;
-    if (phy_rel_move(&sprite->phy, map, 0, sprite->vel, sprite->bounce)) {
+    if (phy_rel_move(&sprite->phy, map, 0, sprite->vel, sprite->bounce, sprite->height) && sprite->harm) {
       if (sprite->bounce) {
         if (sprite->bounce > 0)
           sprite->bounce--;
