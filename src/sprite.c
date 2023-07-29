@@ -11,7 +11,7 @@ void sprite_init(sprite_bank_t* sprites, int size) {
   memset(sprites->bank, 0, size * sizeof(sprite_t));
 }
 
-int sprite_create(sprite_bank_t* sprites, phy_t phy, double vel, double vert, double height, double width, pixel_t color, int harm) {
+int sprite_create(sprite_bank_t* sprites, sprite_t* sprite) {
   int i;
   for (i = 0; i < sprites->size; i++) {
     if (!sprites->bank[i].active)
@@ -20,15 +20,7 @@ int sprite_create(sprite_bank_t* sprites, phy_t phy, double vel, double vert, do
   if (i == sprites->size) {
     return -1;
   }
-  sprites->bank[i].active = 1;
-  sprites->bank[i].phy = phy;
-  sprites->bank[i].vert = vert;
-  sprites->bank[i].vel = vel;
-  sprites->bank[i].height = height;
-  sprites->bank[i].width = width;
-  sprites->bank[i].color = color;
-  sprites->bank[i].harm = harm;
-  sprites->bank[i].boom = 0;
+  memcpy(&sprites->bank[i], sprite, sizeof(sprite_t));
   return i;
 }
 
@@ -64,7 +56,7 @@ void sprite_sort_by_dist(sprite_bank_t* sprites, phy_t* from) {
     sprite = sprite_get(sprites, i);
     sprites->order[i] = i;
     sprites->distance[i] = (sprite->phy.pos_x - from->pos_x) * (sprite->phy.pos_x - from->pos_x) + (sprite->phy.pos_y - from->pos_y) * (sprite->phy.pos_y - from->pos_y);
-    if (sprites->distance[i] < 1.0 && !sprites->bank[i].boom) {
+    if (sprites->bank[i].harm && (sprites->distance[i] < sprites->bank[i].harm_radius * sprites->bank[i].harm_radius) && !sprites->bank[i].boom) {
       sprites->bank[i].boom = 1;
     }
   }
@@ -82,12 +74,17 @@ void sprite_update(sprite_bank_t* sprites, map_t* map) {
     if (!sprite->active) {
       continue;
     }
-    if (phy_rel_move(&sprite->phy, map, 0, sprite->vel)) {
+    sprite->vel *= sprite->friction;
+    if (phy_rel_move(&sprite->phy, map, 0, sprite->vel, sprite->bounce)) {
+      if (sprite->bounce) {
+        sprite->bounce--;
+      } else {
         sprite->boom = 1;
         sprite->vel = 0;
+      }
     }
     if (sprite->boom) {
-      sprite->boom++;
+      sprite->boom = sprite->boom + (sprite->harm - sprite->boom) / 4 + 1;
       if (sprite->boom >= sprite->harm) {
         sprite->active = 0;
       }

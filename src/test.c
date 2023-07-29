@@ -38,16 +38,35 @@ int main(int argc, char** argv) {
   return 0;
 }
 
+sprite_t test_make_sprite() {
+  sprite_t mine;
+  mine.active = 1;
+  mine.phy.pos_x = 8;
+  mine.phy.pos_y = 8;
+  mine.vert = 0.0;
+  mine.vel = 100;
+  mine.height = 0.1;
+  mine.width = 0.2;
+  mine.color = 190;
+  mine.harm = 100;
+  mine.harm_radius = 2.5;
+  mine.boom = 0;
+  mine.friction = 0.99;
+  return mine;
+}
+
 void test_sprite() {
   sprite_bank_t sprites;
-  phy_t phy;
   int sprite_idx;
+  sprite_t mine;
+  phy_t phy;
 
   printf("testing sprite...");
-  phy.pos_x = 8;
-  phy.pos_y = 8;
+  mine = test_make_sprite();
+  phy.pos_x = 10;
+  phy.pos_y = 10;
   sprite_init(&sprites, 10);
-  sprite_idx = sprite_create(&sprites, phy, 0, 0.5, 1.0, 1.0, 64, 9);
+  sprite_idx = sprite_create(&sprites, &mine);
   sprite_sort_by_dist(&sprites, &phy);
   sprite_destroy(&sprites, sprite_idx);
   sprite_cleanup(&sprites);
@@ -61,8 +80,8 @@ void test_client() {
   map_t map;
   int i, j;
   sprite_bank_t sprites;
-  phy_t phy;
   int sprite_idx, sprite_idx2;
+  sprite_t mine;
 
   printf("testing client...");
   render = render_init();
@@ -73,14 +92,10 @@ void test_client() {
     }
   }
   map_set_cell(&map, 7, 7, 1);
-  phy.pos_x = 16;
-  phy.pos_y = 16;
   sprite_init(&sprites, 16);
-  sprite_idx = sprite_create(&sprites, phy, 0, 0.05, 0.1, 0.2, 64, 9);
-  phy.pos_x = 8;
-  phy.dir_x = 1;
-  phy.dir_y = 0;
-  sprite_idx2 = sprite_create(&sprites, phy, 0.01, 0.4, 0.8, 0.5, 96, 9);
+  mine = test_make_sprite();
+  sprite_idx = sprite_create(&sprites, &mine);
+  sprite_idx2 = sprite_create(&sprites, &mine);
   client_init(&client, &map, &sprites);
   while (!client_update(&client, render)) {
     sprite_update(&sprites, &map);
@@ -155,7 +170,7 @@ void test_caster() {
   t = 0;
 #endif
   for (frame = 0; frame < 500; frame++) {
-    phy_rel_move(&camera, &map, 0, 0.01);
+    phy_rel_move(&camera, &map, 0, 0.01, 0);
     caster_draw_map(&caster, &map, &camera, &camera_plane);
     render_update(render, &lfb);
   }

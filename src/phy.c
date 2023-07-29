@@ -1,8 +1,8 @@
 #include "phy.h"
 #include <math.h>
 
-int phy_rel_move(phy_t* phy, map_t* map, double x, double y) {
-  double new_x, new_y;
+int phy_rel_move(phy_t* phy, map_t* map, double x, double y, int bounce) {
+  double new_x, new_y, phi;
   int collision;
 
   collision = 0;
@@ -11,11 +11,21 @@ int phy_rel_move(phy_t* phy, map_t* map, double x, double y) {
   if (!map_get_cell(map, phy->pos_x, new_y)) {
     phy->pos_y = new_y;
   } else {
+    if (bounce) {
+      phy->dir_y = -phy->dir_y;
+      new_y = phy->pos_y + phy->dir_y * y + phy->dir_x * x;
+      phy->pos_y = new_y;
+    }
     collision = 1;
   }
   if (!map_get_cell(map, new_x, phy->pos_y)) {
     phy->pos_x = new_x;
   } else {
+    if (bounce) {
+      phy->dir_x = -phy->dir_x;
+      new_x = phy->pos_x + phy->dir_x * y - phy->dir_y * x;
+      phy->pos_x = new_x;
+    }
     collision = 1;
   }
   return collision;

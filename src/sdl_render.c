@@ -45,7 +45,11 @@ int render_update(render_t render, lfb_t* lfb) {
       i = x * scale_x;
       j = y * scale_y;
       lfb_color = lfb_pixels[i + j * lfb->width];
-      sdl_pixels[x + y * window_width] = lfb_color << 16 | lfb_color << 8 | lfb_color;
+      if (lfb_color == 0) {
+        sdl_pixels[x + y * window_width] = 0xffff0000;
+      } else {
+        sdl_pixels[x + y * window_width] = lfb_color << 16 | lfb_color << 8 | lfb_color;
+      }
     }
   }
   SDL_UnlockSurface(surface);

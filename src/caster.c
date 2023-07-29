@@ -5,7 +5,7 @@
 #include <math.h>
 #include <stdlib.h>
 
-#define WALL_HEIGHT 1000.0
+#define WALL_HEIGHT 400.0
 
 void caster_init(caster_t* caster, lfb_t* lfb) {
   caster->z_buffer = malloc(lfb->width * sizeof(double));
@@ -97,13 +97,13 @@ void caster_draw_map(caster_t* caster, map_t* map, phy_t* camera, phy_t* camera_
       line_end = lfb->height - 1;
     }
     for (y = 0; y < line_start; y++) {
-      buffer[x + y * lfb->width] = 0;
+      buffer[x + y * lfb->width] = 1;
     }
     for (; y < line_end; y++) {
       buffer[x + y * lfb->width] = side ? 255 : 127;
     }
     for (; y < lfb->height; y++) {
-      buffer[x + y * lfb->width] = 0;
+      buffer[x + y * lfb->width] = 1;
     }
     caster->z_buffer[x] = perp_wall_dist;
   }
