@@ -39,7 +39,7 @@ void game_init(game_t* game) {
 }
 
 int game_update(game_t* game) {
-  int done;
+  int done, i;
   player_t* myself;
   player_t* spec_player;
 
@@ -47,7 +47,12 @@ int game_update(game_t* game) {
   spec_player = &game->players[myself->spec];
   done = player_process_input(myself, &game->input);
   net_update(&game->net, game->players, &game->sprites, &game->map);
-  player_update(myself, &game->sprites, &game->map);
+  for (i = 0; i < MAX_PLAYERS; i++) {
+    if (!(rand() % 200) && (i != game->my_id)) {
+      game->players[i].shooting = ((double) rand() / RAND_MAX);
+    }
+    player_update(&game->players[i], &game->sprites, &game->map);
+  }
   sprite_update(&game->sprites, &game->map);
   caster_update(&game->caster, &game->map, &game->sprites, &spec_player->me, &spec_player->camera_plane);
   render_update(game->render, &game->lfb);

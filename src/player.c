@@ -18,8 +18,9 @@ void player_respawn(player_t* player, sprite_bank_t* sprites) {
   player->shot_timer = 0;
   player->spec_timer = 0;
   player->swap_timer = 0;
-  player->me.pos_x = (rand() % 14) + 1.5;
-  player->me.pos_y = (rand() % 14) + 1.5;
+  player->shooting = -1;
+  player->me.pos_x = (rand() % 30) + 1.5;
+  player->me.pos_y = (rand() % 30) + 1.5;
   player->me.dir_x = 1;
   player->me.dir_y = 0;
   player->me.vel_x = 0;
@@ -45,7 +46,6 @@ void player_update(player_t* player, sprite_bank_t* sprites, map_t* map) {
   weapon = weapon_get(player->weapon);
   if (player->shooting > 0) {
     random_double = player->shooting;
-
     for (i = 0; i < weapon.proj_cnt; i++) {
       prng = (prng * 3) % 257;
       x = (prng / 257.0 - 0.5);
@@ -70,6 +70,7 @@ void player_update(player_t* player, sprite_bank_t* sprites, map_t* map) {
       sprite_create(sprites, &projectile);
     }
     player->shot_timer = weapon.repeat_rate;
+    player->shooting = -1;
   }
   player->me.vel_x *= friction;
   player->me.vel_y *= friction;
@@ -149,7 +150,6 @@ int player_process_input(player_t* player, input_t* input) {
       player->spec_timer = 30;
     }
   }
-  player->shooting = -1.0;
   if (input_is_pressed(input, INPUT_SHOOT)) {
     if (!player->shot_timer) {
       player->shooting = rand() / (double) RAND_MAX;
