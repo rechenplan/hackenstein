@@ -18,8 +18,8 @@ void player_respawn(player_t* player, sprite_bank_t* sprites) {
   player->shot_timer = 0;
   player->spec_timer = 0;
   player->swap_timer = 0;
-  player->me.pos_x = 8.5;
-  player->me.pos_y = 8.5;
+  player->me.pos_x = (rand() % 14) + 1.5;
+  player->me.pos_y = (rand() % 14) + 1.5;
   player->me.dir_x = 1;
   player->me.dir_y = 0;
   player->me.vel_x = 0;
@@ -33,7 +33,7 @@ void player_respawn(player_t* player, sprite_bank_t* sprites) {
 
 void player_update(player_t* player, sprite_bank_t* sprites, map_t* map) {
   double friction = 0.9;
-  int i;
+  int i, hurt_me, attacker;
   double x, y;
   double phi;
   sprite_t projectile;
@@ -77,6 +77,14 @@ void player_update(player_t* player, sprite_bank_t* sprites, map_t* map) {
   phy_rel_move(&player->me, map, 0, 1, 0, player_sprite->height);
   /* update sprite position */
   player_sprite->phy = player->me;
+  /* detect damage */
+  sprite_sort_by_dist(sprites, &player->me, &hurt_me, &attacker);
+  if (attacker >= 0) {
+    player->health -= hurt_me;
+    if (player->health <= 0) {
+      player_respawn(player, sprites);
+    }
+  }
 }
 
 void player_init(player_t* player, sprite_bank_t* sprites, int id) {

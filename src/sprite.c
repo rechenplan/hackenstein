@@ -48,19 +48,21 @@ static int sprite_dist_comp(const void *a, const void *b) {
   return SORT_BANK->distance[i] < SORT_BANK->distance[j];
 }
 
-void sprite_sort_by_dist(sprite_bank_t* sprites, phy_t* from, int* hurt_me, int* abuser) {
+void sprite_sort_by_dist(sprite_bank_t* sprites, phy_t* from, int* hurt_me, int* attacker) {
   int i;
   sprite_t* sprite;
 
-  *abuser = -1;
-  *hurt_me = 0;
+  if (hurt_me && attacker) {
+    *attacker = -1;
+    *hurt_me = 0;
+  }
   for (i = 0; i < sprites->size; i++) {
     sprite = sprite_get(sprites, i);
     sprites->order[i] = i;
     sprites->distance[i] = (sprite->phy.pos_x - from->pos_x) * (sprite->phy.pos_x - from->pos_x) + (sprite->phy.pos_y - from->pos_y) * (sprite->phy.pos_y - from->pos_y);
-    if (sprites->bank[i].harm && (sprites->distance[i] < sprites->bank[i].harm_radius * sprites->bank[i].harm_radius) && !sprites->bank[i].boom) {
+    if (hurt_me && attacker && sprites->bank[i].harm && (sprites->distance[i] < sprites->bank[i].harm_radius * sprites->bank[i].harm_radius) && !sprites->bank[i].boom) {
       sprites->bank[i].boom = 1;
-      *abuser = sprites->bank[i].owner;
+      *attacker = sprites->bank[i].owner;
       *hurt_me += sprites->bank[i].harm;
     }
   }

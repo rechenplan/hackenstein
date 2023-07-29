@@ -39,7 +39,7 @@ void game_init(game_t* game) {
 }
 
 int game_update(game_t* game) {
-  int done, hurt_me, abuser;
+  int done;
   player_t* myself;
   player_t* spec_player;
 
@@ -49,14 +49,8 @@ int game_update(game_t* game) {
   net_update(&game->net, game->players, &game->sprites, &game->map);
   player_update(myself, &game->sprites, &game->map);
   sprite_update(&game->sprites, &game->map);
-  caster_update(&game->caster, &game->map, &game->sprites, &spec_player->me, &spec_player->camera_plane, &hurt_me, &abuser);
+  caster_update(&game->caster, &game->map, &game->sprites, &spec_player->me, &spec_player->camera_plane);
   render_update(game->render, &game->lfb);
-  if (abuser > 0) {
-    myself->health -= hurt_me;
-    if (myself->health <= 0) {
-      player_respawn(myself, &game->sprites);
-    }
-  }
   return done;
 }
 
