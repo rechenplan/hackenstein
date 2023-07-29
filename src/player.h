@@ -16,8 +16,9 @@ typedef struct _player_t {
   uint8_t  shot_timer;
   uint8_t  weapon;
   int8_t   health;
-
   float    shooting;
+
+  int      sprite;
 
 } player_t;
 

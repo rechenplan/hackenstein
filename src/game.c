@@ -10,7 +10,7 @@
 #include "render.h"
 #include "lfb.h"
 #include "map.h"
-#include "test.h"
+#include "net.h"
 
 void game_init(game_t* game) {
   int i, j;
@@ -31,8 +31,7 @@ void game_init(game_t* game) {
   }
   lfb_init(&game->lfb, LFB_WIDTH, LFB_HEIGHT);
   caster_init(&game->caster, &game->lfb);
-  /* net_init(&game->net, "localhost", 26000); */
-
+  net_init(&game->net, "localhost", 26000);
   player_respawn(&game->players[game->my_id]);
 }
 
@@ -42,7 +41,7 @@ int game_update(game_t* game) {
 
   myself = &game->players[game->my_id];
   done = player_process_input(myself, &game->input);
-  /* net_update(&game->net, &game->players, &game->sprites, &game->map); */
+  net_update(&game->net, game->players, &game->sprites, &game->map);
   player_update(myself, &game->sprites, &game->map);
   sprite_update(&game->sprites, &game->map);
   caster_update(&game->caster, &game->map, &game->sprites, &myself->me, &myself->camera_plane, &hurt_me, &abuser);
@@ -68,5 +67,5 @@ void game_cleanup(game_t* game) {
   }
   lfb_cleanup(&game->lfb);
   caster_cleanup(&game->caster);
-  /* net_cleanup(&game->net); */
+  net_cleanup(&game->net);
 }

@@ -12,12 +12,12 @@
 #include "render.h"
 #include "lfb.h"
 #include "map.h"
-#include "test.h"
+#include "net.h"
 
-#define MAX_PLAYERS 4
-#define MAX_SPRITES 128
-#define LFB_WIDTH   512
-#define LFB_HEIGHT  288
+#define MAX_PLAYERS (4)
+#define MAX_SPRITES (128)
+#define LFB_WIDTH   (512)
+#define LFB_HEIGHT  (288)
 
 typedef struct _game_t {
   player_t players[MAX_PLAYERS];
@@ -28,6 +28,7 @@ typedef struct _game_t {
   lfb_t lfb;
   caster_t caster;
   int my_id;
+  net_t net;
 } game_t;
 
 void game_init(game_t* game);
