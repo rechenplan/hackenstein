@@ -18,8 +18,8 @@ void game_init(game_t* game) {
   game->my_id = 2;
   game->render = render_init();
   map_init(&game->map, 32, 32, 1);
-  for (j = 0; j < game->map.height; j++) {
-    for (i = 0; i < game->map.width; i++) {
+  for (j = 1; j < game->map.height; j++) {
+    for (i = 1; i < game->map.width; i++) {
       map_set_cell(&game->map, i, j, 0);
     }
   }

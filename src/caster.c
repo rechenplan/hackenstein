@@ -40,8 +40,8 @@ void caster_draw_map(caster_t* caster, map_t* map, phy_t* camera, phy_t* camera_
     ray_y = camera->dir_y + camera_plane->dir_y * rel_x;
     map_x = (int) camera->pos_x;
     map_y = (int) camera->pos_y;
-    delta_dist_x = fabs(1.0 / ray_x);
-    delta_dist_y = fabs(1.0 / ray_y);
+    delta_dist_x = ray_x == 0 ? 1e30 : fabs(1.0 / ray_x);
+    delta_dist_y = ray_y == 0 ? 1e30 : fabs(1.0 / ray_y);
     if (ray_x < 0)
     {
       step_x = -1;
@@ -86,7 +86,7 @@ void caster_draw_map(caster_t* caster, map_t* map, phy_t* camera, phy_t* camera_
     } else {
       perp_wall_dist = side_dist_y - delta_dist_y;
     }
-    line_height = WALL_HEIGHT / perp_wall_dist;
+    line_height = (int) (WALL_HEIGHT / perp_wall_dist);
     line_start = (lfb->height - line_height) / 2;
     line_end = (lfb->height + line_height) / 2;
     if (line_start < 0) {
