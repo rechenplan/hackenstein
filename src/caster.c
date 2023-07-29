@@ -136,8 +136,8 @@ void caster_draw_sprites(caster_t* caster, sprite_bank_t* sprites, phy_t* camera
     boom = 1.0 + sprite->boom / 5.0;
     draw_end_x = screen_x + sprite->width * sprite_size * boom / 2;
     draw_start_x = screen_x - sprite->width * sprite_size * boom / 2;
-    draw_end_y = (lfb->height + sprite->height * sprite_size * boom) / 2 - sprite_size * (sprite->vert - 0.5);
-    draw_start_y = (lfb->height - sprite->height * sprite_size * boom) / 2 - sprite_size * (sprite->vert - 0.5);
+    draw_end_y = (lfb->height + sprite->height * sprite_size * boom) / 2 - sprite_size * (sprite->phy.pos_z - 0.5);
+    draw_start_y = (lfb->height - sprite->height * sprite_size * boom) / 2 - sprite_size * (sprite->phy.pos_z - 0.5);
     /* clamp */
     if (draw_end_x < 0) {
       draw_end_x = 0;

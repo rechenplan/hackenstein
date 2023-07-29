@@ -43,7 +43,6 @@ sprite_t test_make_sprite() {
   mine.active = 1;
   mine.phy.pos_x = 8;
   mine.phy.pos_y = 8;
-  mine.vert = 0.0;
   mine.vel = 100;
   mine.height = 0.1;
   mine.width = 0.2;

@@ -8,7 +8,6 @@
 typedef struct _sprite_t {
   int active;
   phy_t phy;
-  double vert;
   double vel;
   double friction;
   double height;
