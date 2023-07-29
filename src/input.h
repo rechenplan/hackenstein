@@ -12,7 +12,8 @@
 #define INPUT_CHANGE_GUN   (6)
 #define INPUT_SHOOT        (7)
 #define INPUT_EXIT         (8)
-#define INPUT_MAX          (9)
+#define INPUT_CHANGE_SPEC  (9)
+#define INPUT_MAX          (10)
 
 typedef void (*input_cb_t)(int);
 

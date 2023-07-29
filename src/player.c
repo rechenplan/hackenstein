@@ -5,6 +5,7 @@
 #include "render.h"
 #include "phy.h"
 #include "weapon.h"
+#include "global.h"
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -15,6 +16,8 @@ void player_respawn(player_t* player, sprite_bank_t* sprites) {
   player->weapon = WEAPON_SHOTGUN;
   player->health = 100;
   player->shot_timer = 0;
+  player->spec_timer = 0;
+  player->swap_timer = 0;
   player->me.pos_x = 8.5;
   player->me.pos_y = 8.5;
   player->me.dir_x = 1;
@@ -76,7 +79,7 @@ void player_update(player_t* player, sprite_bank_t* sprites, map_t* map) {
   player_sprite->phy = player->me;
 }
 
-void player_init(player_t* player, sprite_bank_t* sprites) {
+void player_init(player_t* player, sprite_bank_t* sprites, int id) {
   sprite_t player_sprite;
 
   player_sprite.active = 1;
@@ -94,6 +97,8 @@ void player_init(player_t* player, sprite_bank_t* sprites) {
   player_sprite.bounce = -1;
 
   player->sprite = sprite_create(sprites, &player_sprite);
+  player->id = id;
+  player->spec = id;
 }
 
 int player_process_input(player_t* player, input_t* input) {
@@ -130,6 +135,12 @@ int player_process_input(player_t* player, input_t* input) {
       player->swap_timer = 30;
     }
   }
+  if (input_is_pressed(input, INPUT_CHANGE_SPEC)) {
+    if (!player->spec_timer) {
+      player->spec = (player->spec + 1) % MAX_PLAYERS;
+      player->spec_timer = 30;
+    }
+  }
   player->shooting = -1.0;
   if (input_is_pressed(input, INPUT_SHOOT)) {
     if (!player->shot_timer) {
@@ -141,6 +152,9 @@ int player_process_input(player_t* player, input_t* input) {
   }
   if (player->swap_timer > 0) {
     player->swap_timer--;
+  }
+  if (player->spec_timer > 0) {
+    player->spec_timer--;
   }
   return input_is_pressed(input, INPUT_EXIT);
 }

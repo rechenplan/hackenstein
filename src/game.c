@@ -27,7 +27,7 @@ void game_init(game_t* game) {
   input_init(&game->input);
   sprite_init(&game->sprites, MAX_SPRITES);
   for (i = 0; i < MAX_PLAYERS; i++) {
-    player_init(&game->players[i], &game->sprites);
+    player_init(&game->players[i], &game->sprites, i);
     /* TODO: remove this. it's for debugging */
     player_respawn(&game->players[i], &game->sprites);
   }
@@ -41,13 +41,15 @@ void game_init(game_t* game) {
 int game_update(game_t* game) {
   int done, hurt_me, abuser;
   player_t* myself;
+  player_t* spec_player;
 
   myself = &game->players[game->my_id];
+  spec_player = &game->players[myself->spec];
   done = player_process_input(myself, &game->input);
   net_update(&game->net, game->players, &game->sprites, &game->map);
   player_update(myself, &game->sprites, &game->map);
   sprite_update(&game->sprites, &game->map);
-  caster_update(&game->caster, &game->map, &game->sprites, &myself->me, &myself->camera_plane, &hurt_me, &abuser);
+  caster_update(&game->caster, &game->map, &game->sprites, &spec_player->me, &spec_player->camera_plane, &hurt_me, &abuser);
   render_update(game->render, &game->lfb);
   if (abuser > 0) {
     myself->health -= hurt_me;

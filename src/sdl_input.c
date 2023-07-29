@@ -38,8 +38,11 @@ void input_update(input_t* input) {
         case SDLK_ESCAPE:
           input->state |= (1 << INPUT_EXIT);
           break;
-        case SDLK_i:
+        case SDLK_o:
           input->state |= (1 << INPUT_CHANGE_GUN);
+          break;
+        case SDLK_l:
+          input->state |= (1 << INPUT_CHANGE_SPEC);
           break;
       }
     }
@@ -69,8 +72,11 @@ void input_update(input_t* input) {
         case SDLK_ESCAPE:
           input->state &= ~(1 << INPUT_EXIT);
           break;
-        case SDLK_i:
+        case SDLK_o:
           input->state &= ~(1 << INPUT_CHANGE_GUN);
+          break;
+        case SDLK_l:
+          input->state &= ~(1 << INPUT_CHANGE_SPEC);
           break;
       }
     }
