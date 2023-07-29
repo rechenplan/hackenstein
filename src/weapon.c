@@ -31,7 +31,7 @@ weapon_t weapon_get(int i) {
       weapon.proj.harm_radius = 1;
       weapon.proj.boom = 0;
       weapon.proj.friction = 1.0;
-      weapon.proj.bounce = 1;
+      weapon.proj.bounce = 0;
       break;
     case WEAPON_MINE:
       weapon.spray = 1.0;
@@ -68,15 +68,15 @@ weapon_t weapon_get(int i) {
       weapon.repeat_rate = 120;
       weapon.proj_cnt = 8;
       weapon.proj.active = 1;
-      weapon.proj.vel = 0.3;
+      weapon.proj.vel = 0.2;
       weapon.proj.height = 0.1;
       weapon.proj.width = 0.1;
       weapon.proj.color = 32;
-      weapon.proj.harm = 15;
+      weapon.proj.harm = 5;
       weapon.proj.harm_radius = 0.5;
       weapon.proj.boom = 0;
-      weapon.proj.friction = 1.0	;
-      weapon.proj.bounce = 0;
+      weapon.proj.friction = 0.99;
+      weapon.proj.bounce = 1;
       break;
   }
   return weapon;

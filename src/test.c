@@ -14,6 +14,7 @@
 #include "render.h"
 #include "lfb.h"
 #include "map.h"
+#include "game.h"
 #include "test.h"
 
 #ifdef SDL
@@ -29,9 +30,9 @@ int main(int argc, char** argv) {
   test_caster();
   test_input();
   test_sprite();
-*/
   test_player();
-
+*/
+  test_game();
 #ifdef SDL
   SDL_Quit();
 #endif
@@ -54,11 +55,19 @@ sprite_t test_make_sprite() {
   return mine;
 }
 
+void test_game() {
+  game_t game;
+  game_init(&game);
+  while (game_update(&game) == 0) {}
+  game_cleanup(&game);
+}
+
 void test_sprite() {
   sprite_bank_t sprites;
   int sprite_idx;
   sprite_t mine;
   phy_t phy;
+  int abuser, hurt_me;
 
   printf("testing sprite...");
   mine = test_make_sprite();
@@ -66,7 +75,7 @@ void test_sprite() {
   phy.pos_y = 10;
   sprite_init(&sprites, 10);
   sprite_idx = sprite_create(&sprites, &mine);
-  sprite_sort_by_dist(&sprites, &phy);
+  sprite_sort_by_dist(&sprites, &phy, &hurt_me, &abuser);
   sprite_destroy(&sprites, sprite_idx);
   sprite_cleanup(&sprites);
   printf("ok\n");
@@ -77,7 +86,7 @@ void test_player() {
   player_t player;
   render_t render;
   map_t map;
-  int i, j, hurt_me;
+  int i, j, hurt_me, abuser;
   sprite_bank_t sprites;
   input_t input;
   lfb_t lfb;
@@ -97,18 +106,19 @@ void test_player() {
   player_init(&player);
   lfb_init(&lfb, 512, 288);
   caster_init(&caster, &lfb);
-
   /* net_init(&net, "localhost", 26000); */
   player_respawn(&player);
-  while (!player_local_update(&player, &input, &map, &sprites)) {
+
+  while (!player_process_input(&player, &input)) {
     /* net_update(&net, &players, &sprites, &map); */
-    player_shot_update(&player, &sprites);
+    player_update(&player, &sprites, &map);
     sprite_update(&sprites, &map);
-    caster_draw_map(&caster, &map, &player.me, &player.camera_plane);
-    hurt_me = caster_draw_sprites(&caster, &sprites, &player.me, &player.camera_plane);
+    caster_update(&caster, &map, &sprites, &player.me, &player.camera_plane, &hurt_me, &abuser);
     render_update(render, &lfb);
-    if (hurt_me) {
+
+    if (abuser > 0) {
       player.health -= hurt_me;
+      printf("Hit by player %d for %d damage\n", abuser, hurt_me);
       if (player.health <= 0) {
         player_respawn(&player);
       }

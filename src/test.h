@@ -1,6 +1,7 @@
 #ifndef TEST_H
 #define TEST_H
 
+void test_game();
 void test_map();
 void test_lfb();
 void test_render();

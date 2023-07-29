@@ -7,6 +7,7 @@
 
 typedef struct _sprite_t {
   int active;
+  int owner;
   phy_t phy;
   double vel;
   double friction;
@@ -32,6 +33,6 @@ void sprite_destroy(sprite_bank_t* sprites, int i);
 sprite_t* sprite_get(sprite_bank_t* sprites, int i);
 void sprite_update(sprite_bank_t* sprites, map_t* map);
 void sprite_cleanup(sprite_bank_t* bank);
-int sprite_sort_by_dist(sprite_bank_t* bank, phy_t *from);
+void sprite_sort_by_dist(sprite_bank_t* bank, phy_t *from, int* hurt_me, int* abuser);
 
 #endif

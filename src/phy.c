@@ -13,7 +13,7 @@ int phy_rel_move(phy_t* phy, map_t* map, double x, double y, int bounce) {
     phy->pos_z = new_z;
   } else {
     if (bounce) {
-      phy->vel_z = -phy->vel_z * 0.5;
+      phy->vel_z = -phy->vel_z * 0.6;
     }
     collision = 1;
   }

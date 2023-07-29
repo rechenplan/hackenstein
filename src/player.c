@@ -10,7 +10,8 @@
 #include <stdio.h>
 
 void player_respawn(player_t* player) {
-  player->weapon = WEAPON_SMG;
+  player->id = 2;
+  player->weapon = WEAPON_SHOTGUN;
   player->health = 100;
   player->shot_timer = 0;
   player->me.pos_x = 8.5;
@@ -24,18 +25,26 @@ void player_respawn(player_t* player) {
   player->camera_plane.dir_y = 2.0 / 3.0;
 }
 
-void player_shot_update(player_t* player, sprite_bank_t* sprites) {
+void player_update(player_t* player, sprite_bank_t* sprites, map_t* map) {
+  double friction = 0.9;
   int i;
+  double x, y;
   double phi;
   sprite_t projectile;
   weapon_t weapon;
   double random_double;
-
+  int prng = 125;
   weapon = weapon_get(player->weapon);
   if (player->shooting > 0) {
     random_double = player->shooting;
+
     for (i = 0; i < weapon.proj_cnt; i++) {
+      prng = (prng * 3) % 257;
+      x = (prng / 257.0 - 0.5);
+      prng = (prng * 3) % 257;
+      y = prng / 257.0 - 0.5;
       projectile = weapon.proj;
+      projectile.owner = player->id;
       projectile.phy = player->me;
       /* shoot in the direction of the camera */
       projectile.phy.vel_x = projectile.phy.dir_x * weapon.proj.vel;
@@ -44,27 +53,28 @@ void player_shot_update(player_t* player, sprite_bank_t* sprites) {
       projectile.phy.pos_z = 0.35;
       /* spray */
       phi = atan2(projectile.phy.vel_y, projectile.phy.vel_x);
-      phi += random_double * weapon.spray / 100.0 - weapon.spray / 200.0;
+      phi += (x + random_double) * weapon.spray / 200.0 - weapon.spray / 400.0;
       projectile.phy.vel_x = cos(phi);
       projectile.phy.vel_y = sin(phi);
       projectile.phy.pos_x += projectile.phy.vel_x * (projectile.harm_radius + 0.1);
       projectile.phy.pos_y += projectile.phy.vel_y * (projectile.harm_radius + 0.1);
-      projectile.phy.vel_z += (random_double / 1000.0) * weapon.spray - weapon.spray / 2000.0;
+      projectile.phy.vel_z += (y + random_double) * weapon.spray / 2000.0 - weapon.spray / 4000.0;
       sprite_create(sprites, &projectile);
     }
     player->shot_timer = weapon.repeat_rate;
   }
+  player->me.vel_x *= friction;
+  player->me.vel_y *= friction;
+  phy_rel_move(&player->me, map, 0, 1, 0);
 }
 
 void player_init(player_t* player) {
 }
 
-int player_local_update(player_t* player, input_t* input, map_t* map, sprite_bank_t* sprites) {
-  double move_speed = 0.01, rot_speed = 0.05, friction = 0.9;
+int player_process_input(player_t* player, input_t* input) {
+  double move_speed = 0.01, rot_speed = 0.05;
 
   input_update(input);
-  player->me.vel_x *= friction;
-  player->me.vel_y *= friction;
   if (input_is_pressed(input, INPUT_FORWARD)) {
     player->me.vel_x += player->me.dir_x * move_speed;
     player->me.vel_y += player->me.dir_y * move_speed;
@@ -98,7 +108,6 @@ int player_local_update(player_t* player, input_t* input, map_t* map, sprite_ban
   if (player->shot_timer > 0) {
     player->shot_timer--;
   }
-  phy_rel_move(&player->me, map, 0, 1, 0);
   return input_is_pressed(input, INPUT_EXIT);
 }
 
