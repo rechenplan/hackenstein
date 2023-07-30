@@ -15,19 +15,14 @@ typedef struct _vec2_t {
 } vec2_t;
 
 typedef struct _phy_t {
-  float pos_x;
-  float pos_y;
-  float pos_z;
-  float vel_x;
-  float vel_y;
-  float vel_z;
-  float dir_x;
-  float dir_y;
+  vec3_t position;
+  vec3_t velocity;
+  vec2_t direction;
   float friction;
   float bouncy;
 } phy_t;
 
 int phy_update(phy_t* phy, map_t* map, int bounce, double height, int elapsed_time);
-void phy_rotate(phy_t* phy, double phi);
+void phy_rotate(vec2_t* v, double phi);
 
 #endif

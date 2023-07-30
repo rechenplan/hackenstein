@@ -24,12 +24,12 @@ void caster_cleanup(caster_t* caster) {
   free(caster->line_end);
 }
 
-void caster_update(caster_t* caster, map_t* map, sprite_bank_t* sprites, phy_t* camera, phy_t* camera_plane, int my_sprite) {
-    caster_draw_map(caster, map, camera, camera_plane);
-    caster_draw_sprites(caster, sprites, camera, camera_plane, my_sprite);
+void caster_update(caster_t* caster, map_t* map, sprite_bank_t* sprites, vec3_t pos, vec2_t dir, vec2_t plane, int my_sprite) {
+    caster_draw_map(caster, map, pos, dir, plane);
+    caster_draw_sprites(caster, sprites, pos, dir, plane, my_sprite);
 }
 
-void caster_draw_map(caster_t* caster, map_t* map, phy_t* camera, phy_t* camera_plane) {
+void caster_draw_map(caster_t* caster, map_t* map, vec3_t pos, vec2_t dir, vec2_t plane) {
   pixel_t* buffer;
   int x, y, map_x, map_y, step_x, step_y, hit;
   int line_height;
@@ -43,31 +43,31 @@ void caster_draw_map(caster_t* caster, map_t* map, phy_t* camera, phy_t* camera_
   buffer = lfb_get_buffer(lfb);
   for (x = 0; x < lfb->width; x++) {
     rel_x = 2.0 * x / lfb->width - 1;
-    ray_x = camera->dir_x + camera_plane->dir_x * rel_x;
-    ray_y = camera->dir_y + camera_plane->dir_y * rel_x;
-    map_x = (int) camera->pos_x;
-    map_y = (int) camera->pos_y;
+    ray_x = dir.x + plane.x * rel_x;
+    ray_y = dir.y + plane.y * rel_x;
+    map_x = (int) pos.x;
+    map_y = (int) pos.y;
     delta_dist_x = ray_x == 0 ? 1e30 : fabs(1.0 / ray_x);
     delta_dist_y = ray_y == 0 ? 1e30 : fabs(1.0 / ray_y);
     if (ray_x < 0)
     {
       step_x = -1;
-      side_dist_x = (camera->pos_x - map_x) * delta_dist_x;
+      side_dist_x = (pos.x - map_x) * delta_dist_x;
     }
     else
     {
       step_x = 1;
-      side_dist_x = (map_x + 1.0 - camera->pos_x) * delta_dist_x;
+      side_dist_x = (map_x + 1.0 - pos.x) * delta_dist_x;
     }
     if (ray_y < 0)
     {
       step_y = -1;
-      side_dist_y = (camera->pos_y - map_y) * delta_dist_y;
+      side_dist_y = (pos.y - map_y) * delta_dist_y;
     }
     else
     {
       step_y = 1;
-      side_dist_y = (map_y + 1.0 - camera->pos_y) * delta_dist_y;
+      side_dist_y = (map_y + 1.0 - pos.y) * delta_dist_y;
     }
     hit = 0;
     while (!hit)
@@ -110,7 +110,7 @@ void caster_draw_map(caster_t* caster, map_t* map, phy_t* camera, phy_t* camera_
   }
 }
 
-void caster_draw_sprites(caster_t* caster, sprite_bank_t* sprites, phy_t* camera, phy_t* camera_plane, int my_sprite) {
+void caster_draw_sprites(caster_t* caster, sprite_bank_t* sprites, vec3_t pos, vec2_t dir, vec2_t plane, int my_sprite) {
   int i, x, y;
   lfb_t* lfb;
   pixel_t* buffer;
@@ -120,25 +120,25 @@ void caster_draw_sprites(caster_t* caster, sprite_bank_t* sprites, phy_t* camera
 
   lfb = caster->lfb;
   buffer = lfb_get_buffer(lfb);
-  sprite_sort_by_dist(sprites, camera, NULL, NULL);
+  sprite_sort_by_dist(sprites, pos, NULL, NULL);
   for (i = 0; i < sprites->size; i++) {
     sprite = sprite_get(sprites, sprites->order[i]);
     if (!sprite->active || sprites->order[i] == my_sprite) {
       continue;
     }
     /* compute */
-    sprite_x = sprite->phy.pos_x - camera->pos_x;
-    sprite_y = sprite->phy.pos_y - camera->pos_y;
-    inv_det = 1.0 / (camera_plane->dir_x * camera->dir_y - camera->dir_x * camera_plane->dir_y);
-    transform_x = inv_det * (camera->dir_y * sprite_x - camera->dir_x * sprite_y);
-    transform_y = inv_det * (camera_plane->dir_x * sprite_y - camera_plane->dir_y * sprite_x);
+    sprite_x = sprite->phy.position.x - pos.x;
+    sprite_y = sprite->phy.position.y - pos.y;
+    inv_det = 1.0 / (plane.x * dir.y - dir.x * plane.y);
+    transform_x = inv_det * (dir.y * sprite_x - dir.x * sprite_y);
+    transform_y = inv_det * (plane.x * sprite_y - plane.y * sprite_x);
     screen_x = (lfb->width / 2) * (1 + transform_x / transform_y);
     sprite_size = WALL_HEIGHT / transform_y;
     boom = 1.0 + sprite->boom / 5.0;
     draw_end_x = screen_x + sprite->width * sprite_size * boom / 2;
     draw_start_x = screen_x - sprite->width * sprite_size * boom / 2;
-    draw_end_y = (lfb->height + sprite->height * sprite_size * boom) / 2 - sprite_size * (sprite->phy.pos_z - 0.5);
-    draw_start_y = (lfb->height - sprite->height * sprite_size * boom) / 2 - sprite_size * (sprite->phy.pos_z - 0.5);
+    draw_end_y = (lfb->height + sprite->height * sprite_size * boom) / 2 - sprite_size * (sprite->phy.position.z - 0.5);
+    draw_start_y = (lfb->height - sprite->height * sprite_size * boom) / 2 - sprite_size * (sprite->phy.position.z - 0.5);
     /* clamp */
     if (draw_end_x < 0) {
       draw_end_x = 0;

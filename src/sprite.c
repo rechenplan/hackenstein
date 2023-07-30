@@ -49,7 +49,7 @@ static int sprite_dist_comp(const void *a, const void *b) {
   return SORT_BANK->distance[i] < SORT_BANK->distance[j];
 }
 
-void sprite_sort_by_dist(sprite_bank_t* sprites, phy_t* from, int* hurt_me, int* attacker) {
+void sprite_sort_by_dist(sprite_bank_t* sprites, vec3_t pos, int* hurt_me, int* attacker) {
   int i;
   sprite_t* sprite;
 
@@ -60,7 +60,7 @@ void sprite_sort_by_dist(sprite_bank_t* sprites, phy_t* from, int* hurt_me, int*
   for (i = 0; i < sprites->size; i++) {
     sprite = sprite_get(sprites, i);
     sprites->order[i] = i;
-    sprites->distance[i] = (sprite->phy.pos_x - from->pos_x) * (sprite->phy.pos_x - from->pos_x) + (sprite->phy.pos_y - from->pos_y) * (sprite->phy.pos_y - from->pos_y);
+    sprites->distance[i] = (sprite->phy.position.x - pos.x) * (sprite->phy.position.x - pos.x) + (sprite->phy.position.y - pos.y) * (sprite->phy.position.y - pos.y);
     if (hurt_me && attacker && sprites->bank[i].harm && (sprites->distance[i] < sprites->bank[i].harm_radius * sprites->bank[i].harm_radius) && !sprites->bank[i].boom) {
       sprites->bank[i].boom = 1;
       *attacker = sprites->bank[i].owner;
@@ -87,9 +87,9 @@ void sprite_update(sprite_bank_t* sprites, map_t* map, int elapsed_time) {
           sprite->bounce--;
       } else if (!sprite->boom) {
         sprite->boom = 1;
-        sprite->phy.vel_x = 0;
-        sprite->phy.vel_y = 0;
-        sprite->phy.vel_z = 0;
+        sprite->phy.velocity.x = 0;
+        sprite->phy.velocity.y = 0;
+        sprite->phy.velocity.z = 0;
       }
     }
     if (sprite->boom) {

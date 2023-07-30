@@ -25,20 +25,20 @@ void player_respawn(player_t* player, sprite_bank_t* sprites) {
   player->spec_timer = 0;
   player->swap_timer = 0;
   player->shooting = -1;
-  player->me.pos_x = (rand() % 30) + 1.5;
-  player->me.pos_y = (rand() % 30) + 1.5;
-  player->me.pos_z = 0;
-  player->me.dir_x = 1;
-  player->me.dir_y = 0;
-  player->me.vel_x = 0;
-  player->me.vel_y = 0;
-  player->me.vel_z = 0;
-  player->me.friction = PLAYER_FRICTION;
-  player->me.bouncy = PLAYER_BOUNCY;
-  player->camera_plane.dir_x = 0;
-  player->camera_plane.dir_y = 2.0 / 3.0;
+  player->phy.position.x = (rand() % 30) + 1.5;
+  player->phy.position.y = (rand() % 30) + 1.5;
+  player->phy.position.z = 0;
+  player->phy.direction.x = 1;
+  player->phy.direction.y = 0;
+  player->phy.velocity.x = 0;
+  player->phy.velocity.y = 0;
+  player->phy.velocity.z = 0;
+  player->phy.friction = PLAYER_FRICTION;
+  player->phy.bouncy = PLAYER_BOUNCY;
+  player->plane.x = 0;
+  player->plane.y = 2.0 / 3.0;
   player_sprite = sprite_get(sprites, player->sprite);
-  player_sprite->phy = player->me;
+  player_sprite->phy = player->phy;
 }
 
 void player_shoot(player_t* player, sprite_bank_t* sprites) {
@@ -62,25 +62,25 @@ void player_shoot(player_t* player, sprite_bank_t* sprites) {
       projectile.owner = player->id;
 
       /* shoot in the direction of the camera */
-      projectile.phy.vel_x = player->me.dir_x;
-      projectile.phy.vel_y = player->me.dir_y;
-      projectile.phy.vel_z = 0;
-      projectile.phy.pos_x = player->me.pos_x;
-      projectile.phy.pos_y = player->me.pos_y;
-      projectile.phy.pos_z = player->me.pos_z;
-      projectile.phy.dir_x = player->me.dir_x;
-      projectile.phy.dir_y = player->me.dir_y;
+      projectile.phy.velocity.x = player->phy.direction.x;
+      projectile.phy.velocity.y = player->phy.direction.y;
+      projectile.phy.velocity.z = 0;
+      projectile.phy.position.x = player->phy.position.x;
+      projectile.phy.position.y = player->phy.position.y;
+      projectile.phy.position.z = player->phy.position.z;
+      projectile.phy.direction.x = player->phy.direction.x;
+      projectile.phy.direction.y = player->phy.direction.y;
       projectile.phy.friction = weapon.friction;
       projectile.phy.bouncy = weapon.bouncy;
 
       /* spray */
-      phi = atan2(projectile.phy.vel_y, projectile.phy.vel_x);
+      phi = atan2(projectile.phy.velocity.y, projectile.phy.velocity.x);
       phi += (x + random_double) * weapon.spray / 200.0 - weapon.spray / 400.0;
-      projectile.phy.vel_x = cos(phi) * projectile.vel;
-      projectile.phy.vel_y = sin(phi) * projectile.vel;
-      projectile.phy.pos_x += projectile.phy.dir_x * (projectile.harm_radius + 0.1);
-      projectile.phy.pos_y += projectile.phy.dir_y * (projectile.harm_radius + 0.1);
-      projectile.phy.vel_z += (y + random_double) * weapon.spray / 10.0 - weapon.spray / 20.0;
+      projectile.phy.velocity.x = cos(phi) * projectile.vel;
+      projectile.phy.velocity.y = sin(phi) * projectile.vel;
+      projectile.phy.position.x += projectile.phy.direction.x * (projectile.harm_radius + 0.1);
+      projectile.phy.position.y += projectile.phy.direction.y * (projectile.harm_radius + 0.1);
+      projectile.phy.velocity.z += (y + random_double) * weapon.spray / 10.0 - weapon.spray / 20.0;
       sprite_create(sprites, &projectile);
     }
     player->shot_timer = weapon.repeat_rate;
@@ -93,11 +93,11 @@ void player_update(player_t* player, sprite_bank_t* sprites, map_t* map, int ela
   sprite_t* player_sprite;
 
   player_sprite = sprite_get(sprites, player->sprite);
-  phy_update(&player->me, map, -1, player_sprite->height, elapsed_time);
+  phy_update(&player->phy, map, -1, player_sprite->height, elapsed_time);
   /* update sprite position */
-  player_sprite->phy = player->me;
+  player_sprite->phy = player->phy;
   /* detect damage */
-  sprite_sort_by_dist(sprites, &player->me, &hurt_me, &attacker);
+  sprite_sort_by_dist(sprites, player->phy.position, &hurt_me, &attacker);
   if (attacker >= 0) {
     player->health -= hurt_me;
     if (player->health <= 0) {
@@ -112,7 +112,7 @@ void player_init(player_t* player, sprite_bank_t* sprites, int id) {
   player_sprite.active = 1;
   player_sprite.owner = 0;
   /* player_sprite.phy */
-  player_sprite.phy.pos_z = 0.0;
+  player_sprite.phy.position.z = 0.0;
   player_sprite.vel = 0;
   /* player_sprite.friction */
   player_sprite.height = 0.8;
@@ -137,28 +137,28 @@ int player_process_input(player_t* player, input_t* input, int elapsed_time) {
 
   input_update(input);
   if (input_is_pressed(input, INPUT_FORWARD)) {
-    player->me.vel_x += player->me.dir_x * move_speed;
-    player->me.vel_y += player->me.dir_y * move_speed;
+    player->phy.velocity.x += player->phy.direction.x * move_speed;
+    player->phy.velocity.y += player->phy.direction.y * move_speed;
   }
   if (input_is_pressed(input, INPUT_BACK)) {
-    player->me.vel_x -= player->me.dir_x * move_speed;
-    player->me.vel_y -= player->me.dir_y * move_speed;
+    player->phy.velocity.x -= player->phy.direction.x * move_speed;
+    player->phy.velocity.y -= player->phy.direction.y * move_speed;
   }
   if (input_is_pressed(input, INPUT_RIGHT)) {
-    player->me.vel_x -= player->me.dir_y * move_speed;
-    player->me.vel_y += player->me.dir_x * move_speed;
+    player->phy.velocity.x -= player->phy.direction.y * move_speed;
+    player->phy.velocity.y += player->phy.direction.x * move_speed;
   }
   if (input_is_pressed(input, INPUT_LEFT)) {
-    player->me.vel_x += player->me.dir_y * move_speed;
-    player->me.vel_y -= player->me.dir_x * move_speed;
+    player->phy.velocity.x += player->phy.direction.y * move_speed;
+    player->phy.velocity.y -= player->phy.direction.x * move_speed;
   }
   if (input_is_pressed(input, INPUT_ROTATE_RIGHT)) {
-    phy_rotate(&player->me, rot_speed);
-    phy_rotate(&player->camera_plane, rot_speed);
+    phy_rotate(&player->phy.direction, rot_speed);
+    phy_rotate(&player->plane, rot_speed);
   }
   if (input_is_pressed(input, INPUT_ROTATE_LEFT)) {
-    phy_rotate(&player->me, -rot_speed);
-    phy_rotate(&player->camera_plane, -rot_speed);
+    phy_rotate(&player->phy.direction, -rot_speed);
+    phy_rotate(&player->plane, -rot_speed);
   }
   if (input_is_pressed(input, INPUT_CHANGE_GUN)) {
     if (player->swap_timer <= 0) {

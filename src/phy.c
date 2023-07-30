@@ -8,54 +8,54 @@ int phy_update(phy_t* phy, map_t* map, int bounce, double height, int elapsed_ti
 
   time = elapsed_time / 1000.0;
 
-  phy->vel_x *= pow(phy->friction, time);
-  phy->vel_y *= pow(phy->friction, time);
-  phy->vel_z -= GRAVITY * time;
+  phy->velocity.x *= pow(phy->friction, time);
+  phy->velocity.y *= pow(phy->friction, time);
+  phy->velocity.z -= GRAVITY * time;
 
   collision = 0;
-  new_x = phy->pos_x + phy->vel_x * time;
-  new_y = phy->pos_y + phy->vel_y * time;
-  new_z = phy->pos_z + phy->vel_z * time;
+  new_x = phy->position.x + phy->velocity.x * time;
+  new_y = phy->position.y + phy->velocity.y * time;
+  new_z = phy->position.z + phy->velocity.z * time;
 
   floor = height / 2;
   ceil = 1 - height / 2;
 
   if (new_z < floor) {
-    phy->vel_z = -phy->vel_z * phy->bouncy;
+    phy->velocity.z = -phy->velocity.z * phy->bouncy;
     collision = 1;
-    phy->pos_z = floor;
+    phy->position.z = floor;
   } else if (new_z > ceil) {
-    phy->vel_z = -phy->vel_z * phy->bouncy;
+    phy->velocity.z = -phy->velocity.z * phy->bouncy;
     collision = 1;
-    phy->pos_z = ceil;
+    phy->position.z = ceil;
   } else {
-    phy->pos_z = new_z;
+    phy->position.z = new_z;
   }
 
-  if (!map_get_cell(map, phy->pos_x, new_y)) {
-    phy->pos_y = new_y;
+  if (!map_get_cell(map, phy->position.x, new_y)) {
+    phy->position.y = new_y;
   } else {
-    phy->vel_y = -phy->vel_y * phy->bouncy;
-    new_y = phy->pos_y + phy->vel_y * time;
-    phy->pos_y = new_y;
+    phy->velocity.y = -phy->velocity.y * phy->bouncy;
+    new_y = phy->position.y + phy->velocity.y * time;
+    phy->position.y = new_y;
     collision = 1;
   }
-  if (!map_get_cell(map, new_x, phy->pos_y)) {
-    phy->pos_x = new_x;
+  if (!map_get_cell(map, new_x, phy->position.y)) {
+    phy->position.x = new_x;
   } else {
-    phy->vel_x = -phy->vel_x * phy->bouncy;
-    new_x = phy->pos_x + phy->vel_x * time;
-    phy->pos_x = new_x;
+    phy->velocity.x = -phy->velocity.x * phy->bouncy;
+    new_x = phy->position.x + phy->velocity.x * time;
+    phy->position.x = new_x;
     collision = 1;
   }
   return collision;
 }
 
-void phy_rotate(phy_t* phy, double phi) {
+void phy_rotate(vec2_t* v, double phi) {
   double dir_x, dir_y;
 
-  dir_x = phy->dir_x;
-  dir_y = phy->dir_y;
-  phy->dir_x = dir_x * cos(phi) - dir_y * sin(phi);
-  phy->dir_y = dir_x * sin(phi) + dir_y * cos(phi);
+  dir_x = v->x;
+  dir_y = v->y;
+  v->x = dir_x * cos(phi) - dir_y * sin(phi);
+  v->y = dir_x * sin(phi) + dir_y * cos(phi);
 }

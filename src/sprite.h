@@ -32,6 +32,6 @@ void sprite_destroy(sprite_bank_t* sprites, int i);
 sprite_t* sprite_get(sprite_bank_t* sprites, int i);
 void sprite_update(sprite_bank_t* sprites, map_t* map, int elapsed_time);
 void sprite_cleanup(sprite_bank_t* bank);
-void sprite_sort_by_dist(sprite_bank_t* bank, phy_t *from, int* hurt_me, int* attacker);
+void sprite_sort_by_dist(sprite_bank_t* bank, vec3_t pos, int* hurt_me, int* attacker);
 
 #endif

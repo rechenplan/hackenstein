@@ -10,8 +10,8 @@
 #include "phy.h"
 
 typedef struct _player_t {
-  phy_t    me;
-  phy_t    camera_plane;
+  phy_t    phy;
+  vec2_t   plane;
   uint8_t  id;
   int16_t  shot_timer;
   int16_t  swap_timer;
