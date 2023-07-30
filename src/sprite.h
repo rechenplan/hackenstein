@@ -18,6 +18,7 @@ typedef struct _sprite_t {
   double harm_radius;
   int boom;
   int bounce;
+  double bouncy;
 } sprite_t;
 
 typedef struct _sprite_bank_t {
@@ -31,8 +32,8 @@ void sprite_init(sprite_bank_t* sprites, int size);
 int sprite_create(sprite_bank_t* sprites, sprite_t* sprite);
 void sprite_destroy(sprite_bank_t* sprites, int i);
 sprite_t* sprite_get(sprite_bank_t* sprites, int i);
-void sprite_update(sprite_bank_t* sprites, map_t* map);
+void sprite_update(sprite_bank_t* sprites, map_t* map, int elapsed_time);
 void sprite_cleanup(sprite_bank_t* bank);
-void sprite_sort_by_dist(sprite_bank_t* bank, phy_t *from, int* hurt_me, int* abuser);
+void sprite_sort_by_dist(sprite_bank_t* bank, phy_t *from, int* hurt_me, int* attacker);
 
 #endif

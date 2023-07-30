@@ -10,6 +10,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+/* per second */
+#define PLAYER_FRICTION (0.001)
+#define PLAYER_MOVE_SPEED (20.0)
+#define PLAYER_ROT_SPEED (3.14159)
+
 void player_respawn(player_t* player, sprite_bank_t* sprites) {
   sprite_t* player_sprite;
 
@@ -32,8 +37,7 @@ void player_respawn(player_t* player, sprite_bank_t* sprites) {
   player_sprite->phy = player->me;
 }
 
-void player_update(player_t* player, sprite_bank_t* sprites, map_t* map) {
-  double friction = 0.9;
+void player_update(player_t* player, sprite_bank_t* sprites, map_t* map, int elapsed_time) {
   int i, hurt_me, attacker;
   double x, y;
   double phi;
@@ -55,27 +59,27 @@ void player_update(player_t* player, sprite_bank_t* sprites, map_t* map) {
       projectile.owner = player->id;
       projectile.phy = player->me;
       /* shoot in the direction of the camera */
-      projectile.phy.vel_x = projectile.phy.dir_x * weapon.proj.vel;
-      projectile.phy.vel_y = projectile.phy.dir_y * weapon.proj.vel;
+      projectile.phy.vel_x = projectile.phy.dir_x;
+      projectile.phy.vel_y = projectile.phy.dir_y;
       projectile.phy.vel_z = 0;
       projectile.phy.pos_z = 0.35;
       /* spray */
       phi = atan2(projectile.phy.vel_y, projectile.phy.vel_x);
       phi += (x + random_double) * weapon.spray / 200.0 - weapon.spray / 400.0;
-      projectile.phy.vel_x = cos(phi);
-      projectile.phy.vel_y = sin(phi);
-      projectile.phy.pos_x += projectile.phy.vel_x * (projectile.harm_radius + 0.1);
-      projectile.phy.pos_y += projectile.phy.vel_y * (projectile.harm_radius + 0.1);
-      projectile.phy.vel_z += (y + random_double) * weapon.spray / 2000.0 - weapon.spray / 4000.0;
+      projectile.phy.vel_x = cos(phi) * projectile.vel;
+      projectile.phy.vel_y = sin(phi) * projectile.vel;
+      projectile.phy.pos_x += projectile.phy.dir_x * (projectile.harm_radius + 0.1);
+      projectile.phy.pos_y += projectile.phy.dir_y * (projectile.harm_radius + 0.1);
+      projectile.phy.vel_z += (y + random_double) * weapon.spray / 10.0 - weapon.spray / 20.0;
       sprite_create(sprites, &projectile);
     }
     player->shot_timer = weapon.repeat_rate;
     player->shooting = -1;
   }
-  player->me.vel_x *= friction;
-  player->me.vel_y *= friction;
+  player->me.vel_x *= pow(PLAYER_FRICTION, elapsed_time / 1000.0);
+  player->me.vel_y *= pow(PLAYER_FRICTION, elapsed_time / 1000.0);
   player_sprite = sprite_get(sprites, player->sprite);
-  phy_rel_move(&player->me, map, 0, 1, 0, player_sprite->height);
+  phy_update(&player->me, map, -1, player_sprite->height, elapsed_time, 0.0);
   /* update sprite position */
   player_sprite->phy = player->me;
   /* detect damage */
@@ -111,8 +115,11 @@ void player_init(player_t* player, sprite_bank_t* sprites, int id) {
   player->connected = 0;
 }
 
-int player_process_input(player_t* player, input_t* input) {
-  double move_speed = 0.01, rot_speed = 0.05;
+int player_process_input(player_t* player, input_t* input, int elapsed_time) {
+  double move_speed, rot_speed;
+
+  move_speed = PLAYER_MOVE_SPEED * elapsed_time / 1000.0;
+  rot_speed = PLAYER_ROT_SPEED * elapsed_time / 1000.0;
 
   input_update(input);
   if (input_is_pressed(input, INPUT_FORWARD)) {
@@ -140,30 +147,30 @@ int player_process_input(player_t* player, input_t* input) {
     phy_rotate(&player->camera_plane, -rot_speed);
   }
   if (input_is_pressed(input, INPUT_CHANGE_GUN)) {
-    if (!player->swap_timer) {
+    if (player->swap_timer <= 0) {
       player->weapon = (player->weapon + 1) % MAX_WEAPON;
-      player->swap_timer = 30;
+      player->swap_timer = 250;
     }
   }
   if (input_is_pressed(input, INPUT_CHANGE_SPEC)) {
-    if (!player->spec_timer) {
+    if (player->spec_timer <= 0) {
       player->spec = (player->spec + 1) % MAX_PLAYERS;
-      player->spec_timer = 30;
+      player->spec_timer = 250;
     }
   }
   if (input_is_pressed(input, INPUT_SHOOT)) {
-    if (!player->shot_timer) {
+    if (player->shot_timer <= 0) {
       player->shooting = rand() / (double) RAND_MAX;
     }
   }
   if (player->shot_timer > 0) {
-    player->shot_timer--;
+    player->shot_timer -= elapsed_time;
   }
   if (player->swap_timer > 0) {
-    player->swap_timer--;
+    player->swap_timer -= elapsed_time;
   }
   if (player->spec_timer > 0) {
-    player->spec_timer--;
+    player->spec_timer -= elapsed_time;
   }
   return input_is_pressed(input, INPUT_EXIT);
 }

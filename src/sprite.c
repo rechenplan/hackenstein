@@ -1,7 +1,10 @@
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include "sprite.h"
 #include "lfb.h"
+
+#define GRAVITY (0.25)
 
 void sprite_init(sprite_bank_t* sprites, int size) {
   sprites->size = size;
@@ -70,25 +73,30 @@ void sprite_sort_by_dist(sprite_bank_t* sprites, phy_t* from, int* hurt_me, int*
   qsort(sprites->order, sprites->size, sizeof(int), sprite_dist_comp);
 }
 
-void sprite_update(sprite_bank_t* sprites, map_t* map) {
+void sprite_update(sprite_bank_t* sprites, map_t* map, int elapsed_time) {
   int i;
   sprite_t* sprite;
+  double time;
 
   for (i = 0; i < sprites->size; i++) {
     sprite = sprite_get(sprites, i);
     if (!sprite->active) {
       continue;
     }
-    sprite->vel *= sprite->friction;
-    /* gravity */
-    sprite->phy.vel_z -= 1.0 / 5000.0;
-    if (phy_rel_move(&sprite->phy, map, 0, sprite->vel, sprite->bounce, sprite->height) && sprite->harm) {
+
+    time = elapsed_time / 1000.0;
+    sprite->phy.vel_x *= pow(sprite->friction, time);
+    sprite->phy.vel_y *= pow(sprite->friction, time);
+    sprite->phy.vel_z -= GRAVITY * time;
+    if (phy_update(&sprite->phy, map, sprite->bounce, sprite->height, elapsed_time, sprite->bouncy) && sprite->harm) {
       if (sprite->bounce) {
         if (sprite->bounce > 0)
           sprite->bounce--;
       } else if (!sprite->boom) {
         sprite->boom = 1;
-        sprite->vel = 0;
+        sprite->phy.vel_x = 0;
+        sprite->phy.vel_y = 0;
+        sprite->phy.vel_z = 0;
       }
     }
     if (sprite->boom) {

@@ -29,10 +29,13 @@ typedef struct _game_t {
   caster_t caster;
   int my_id;
   net_t net;
+  int start_time;
+  int last_time;
+  int net_frame;
 } game_t;
 
-void game_init(game_t* game, char* host, int port, int my_id);
-int game_update(game_t* game);
+void game_init(game_t* game, char* host, int port, int my_id, int ms_time);
+int game_update(game_t* game, int ms_time);
 void game_cleanup(game_t* game);
 
 #endif

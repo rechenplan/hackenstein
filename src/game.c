@@ -12,9 +12,12 @@
 #include "map.h"
 #include "net.h"
 
-void game_init(game_t* game, char* host, int port, int my_id) {
+void game_init(game_t* game, char* host, int port, int my_id, int start_time) {
   int i, j;
 
+  game->start_time = start_time;
+  game->last_time = start_time;
+  game->net_frame = 0;
   game->my_id = my_id;
   game->render = render_init();
   game->net = net_init(host, port);
@@ -37,23 +40,27 @@ void game_init(game_t* game, char* host, int port, int my_id) {
   player_respawn(&game->players[game->my_id], &game->sprites);
 }
 
-int game_update(game_t* game) {
-  int done, i;
+int game_update(game_t* game, int current_time) {
+  int done, i, correct_net_frame, elapsed_time;
   player_t* myself;
   player_t* spec_player;
 
+  elapsed_time = current_time - game->last_time;
   myself = &game->players[game->my_id];
   spec_player = &game->players[myself->spec];
-  done = player_process_input(myself, &game->input);
-  if (game->net) {
+  done = player_process_input(myself, &game->input, elapsed_time);
+  correct_net_frame = (current_time - game->start_time) * NET_FRAME_LIMIT / 1000;
+  if (game->net && game->net_frame <= correct_net_frame) {
     net_update(game->net, game->players, game->my_id);
+    for (i = 0; i < MAX_PLAYERS; i++) {
+      player_update(&game->players[i], &game->sprites, &game->map, 1000 / NET_FRAME_LIMIT);
+    }
+    sprite_update(&game->sprites, &game->map, 1000 / NET_FRAME_LIMIT);
+    game->net_frame++;
   }
-  for (i = 0; i < MAX_PLAYERS; i++) {
-    player_update(&game->players[i], &game->sprites, &game->map);
-  }
-  sprite_update(&game->sprites, &game->map);
-  caster_update(&game->caster, &game->map, &game->sprites, &spec_player->me, &spec_player->camera_plane);
+  caster_update(&game->caster, &game->map, &game->sprites, &spec_player->me, &spec_player->camera_plane, spec_player->id);
   render_update(game->render, &game->lfb);
+  game->last_time = current_time;
   return done;
 }
 

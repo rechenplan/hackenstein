@@ -3,4 +3,7 @@
 
 #define MAX_PLAYERS (2)
 
+/* Notice physics are also limited by this */
+#define NET_FRAME_LIMIT (20)
+
 #endif
