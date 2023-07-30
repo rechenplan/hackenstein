@@ -1,4 +1,5 @@
 #include <enet/enet.h>
+#include <math.h>
 #include "net.h"
 #include "game.h"
 #include "sprite.h"
@@ -38,7 +39,6 @@ void net_update(net_t net, player_t players[MAX_PLAYERS], int my_id) {
   char* ptr;
   uint8_t id;
   enet_net_t* enet;
-  int sprite;
   char player_packet[PLAYER_PACKET_SIZE];
 
   enet = (enet_net_t*) net;
@@ -55,8 +55,8 @@ void net_update(net_t net, player_t players[MAX_PLAYERS], int my_id) {
         players[id].phy.position.x = *((float*) ptr); ptr += 4;
         players[id].phy.position.y = *((float*) ptr); ptr += 4;
         players[id].phy.position.z = *((float*) ptr); ptr += 4;
-        players[id].phy.direction.x = *((float*) ptr); ptr += 4;
-        players[id].phy.direction.y = *((float*) ptr); ptr += 4;
+        players[id].phy.direction.x = cos(*((float*) ptr));
+        players[id].phy.direction.y = sin(*((float*) ptr)); ptr += 4;
         players[id].phy.friction = *((float*) ptr); ptr += 4;
         players[id].phy.bouncy = *((float*) ptr); ptr += 4;
         /* TODO: reconstruct plane from phy.direction */
@@ -74,8 +74,7 @@ void net_update(net_t net, player_t players[MAX_PLAYERS], int my_id) {
   *((float*) ptr) = players[my_id].phy.position.x; ptr += 4;
   *((float*) ptr) = players[my_id].phy.position.y; ptr += 4;
   *((float*) ptr) = players[my_id].phy.position.z; ptr += 4;
-  *((float*) ptr) = players[my_id].phy.direction.x; ptr += 4;
-  *((float*) ptr) = players[my_id].phy.direction.y; ptr += 4;
+  *((float*) ptr) = atan2(players[my_id].phy.direction.y, players[my_id].phy.direction.x); ptr += 4;
   *((float*) ptr) = players[my_id].phy.friction; ptr += 4;
   *((float*) ptr) = players[my_id].phy.bouncy; ptr += 4;
   packet = enet_packet_create(player_packet, PLAYER_PACKET_SIZE, 0);
