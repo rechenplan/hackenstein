@@ -8,7 +8,10 @@
 
 typedef struct _caster_t {
   lfb_t* lfb;
-  double *z_buffer;
+  double* z_buffer;
+  int* side;
+  int* line_start;
+  int* line_end;
 } caster_t;
 
 void caster_init(caster_t* cast, lfb_t* lfb);

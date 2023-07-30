@@ -9,12 +9,18 @@
 
 void caster_init(caster_t* caster, lfb_t* lfb) {
   caster->z_buffer = malloc(lfb->width * sizeof(double));
+  caster->side = malloc(lfb->width * sizeof(int));
+  caster->line_start = malloc(lfb->width * sizeof(int));
+  caster->line_end = malloc(lfb->width * sizeof(int));
   caster->lfb = lfb;
   return;
 }
 
 void caster_cleanup(caster_t* caster) {
   free(caster->z_buffer);
+  free(caster->side);
+  free(caster->line_start);
+  free(caster->line_end);
 }
 
 void caster_update(caster_t* caster, map_t* map, sprite_bank_t* sprites, phy_t* camera, phy_t* camera_plane, int my_sprite) {
@@ -24,8 +30,8 @@ void caster_update(caster_t* caster, map_t* map, sprite_bank_t* sprites, phy_t* 
 
 void caster_draw_map(caster_t* caster, map_t* map, phy_t* camera, phy_t* camera_plane) {
   pixel_t* buffer;
-  int x, y, map_x, map_y, step_x, step_y, hit, side;
-  int line_start, line_end, line_height;
+  int x, y, map_x, map_y, step_x, step_y, hit;
+  int line_height;
   double rel_x, ray_x, ray_y;
   double side_dist_x, side_dist_y;
   double delta_dist_x, delta_dist_y;
@@ -69,48 +75,37 @@ void caster_draw_map(caster_t* caster, map_t* map, phy_t* camera, phy_t* camera_
       {
         side_dist_x += delta_dist_x;
         map_x += step_x;
-        side = 0;
+        caster->side[x] = 0;
       }
       else
       {
         side_dist_y += delta_dist_y;
         map_y += step_y;
-        side = 1;
+        caster->side[x] = 1;
       }
       if (map_get_cell(map, map_x, map_y)) {
         hit = 1;
       }
     }
-    if (side == 0) {
+    if (caster->side[x] == 0) {
       perp_wall_dist = side_dist_x - delta_dist_x;
     } else {
       perp_wall_dist = side_dist_y - delta_dist_y;
     }
     line_height = (int) (WALL_HEIGHT / perp_wall_dist);
-    line_start = (lfb->height - line_height) / 2;
-    line_end = (lfb->height + line_height) / 2;
-    if (line_start < 0) {
-      line_start = 0;
-    }
-    if (line_end < 0) {
-      line_end = 0;
-    }
-    if (line_start > lfb->height - 1) {
-      line_start = lfb->height - 1;
-    }
-    if (line_end > lfb->height - 1) {
-      line_end = lfb->height - 1;
-    }
-    for (y = 0; y < line_start; y++) {
-      buffer[x + y * lfb->width] = 1;
-    }
-    for (; y < line_end; y++) {
-      buffer[x + y * lfb->width] = side ? 255 : 127;
-    }
-    for (; y < lfb->height; y++) {
-      buffer[x + y * lfb->width] = 1;
-    }
+    caster->line_start[x] = (lfb->height - line_height) / 2;
+    caster->line_end[x] = (lfb->height + line_height) / 2;
     caster->z_buffer[x] = perp_wall_dist;
+  }
+
+  for (y = 0; y < lfb->height; y++) {
+    for (x = 0; x < lfb->width; x++) {
+      if (y < caster->line_start[x] || y > caster->line_end[x]) {
+        buffer[x + y * lfb->width] = 1;
+      } else {
+        buffer[x + y * lfb->width] = caster->side[x] ? 255 : 127;
+      }
+    }
   }
 }
 
