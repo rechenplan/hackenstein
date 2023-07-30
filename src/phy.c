@@ -1,11 +1,16 @@
 #include "phy.h"
+#include "global.h"
 #include <math.h>
 
-int phy_update(phy_t* phy, map_t* map, int bounce, double height, int elapsed_time, double bouncy) {
+int phy_update(phy_t* phy, map_t* map, int bounce, double height, int elapsed_time) {
   double new_x, new_y, new_z, floor, ceil, time;
   int collision;
 
   time = elapsed_time / 1000.0;
+
+  phy->vel_x *= pow(phy->friction, time);
+  phy->vel_y *= pow(phy->friction, time);
+  phy->vel_z -= GRAVITY * time;
 
   collision = 0;
   new_x = phy->pos_x + phy->vel_x * time;
@@ -17,13 +22,13 @@ int phy_update(phy_t* phy, map_t* map, int bounce, double height, int elapsed_ti
 
   if (new_z < floor) {
     if (bounce) {
-      phy->vel_z = -phy->vel_z * bouncy;
+      phy->vel_z = -phy->vel_z * phy->bouncy;
     }
     collision = 1;
     phy->pos_z = floor;
   } else if (new_z > ceil) {
     if (bounce) {
-      phy->vel_z = -phy->vel_z * bouncy;
+      phy->vel_z = -phy->vel_z * phy->bouncy;
     }
     collision = 1;
     phy->pos_z = ceil;
@@ -35,7 +40,7 @@ int phy_update(phy_t* phy, map_t* map, int bounce, double height, int elapsed_ti
     phy->pos_y = new_y;
   } else {
     if (bounce) {
-      phy->vel_y = -phy->vel_y * bouncy;
+      phy->vel_y = -phy->vel_y * phy->bouncy;
       new_y = phy->pos_y + phy->vel_y * time;
       phy->pos_y = new_y;
     }
@@ -45,7 +50,7 @@ int phy_update(phy_t* phy, map_t* map, int bounce, double height, int elapsed_ti
     phy->pos_x = new_x;
   } else {
     if (bounce) {
-      phy->vel_x = -phy->vel_x * bouncy;
+      phy->vel_x = -phy->vel_x * phy->bouncy;
       new_x = phy->pos_x + phy->vel_x * time;
       phy->pos_x = new_x;
     }

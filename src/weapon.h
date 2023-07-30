@@ -8,6 +8,8 @@ typedef struct _weapon_t {
   double spray;
   int repeat_rate;
   int proj_cnt;
+  double bouncy;
+  double friction;
 } weapon_t;
 
 #define WEAPON_ROCKET 0

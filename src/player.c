@@ -31,6 +31,7 @@ void player_respawn(player_t* player, sprite_bank_t* sprites) {
   player->me.vel_x = 0;
   player->me.vel_y = 0;
   player->me.vel_z = 0;
+  player->me.friction = PLAYER_FRICTION;
   player->camera_plane.dir_x = 0;
   player->camera_plane.dir_y = 2.0 / 3.0;
   player_sprite = sprite_get(sprites, player->sprite);
@@ -57,12 +58,19 @@ void player_update(player_t* player, sprite_bank_t* sprites, map_t* map, int ela
       y = prng / 257.0 - 0.5;
       projectile = weapon.proj;
       projectile.owner = player->id;
-      projectile.phy = player->me;
+
       /* shoot in the direction of the camera */
-      projectile.phy.vel_x = projectile.phy.dir_x;
-      projectile.phy.vel_y = projectile.phy.dir_y;
+      projectile.phy.vel_x = player->me.dir_x;
+      projectile.phy.vel_y = player->me.dir_y;
       projectile.phy.vel_z = 0;
-      projectile.phy.pos_z = 0.35;
+      projectile.phy.pos_x = player->me.pos_x;
+      projectile.phy.pos_y = player->me.pos_y;
+      projectile.phy.pos_z = player->me.pos_z;
+      projectile.phy.dir_x = player->me.dir_x;
+      projectile.phy.dir_y = player->me.dir_y;
+      projectile.phy.friction = weapon.friction;
+      projectile.phy.bouncy = weapon.bouncy;
+
       /* spray */
       phi = atan2(projectile.phy.vel_y, projectile.phy.vel_x);
       phi += (x + random_double) * weapon.spray / 200.0 - weapon.spray / 400.0;
@@ -76,10 +84,8 @@ void player_update(player_t* player, sprite_bank_t* sprites, map_t* map, int ela
     player->shot_timer = weapon.repeat_rate;
     player->shooting = -1;
   }
-  player->me.vel_x *= pow(PLAYER_FRICTION, elapsed_time / 1000.0);
-  player->me.vel_y *= pow(PLAYER_FRICTION, elapsed_time / 1000.0);
   player_sprite = sprite_get(sprites, player->sprite);
-  phy_update(&player->me, map, -1, player_sprite->height, elapsed_time, 0.0);
+  phy_update(&player->me, map, -1, player_sprite->height, elapsed_time);
   /* update sprite position */
   player_sprite->phy = player->me;
   /* detect damage */

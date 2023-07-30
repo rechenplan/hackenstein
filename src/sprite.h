@@ -9,8 +9,6 @@ typedef struct _sprite_t {
   int active;
   int owner;
   phy_t phy;
-  double vel;
-  double friction;
   double height;
   double width;
   pixel_t color;
@@ -18,7 +16,7 @@ typedef struct _sprite_t {
   double harm_radius;
   int boom;
   int bounce;
-  double bouncy;
+  double vel;
 } sprite_t;
 
 typedef struct _sprite_bank_t {

@@ -4,8 +4,6 @@
 #include "sprite.h"
 #include "lfb.h"
 
-#define GRAVITY (0.25)
-
 void sprite_init(sprite_bank_t* sprites, int size) {
   sprites->size = size;
   sprites->bank = malloc(size * sizeof(sprite_t));
@@ -76,7 +74,6 @@ void sprite_sort_by_dist(sprite_bank_t* sprites, phy_t* from, int* hurt_me, int*
 void sprite_update(sprite_bank_t* sprites, map_t* map, int elapsed_time) {
   int i;
   sprite_t* sprite;
-  double time;
 
   for (i = 0; i < sprites->size; i++) {
     sprite = sprite_get(sprites, i);
@@ -84,11 +81,7 @@ void sprite_update(sprite_bank_t* sprites, map_t* map, int elapsed_time) {
       continue;
     }
 
-    time = elapsed_time / 1000.0;
-    sprite->phy.vel_x *= pow(sprite->friction, time);
-    sprite->phy.vel_y *= pow(sprite->friction, time);
-    sprite->phy.vel_z -= GRAVITY * time;
-    if (phy_update(&sprite->phy, map, sprite->bounce, sprite->height, elapsed_time, sprite->bouncy) && sprite->harm) {
+    if (phy_update(&sprite->phy, map, sprite->bounce, sprite->height, elapsed_time) && sprite->harm) {
       if (sprite->bounce) {
         if (sprite->bounce > 0)
           sprite->bounce--;

@@ -5,6 +5,10 @@
 
 /* Notice physics are also limited by this */
 #define NET_FRAME_LIMIT (30)
-#define FRAME_LIMIT (999)
+
+/* TODO: Debug global frame limit in main.c */
+#define FRAME_LIMIT (99)
+
+#define GRAVITY (4.0)
 
 #endif
