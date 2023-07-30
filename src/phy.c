@@ -21,15 +21,11 @@ int phy_update(phy_t* phy, map_t* map, int bounce, double height, int elapsed_ti
   ceil = 1 - height / 2;
 
   if (new_z < floor) {
-    if (bounce) {
-      phy->vel_z = -phy->vel_z * phy->bouncy;
-    }
+    phy->vel_z = -phy->vel_z * phy->bouncy;
     collision = 1;
     phy->pos_z = floor;
   } else if (new_z > ceil) {
-    if (bounce) {
-      phy->vel_z = -phy->vel_z * phy->bouncy;
-    }
+    phy->vel_z = -phy->vel_z * phy->bouncy;
     collision = 1;
     phy->pos_z = ceil;
   } else {
@@ -39,21 +35,17 @@ int phy_update(phy_t* phy, map_t* map, int bounce, double height, int elapsed_ti
   if (!map_get_cell(map, phy->pos_x, new_y)) {
     phy->pos_y = new_y;
   } else {
-    if (bounce) {
-      phy->vel_y = -phy->vel_y * phy->bouncy;
-      new_y = phy->pos_y + phy->vel_y * time;
-      phy->pos_y = new_y;
-    }
+    phy->vel_y = -phy->vel_y * phy->bouncy;
+    new_y = phy->pos_y + phy->vel_y * time;
+    phy->pos_y = new_y;
     collision = 1;
   }
   if (!map_get_cell(map, new_x, phy->pos_y)) {
     phy->pos_x = new_x;
   } else {
-    if (bounce) {
-      phy->vel_x = -phy->vel_x * phy->bouncy;
-      new_x = phy->pos_x + phy->vel_x * time;
-      phy->pos_x = new_x;
-    }
+    phy->vel_x = -phy->vel_x * phy->bouncy;
+    new_x = phy->pos_x + phy->vel_x * time;
+    phy->pos_x = new_x;
     collision = 1;
   }
   return collision;

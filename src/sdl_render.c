@@ -22,24 +22,27 @@ void render_cleanup(render_t render) {
 
 int render_update(render_t render, lfb_t* lfb) {
   SDL_Window* window;
-  SDL_Surface* surface;
+  SDL_Surface* window_surface;
+  /*
   int window_width, window_height, x, y;
   uint32_t* sdl_pixels;
   pixel_t* lfb_pixels;
   pixel_t lfb_color;
   int start_time, offset_x, offset_y, sdl_idx;
+  */
 
-  start_time = SDL_GetTicks();
   window = (SDL_Window*) render;
+  window_surface = SDL_GetWindowSurface(window);
+  SDL_BlitScaled(lfb->surface, NULL, window_surface, NULL);
+
+/*
+  start_time = SDL_GetTicks();
   SDL_GetWindowSize(window, &window_width, &window_height);
-  surface = SDL_GetWindowSurface(window);
   sdl_pixels = surface->pixels;
   lfb_pixels = lfb_get_buffer(lfb);
   SDL_LockSurface(surface);
   offset_x = (window_width - lfb->width) / 2;
   offset_y = (window_height - lfb->height) / 2;
-
-  /* TODO: this loop slows the frame rate. speed it up. */
   for (y = 0; y < lfb->height; y++) {
     for (x = 0; x < lfb->width; x++) {
       lfb_color = lfb_pixels[x + y * lfb->width];
@@ -54,6 +57,7 @@ int render_update(render_t render, lfb_t* lfb) {
     }
   }
   SDL_UnlockSurface(surface);
+*/
   SDL_UpdateWindowSurface(window);
-  return SDL_GetTicks() - start_time;
+  return 0;
 }

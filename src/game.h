@@ -16,8 +16,8 @@
 #include "global.h"
 
 #define MAX_SPRITES (128)
-#define LFB_WIDTH   (1024)
-#define LFB_HEIGHT  (768)
+#define LFB_WIDTH   (512)
+#define LFB_HEIGHT  (288)
 
 typedef struct _game_t {
   player_t players[MAX_PLAYERS];
@@ -32,10 +32,12 @@ typedef struct _game_t {
   int start_time;
   int last_time;
   int net_frame;
+  int phy_frame;
+  int gfx_frame;
 } game_t;
 
 void game_init(game_t* game, char* host, int port, int my_id, int ms_time);
-int game_update(game_t* game, int ms_time);
+int game_update(game_t* game, int ms_time, int* sleep);
 void game_cleanup(game_t* game);
 
 #endif

@@ -18,6 +18,8 @@ void game_init(game_t* game, char* host, int port, int my_id, int start_time) {
   game->start_time = start_time;
   game->last_time = start_time;
   game->net_frame = 0;
+  game->phy_frame = 0;
+  game->gfx_frame = 0;
   game->my_id = my_id;
   game->render = render_init();
   game->net = net_init(host, port);
@@ -40,8 +42,9 @@ void game_init(game_t* game, char* host, int port, int my_id, int start_time) {
   player_respawn(&game->players[game->my_id], &game->sprites);
 }
 
-int game_update(game_t* game, int current_time) {
-  int done, i, correct_net_frame, elapsed_time;
+int game_update(game_t* game, int current_time, int *sleep) {
+  int done, i, correct_net_frame, correct_phy_frame, correct_gfx_frame, elapsed_time;
+  int frame_computed;
   player_t* myself;
   player_t* spec_player;
 
@@ -49,17 +52,37 @@ int game_update(game_t* game, int current_time) {
   myself = &game->players[game->my_id];
   spec_player = &game->players[myself->spec];
   done = player_process_input(myself, &game->input, elapsed_time);
+  frame_computed = 0;
+
+  /* net frame */
   correct_net_frame = (current_time - game->start_time) * NET_FRAME_LIMIT / 1000;
   if (game->net && game->net_frame <= correct_net_frame) {
     net_update(game->net, game->players, game->my_id);
     for (i = 0; i < MAX_PLAYERS; i++) {
-      player_update(&game->players[i], &game->sprites, &game->map, 1000 / NET_FRAME_LIMIT);
+      player_shoot(&game->players[i], &game->sprites);
     }
-    sprite_update(&game->sprites, &game->map, 1000 / NET_FRAME_LIMIT);
     game->net_frame++;
+    frame_computed = 1;
   }
-  caster_update(&game->caster, &game->map, &game->sprites, &spec_player->me, &spec_player->camera_plane, spec_player->id);
-  render_update(game->render, &game->lfb);
+  /* physics frame */
+  correct_phy_frame = (current_time - game->start_time) * PHY_FRAME_LIMIT / 1000;
+  if (game->phy_frame <= correct_phy_frame) {
+    for (i = 0; i < MAX_PLAYERS; i++) {
+      player_update(&game->players[i], &game->sprites, &game->map, 1000 / PHY_FRAME_LIMIT);
+    }
+    sprite_update(&game->sprites, &game->map, 1000 / PHY_FRAME_LIMIT);
+    game->phy_frame++;
+    frame_computed = 1;
+  }
+  /* graphics frame */
+  correct_gfx_frame = (current_time - game->start_time) * GFX_FRAME_LIMIT / 1000;
+  if (game->gfx_frame <= correct_gfx_frame) {
+    caster_update(&game->caster, &game->map, &game->sprites, &spec_player->me, &spec_player->camera_plane, spec_player->id);
+    render_update(game->render, &game->lfb);
+    game->gfx_frame++;
+    frame_computed = 1;
+  }
+  *sleep = !frame_computed;
   game->last_time = current_time;
   return done;
 }

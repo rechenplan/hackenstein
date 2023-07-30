@@ -2,11 +2,13 @@
 #define LFB_H
 
 #include <stdint.h>
+#include <SDL2/SDL.h>
 
-typedef uint8_t pixel_t;
+typedef uint32_t pixel_t;
 
 typedef struct _lfb_t {
   pixel_t* buffer;
+  SDL_Surface* surface;
   int width;
   int height;
 } lfb_t;

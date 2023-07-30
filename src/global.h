@@ -3,12 +3,12 @@
 
 #define MAX_PLAYERS (2)
 
-/* Notice physics are also limited by this */
-#define NET_FRAME_LIMIT (30)
+#define NET_FRAME_LIMIT (16)
+#define PHY_FRAME_LIMIT (30)
+#define GFX_FRAME_LIMIT (60)
 
-/* TODO: Debug global frame limit in main.c */
-#define FRAME_LIMIT (99)
+#define GRAVITY (1.0)
 
-#define GRAVITY (4.0)
+#define GRAYSCALE(x) ((x << 16) | (x << 8) | (x))
 
 #endif

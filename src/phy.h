@@ -3,6 +3,17 @@
 
 #include "map.h"
 
+typedef struct _vec3_t {
+  float x;
+  float y;
+  float z;
+} vec3_t;
+
+typedef struct _vec2_t {
+  float x;
+  float y;
+} vec2_t;
+
 typedef struct _phy_t {
   float pos_x;
   float pos_y;

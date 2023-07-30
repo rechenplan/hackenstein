@@ -12,6 +12,7 @@
 
 /* per second */
 #define PLAYER_FRICTION (0.001)
+#define PLAYER_BOUNCY (0.0)
 #define PLAYER_MOVE_SPEED (20.0)
 #define PLAYER_ROT_SPEED (3.14159)
 
@@ -26,30 +27,31 @@ void player_respawn(player_t* player, sprite_bank_t* sprites) {
   player->shooting = -1;
   player->me.pos_x = (rand() % 30) + 1.5;
   player->me.pos_y = (rand() % 30) + 1.5;
+  player->me.pos_z = 0;
   player->me.dir_x = 1;
   player->me.dir_y = 0;
   player->me.vel_x = 0;
   player->me.vel_y = 0;
   player->me.vel_z = 0;
   player->me.friction = PLAYER_FRICTION;
+  player->me.bouncy = PLAYER_BOUNCY;
   player->camera_plane.dir_x = 0;
   player->camera_plane.dir_y = 2.0 / 3.0;
   player_sprite = sprite_get(sprites, player->sprite);
   player_sprite->phy = player->me;
 }
 
-void player_update(player_t* player, sprite_bank_t* sprites, map_t* map, int elapsed_time) {
-  int i, hurt_me, attacker;
+void player_shoot(player_t* player, sprite_bank_t* sprites) {
+  int i;
   double x, y;
-  double phi;
   sprite_t projectile;
   weapon_t weapon;
+  double phi;
   double random_double;
   int prng = 125;
-  sprite_t* player_sprite;
 
-  weapon = weapon_get(player->weapon);
   if (player->shooting > 0) {
+    weapon = weapon_get(player->weapon);
     random_double = player->shooting;
     for (i = 0; i < weapon.proj_cnt; i++) {
       prng = (prng * 3) % 257;
@@ -84,6 +86,12 @@ void player_update(player_t* player, sprite_bank_t* sprites, map_t* map, int ela
     player->shot_timer = weapon.repeat_rate;
     player->shooting = -1;
   }
+}
+
+void player_update(player_t* player, sprite_bank_t* sprites, map_t* map, int elapsed_time) {
+  int hurt_me, attacker;
+  sprite_t* player_sprite;
+
   player_sprite = sprite_get(sprites, player->sprite);
   phy_update(&player->me, map, -1, player_sprite->height, elapsed_time);
   /* update sprite position */
@@ -104,16 +112,16 @@ void player_init(player_t* player, sprite_bank_t* sprites, int id) {
   player_sprite.active = 1;
   player_sprite.owner = 0;
   /* player_sprite.phy */
-  player_sprite.phy.pos_z = 0.4;
+  player_sprite.phy.pos_z = 0.0;
   player_sprite.vel = 0;
   /* player_sprite.friction */
   player_sprite.height = 0.8;
   player_sprite.width = 0.5;
-  player_sprite.color = 64;
+  player_sprite.color = GRAYSCALE(64);
   player_sprite.harm = 0;
   player_sprite.harm_radius = 0;
   player_sprite.boom = 0;
-  player_sprite.bounce = -1;
+  player_sprite.bounce = 0;
 
   player->sprite = sprite_create(sprites, &player_sprite);
   player->id = id;
