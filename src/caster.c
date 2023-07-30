@@ -24,12 +24,12 @@ void caster_cleanup(caster_t* caster) {
   free(caster->line_end);
 }
 
-void caster_update(caster_t* caster, map_t* map, sprite_bank_t* sprites, vec3_t pos, vec2_t dir, vec2_t plane, int my_sprite) {
-    caster_draw_map(caster, map, pos, dir, plane);
-    caster_draw_sprites(caster, sprites, pos, dir, plane, my_sprite);
+void caster_update(caster_t* caster, map_t* map, sprite_bank_t* sprites, player_t* player) {
+    caster_draw_map(caster, map, player);
+    caster_draw_sprites(caster, sprites, player);
 }
 
-void caster_draw_map(caster_t* caster, map_t* map, vec3_t pos, vec2_t dir, vec2_t plane) {
+void caster_draw_map(caster_t* caster, map_t* map, player_t* player) {
   pixel_t* buffer;
   int x, y, map_x, map_y, step_x, step_y, hit;
   int line_height;
@@ -38,7 +38,12 @@ void caster_draw_map(caster_t* caster, map_t* map, vec3_t pos, vec2_t dir, vec2_
   double delta_dist_x, delta_dist_y;
   double perp_wall_dist;
   lfb_t* lfb;
+  vec3_t pos;
+  vec2_t dir, plane;
 
+  pos = player->phy.position;
+  dir = player->phy.direction;
+  plane = player->plane;
   lfb = caster->lfb;
   buffer = lfb_get_buffer(lfb);
   for (x = 0; x < lfb->width; x++) {
@@ -110,17 +115,23 @@ void caster_draw_map(caster_t* caster, map_t* map, vec3_t pos, vec2_t dir, vec2_
   }
 }
 
-void caster_draw_sprites(caster_t* caster, sprite_bank_t* sprites, vec3_t pos, vec2_t dir, vec2_t plane, int my_sprite) {
+void caster_draw_sprites(caster_t* caster, sprite_bank_t* sprites, player_t* player) {
   int i, x, y;
   lfb_t* lfb;
   pixel_t* buffer;
   sprite_t* sprite;
   double sprite_x, sprite_y, inv_det, transform_x, transform_y, sprite_size, screen_x, boom;
-  int draw_start_x, draw_end_x, draw_start_y, draw_end_y;
+  int draw_start_x, draw_end_x, draw_start_y, draw_end_y, my_sprite;
+  vec3_t pos;
+  vec2_t dir, plane;
 
+  pos = player->phy.position;
+  dir = player->phy.direction;
+  plane = player->plane;
+  my_sprite = player->sprite;
   lfb = caster->lfb;
   buffer = lfb_get_buffer(lfb);
-  sprite_sort_by_dist(sprites, pos, NULL, NULL);
+  sprite_sort_by_dist(sprites, pos);
   for (i = 0; i < sprites->size; i++) {
     sprite = sprite_get(sprites, sprites->order[i]);
     if (!sprite->active || sprites->order[i] == my_sprite) {

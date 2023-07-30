@@ -4,7 +4,7 @@
 #define MAX_PLAYERS (2)
 
 #define NET_FRAME_LIMIT (16)
-#define PHY_FRAME_LIMIT (30)
+#define PHY_FRAME_LIMIT (60)
 #define GFX_FRAME_LIMIT (60)
 
 #define GRAVITY (1.0)

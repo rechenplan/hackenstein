@@ -49,23 +49,14 @@ static int sprite_dist_comp(const void *a, const void *b) {
   return SORT_BANK->distance[i] < SORT_BANK->distance[j];
 }
 
-void sprite_sort_by_dist(sprite_bank_t* sprites, vec3_t pos, int* hurt_me, int* attacker) {
+void sprite_sort_by_dist(sprite_bank_t* sprites, vec3_t pos) {
   int i;
   sprite_t* sprite;
 
-  if (hurt_me && attacker) {
-    *attacker = -1;
-    *hurt_me = 0;
-  }
   for (i = 0; i < sprites->size; i++) {
     sprite = sprite_get(sprites, i);
     sprites->order[i] = i;
     sprites->distance[i] = (sprite->phy.position.x - pos.x) * (sprite->phy.position.x - pos.x) + (sprite->phy.position.y - pos.y) * (sprite->phy.position.y - pos.y);
-    if (hurt_me && attacker && sprites->bank[i].harm && (sprites->distance[i] < sprites->bank[i].harm_radius * sprites->bank[i].harm_radius) && !sprites->bank[i].boom) {
-      sprites->bank[i].boom = 1;
-      *attacker = sprites->bank[i].owner;
-      *hurt_me += sprites->bank[i].harm;
-    }
   }
   SORT_BANK = sprites;
   qsort(sprites->order, sprites->size, sizeof(int), sprite_dist_comp);

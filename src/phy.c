@@ -8,10 +8,6 @@ int phy_update(phy_t* phy, map_t* map, int bounce, double height, int elapsed_ti
 
   time = elapsed_time / 1000.0;
 
-  phy->velocity.x *= pow(phy->friction, time);
-  phy->velocity.y *= pow(phy->friction, time);
-  phy->velocity.z -= GRAVITY * time;
-
   collision = 0;
   new_x = phy->position.x + phy->velocity.x * time;
   new_y = phy->position.y + phy->velocity.y * time;
@@ -48,6 +44,11 @@ int phy_update(phy_t* phy, map_t* map, int bounce, double height, int elapsed_ti
     phy->position.x = new_x;
     collision = 1;
   }
+
+  phy->velocity.x *= pow(phy->friction, time);
+  phy->velocity.y *= pow(phy->friction, time);
+  phy->velocity.z -= GRAVITY * time;
+
   return collision;
 }
 

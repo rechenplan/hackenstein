@@ -6,7 +6,6 @@
 #include "lfb.h"
 #include "input.h"
 #include "map.h"
-#include "caster.h"
 #include "phy.h"
 
 typedef struct _player_t {
@@ -30,9 +29,10 @@ typedef struct _player_t {
 
 void player_init(player_t* player, sprite_bank_t* sprites, int id);
 void player_respawn(player_t* player, sprite_bank_t* sprites);
-void player_update(player_t* player, sprite_bank_t* sprites, map_t* map, int elapsed_time);
+void player_update(player_t* player, sprite_bank_t* sprites, map_t* map, int elapsed_time, int local);
 void player_shoot(player_t* player, sprite_bank_t* sprites);
 int  player_process_input(player_t* player, input_t* input, int elapsed_time);
 void player_cleanup(player_t* player);
+void player_harm(player_t* player, sprite_bank_t* sprites, int harm, vec3_t velocity);
 
 #endif

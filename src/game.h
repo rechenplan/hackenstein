@@ -12,6 +12,7 @@
 #include "render.h"
 #include "lfb.h"
 #include "map.h"
+#include "hud.h"
 #include "net.h"
 #include "global.h"
 
@@ -27,6 +28,7 @@ typedef struct _game_t {
   input_t input;
   lfb_t lfb;
   caster_t caster;
+  hud_t hud;
   int my_id;
   net_t net;
   int start_time;

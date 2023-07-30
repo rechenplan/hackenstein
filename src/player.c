@@ -11,10 +11,11 @@
 #include <stdio.h>
 
 /* per second */
-#define PLAYER_FRICTION (0.001)
+#define PUSH_BACK (0.5)
+#define PLAYER_FRICTION (1.0 / 100000.0)
 #define PLAYER_BOUNCY (0.0)
-#define PLAYER_MOVE_SPEED (20.0)
-#define PLAYER_ROT_SPEED (3.14159)
+#define PLAYER_MOVE_SPEED (50.0)
+#define PLAYER_ROT_SPEED (3.14159 / 4)
 
 void player_respawn(player_t* player, sprite_bank_t* sprites) {
   sprite_t* player_sprite;
@@ -88,20 +89,29 @@ void player_shoot(player_t* player, sprite_bank_t* sprites) {
   }
 }
 
-void player_update(player_t* player, sprite_bank_t* sprites, map_t* map, int elapsed_time) {
-  int hurt_me, attacker;
+#define SQUARED(x) ((x)*(x))
+void player_update(player_t* player, sprite_bank_t* sprites, map_t* map, int elapsed_time, int local) {
   sprite_t* player_sprite;
+  sprite_t* sprite;
+  int i = 0;
+  double distance;
 
   player_sprite = sprite_get(sprites, player->sprite);
-  phy_update(&player->phy, map, -1, player_sprite->height, elapsed_time);
+  phy_update(&player->phy, map, 0, player_sprite->height, elapsed_time);
   /* update sprite position */
   player_sprite->phy = player->phy;
-  /* detect damage */
-  sprite_sort_by_dist(sprites, player->phy.position, &hurt_me, &attacker);
-  if (attacker >= 0) {
-    player->health -= hurt_me;
-    if (player->health <= 0) {
-      player_respawn(player, sprites);
+  /* detect damage on local players */
+  for (i = 0; i < sprites->size; i++) {
+    sprite = &sprites->bank[i];
+    distance = sqrt(SQUARED(sprite->phy.position.x - player->phy.position.x) + SQUARED(sprite->phy.position.y - player->phy.position.y));
+    if (sprite->harm && (distance < sprite->harm_radius) && !sprite->boom) {
+      if (local) {
+        player_harm(player, sprites, sprite->harm / (1 + distance), sprite->phy.velocity);
+      }
+      sprite->boom = 1;
+      sprite->phy.velocity.x = 0;
+      sprite->phy.velocity.y = 0;
+      sprite->phy.velocity.z = 0;
     }
   }
 }
@@ -175,6 +185,7 @@ int player_process_input(player_t* player, input_t* input, int elapsed_time) {
   if (input_is_pressed(input, INPUT_SHOOT)) {
     if (player->shot_timer <= 0) {
       player->shooting = (rand() % 255) + 1;
+      printf("%d\n", player->shooting);
     }
   }
   if (player->shot_timer > 0) {
@@ -192,3 +203,15 @@ int player_process_input(player_t* player, input_t* input, int elapsed_time) {
 void player_cleanup(player_t* player) {
 }
 
+void player_harm(player_t* player, sprite_bank_t* sprites, int harm, vec3_t velocity) {
+  double speed;
+
+  printf("Harming for %d\n", harm);
+  speed = sqrt(SQUARED(velocity.x) + SQUARED(velocity.y));
+  player->phy.velocity.x += (velocity.x / speed) * harm * PUSH_BACK;
+  player->phy.velocity.y += (velocity.y / speed) * harm * PUSH_BACK;
+  player->health -= harm;
+  if (player->health <= 0) {
+    player_respawn(player, sprites);
+  }
+}
