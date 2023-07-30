@@ -10,16 +10,19 @@
 #include "phy.h"
 
 typedef struct _player_t {
-  phy_t    phy;
-  vec2_t   plane;
+  phy_t    phy; /* 28 bytes need to be sent (position & direction) */
+
+  /* these 4 bytes need to be sent */
   uint8_t  id;
+  uint8_t  weapon;
+  int8_t   health;
+  uint8_t  shooting;
+
+
+  vec2_t   plane; /* don't need to end this (can be reconstructed from dir) */
   int16_t  shot_timer;
   int16_t  swap_timer;
   int16_t  spec_timer;
-  uint8_t  weapon;
-  int8_t   health;
-  float    shooting;
-
   uint16_t sprite;
   uint8_t  spec;
   uint8_t  connected;

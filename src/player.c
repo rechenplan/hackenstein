@@ -24,7 +24,7 @@ void player_respawn(player_t* player, sprite_bank_t* sprites) {
   player->shot_timer = 0;
   player->spec_timer = 0;
   player->swap_timer = 0;
-  player->shooting = -1;
+  player->shooting = 0;
   player->phy.position.x = (rand() % 30) + 1.5;
   player->phy.position.y = (rand() % 30) + 1.5;
   player->phy.position.z = 0;
@@ -50,9 +50,9 @@ void player_shoot(player_t* player, sprite_bank_t* sprites) {
   double random_double;
   int prng = 125;
 
-  if (player->shooting > 0) {
+  if (player->shooting) {
     weapon = weapon_get(player->weapon);
-    random_double = player->shooting;
+    random_double = player->shooting / 256.0;
     for (i = 0; i < weapon.proj_cnt; i++) {
       prng = (prng * 3) % 257;
       x = (prng / 257.0 - 0.5);
@@ -84,7 +84,7 @@ void player_shoot(player_t* player, sprite_bank_t* sprites) {
       sprite_create(sprites, &projectile);
     }
     player->shot_timer = weapon.repeat_rate;
-    player->shooting = -1;
+    player->shooting = 0;
   }
 }
 
@@ -174,7 +174,7 @@ int player_process_input(player_t* player, input_t* input, int elapsed_time) {
   }
   if (input_is_pressed(input, INPUT_SHOOT)) {
     if (player->shot_timer <= 0) {
-      player->shooting = rand() / (double) RAND_MAX;
+      player->shooting = (rand() % 255) + 1;
     }
   }
   if (player->shot_timer > 0) {
