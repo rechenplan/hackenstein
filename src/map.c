@@ -75,7 +75,6 @@ void map_from_packet(map_t* map, uint8_t* packet, int size) {
   ptr += 4;
   expected_size = 2 * sizeof(uint32_t) + (1 + map->width * map->height) * sizeof(cell_t);
   if (size != expected_size) {
-    fprintf(stderr, "map_from_packet(): size == %d (expected %d)\n", size, expected_size);
     return;
   }
   memcpy(&map->default_cell, ptr, sizeof(cell_t));

@@ -108,6 +108,7 @@ void player_init(player_t* player, sprite_bank_t* sprites, int id) {
   player->sprite = sprite_create(sprites, &player_sprite);
   player->id = id;
   player->spec = id;
+  player->connected = 0;
 }
 
 int player_process_input(player_t* player, input_t* input) {

@@ -2,6 +2,7 @@
 
 int WinMain(HINSTANCE inst, HINSTANCE p_inst, LPSTR arg, int show) {
   player_t players[MAX_PLAYERS];
+
   ENetAddress address;
   ENetHost* server;
   ENetEvent event;
@@ -30,7 +31,7 @@ int WinMain(HINSTANCE inst, HINSTANCE p_inst, LPSTR arg, int show) {
         printf("connection received.\n");
         break;
       case ENET_EVENT_TYPE_RECEIVE:
-        printf("packet received.\n");
+        enet_host_broadcast(server, 0, event.packet);
         break;
       case ENET_EVENT_TYPE_DISCONNECT:
         printf("disconnect received.\n");

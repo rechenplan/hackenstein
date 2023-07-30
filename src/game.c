@@ -12,11 +12,12 @@
 #include "map.h"
 #include "net.h"
 
-void game_init(game_t* game) {
+void game_init(game_t* game, char* host, int port, int my_id) {
   int i, j;
 
-  game->my_id = 2;
+  game->my_id = my_id;
   game->render = render_init();
+  game->net = net_init(host, port);
   map_init(&game->map, 32, 32, 1);
   for (j = 1; j < game->map.height; j++) {
     for (i = 1; i < game->map.width; i++) {
@@ -33,9 +34,7 @@ void game_init(game_t* game) {
   }
   lfb_init(&game->lfb, LFB_WIDTH, LFB_HEIGHT);
   caster_init(&game->caster, &game->lfb);
-  net_init(&game->net, "localhost", 26000);
   player_respawn(&game->players[game->my_id], &game->sprites);
-
 }
 
 int game_update(game_t* game) {
@@ -46,11 +45,10 @@ int game_update(game_t* game) {
   myself = &game->players[game->my_id];
   spec_player = &game->players[myself->spec];
   done = player_process_input(myself, &game->input);
-  net_update(&game->net, game->players, &game->sprites, &game->map);
+  if (game->net) {
+    net_update(game->net, game->players, game->my_id);
+  }
   for (i = 0; i < MAX_PLAYERS; i++) {
-    if (!(rand() % 200) && (i != game->my_id)) {
-      game->players[i].shooting = ((double) rand() / RAND_MAX);
-    }
     player_update(&game->players[i], &game->sprites, &game->map);
   }
   sprite_update(&game->sprites, &game->map);
@@ -71,5 +69,7 @@ void game_cleanup(game_t* game) {
   }
   lfb_cleanup(&game->lfb);
   caster_cleanup(&game->caster);
-  net_cleanup(&game->net);
+  if (game->net) {
+    net_cleanup(game->net);
+  }
 }

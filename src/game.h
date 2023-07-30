@@ -31,7 +31,7 @@ typedef struct _game_t {
   net_t net;
 } game_t;
 
-void game_init(game_t* game);
+void game_init(game_t* game, char* host, int port, int my_id);
 int game_update(game_t* game);
 void game_cleanup(game_t* game);
 

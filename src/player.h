@@ -20,8 +20,9 @@ typedef struct _player_t {
   int8_t   health;
   float    shooting;
 
-  int      sprite;
-  int      spec;
+  uint16_t sprite;
+  uint8_t  spec;
+  uint8_t  connected;
 } player_t;
 
 void player_init(player_t* player, sprite_bank_t* sprites, int id);
