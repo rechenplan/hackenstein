@@ -10,6 +10,8 @@
 #include "lfb.h"
 #include "map.h"
 
+#define PLAYER_PACKET_SIZE (32)
+
 typedef void* net_t;
 
 net_t net_init(char* host, int port);
