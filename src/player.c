@@ -11,8 +11,6 @@
 #include <stdio.h>
 
 /* per second */
-#define TAU (3.14159 * 2)
-
 #define PUSH_BACK (0.5)
 #define PLAYER_FRICTION (1.0 / 100000.0)
 #define PLAYER_BOUNCY (0.0)
@@ -32,15 +30,12 @@ void player_respawn(player_t* player, sprite_bank_t* sprites) {
   player->phy.position.x = (rand() % 30) + 1.5;
   player->phy.position.y = (rand() % 30) + 1.5;
   player->phy.position.z = 0;
-  player->phy.direction.x = 1;
-  player->phy.direction.y = 0;
+  player->phy.phi = 0;
   player->phy.velocity.x = 0;
   player->phy.velocity.y = 0;
   player->phy.velocity.z = 0;
   player->phy.friction = PLAYER_FRICTION;
   player->phy.bouncy = PLAYER_BOUNCY;
-  player->plane.x = 0;
-  player->plane.y = 2.0 / 3.0;
   player_sprite = sprite_get(sprites, player->sprite);
   player_sprite->phy = player->phy;
   player->dirty_flag = DIRTY_FLAG_HEALTH | DIRTY_FLAG_POSITION | DIRTY_FLAG_WEAPON;
@@ -67,26 +62,21 @@ void player_shoot(player_t* player, sprite_bank_t* sprites) {
       projectile = weapon.proj;
       projectile.owner = player->id;
 
-      /* shoot in the direction of the camera */
-      projectile.phy.velocity.x = player->phy.direction.x;
-      projectile.phy.velocity.y = player->phy.direction.y;
-      projectile.phy.velocity.z = 0;
       projectile.phy.position.x = player->phy.position.x;
       projectile.phy.position.y = player->phy.position.y;
       projectile.phy.position.z = player->phy.position.z;
-      projectile.phy.direction.x = player->phy.direction.x;
-      projectile.phy.direction.y = player->phy.direction.y;
+      projectile.phy.phi = player->phy.phi;
       projectile.phy.friction = weapon.friction;
       projectile.phy.bouncy = weapon.bouncy;
 
       /* spray */
-      phi = atan2(projectile.phy.velocity.y, projectile.phy.velocity.x);
-      phi += (x + random_double) * weapon.spray / 200.0 - weapon.spray / 400.0;
-      projectile.phy.velocity.x = cos(phi) * projectile.vel;
-      projectile.phy.velocity.y = sin(phi) * projectile.vel;
-      projectile.phy.position.x += projectile.phy.direction.x * (projectile.harm_radius + 0.1);
-      projectile.phy.position.y += projectile.phy.direction.y * (projectile.harm_radius + 0.1);
-      projectile.phy.velocity.z += (y + random_double) * weapon.spray / 10.0 - weapon.spray / 20.0;
+      projectile.phy.phi += (x + random_double) * weapon.spray / 200.0 - weapon.spray / 400.0;
+      projectile.phy.velocity.x = cos(projectile.phy.phi) * projectile.vel;
+      projectile.phy.velocity.y = sin(projectile.phy.phi) * projectile.vel;
+      projectile.phy.velocity.z = (y + random_double) * weapon.spray / 10.0 - weapon.spray / 20.0;
+
+      projectile.phy.position.x += cos(projectile.phy.phi) * (projectile.harm_radius + 0.1);
+      projectile.phy.position.y += sin(projectile.phy.phi) * (projectile.harm_radius + 0.1);
       sprite_create(sprites, &projectile);
     }
     player->shot_timer = weapon.repeat_rate;
@@ -162,28 +152,26 @@ int player_process_input(player_t* player, input_t* input, int elapsed_time) {
 
   input_update(input);
   if (input_is_pressed(input, INPUT_FORWARD)) {
-    player->phy.velocity.x += player->phy.direction.x * move_speed;
-    player->phy.velocity.y += player->phy.direction.y * move_speed;
+    player->phy.velocity.x += cos(player->phy.phi) * move_speed;
+    player->phy.velocity.y += sin(player->phy.phi) * move_speed;
   }
   if (input_is_pressed(input, INPUT_BACK)) {
-    player->phy.velocity.x -= player->phy.direction.x * move_speed;
-    player->phy.velocity.y -= player->phy.direction.y * move_speed;
+    player->phy.velocity.x -= cos(player->phy.phi) * move_speed;
+    player->phy.velocity.y -= sin(player->phy.phi) * move_speed;
   }
   if (input_is_pressed(input, INPUT_RIGHT)) {
-    player->phy.velocity.x -= player->phy.direction.y * move_speed;
-    player->phy.velocity.y += player->phy.direction.x * move_speed;
+    player->phy.velocity.x -= sin(player->phy.phi) * move_speed;
+    player->phy.velocity.y += cos(player->phy.phi) * move_speed;
   }
   if (input_is_pressed(input, INPUT_LEFT)) {
-    player->phy.velocity.x += player->phy.direction.y * move_speed;
-    player->phy.velocity.y -= player->phy.direction.x * move_speed;
+    player->phy.velocity.x += sin(player->phy.phi) * move_speed;
+    player->phy.velocity.y -= cos(player->phy.phi) * move_speed;
   }
   if (input_is_pressed(input, INPUT_ROTATE_RIGHT)) {
-    phy_rotate(&player->phy.direction, rot_speed);
-    phy_rotate(&player->plane, rot_speed);
+    player->phy.phi += rot_speed;
   }
   if (input_is_pressed(input, INPUT_ROTATE_LEFT)) {
-    phy_rotate(&player->phy.direction, -rot_speed);
-    phy_rotate(&player->plane, -rot_speed);
+    player->phy.phi -= rot_speed;
   }
   if (input_is_pressed(input, INPUT_CHANGE_GUN)) {
     if (player->swap_timer <= 0) {

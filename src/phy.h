@@ -17,7 +17,7 @@ typedef struct _vec2_t {
 typedef struct _phy_t {
   vec3_t position;
   vec3_t velocity;
-  vec2_t direction;
+  float phi;
   float friction;
   float bouncy;
 } phy_t;

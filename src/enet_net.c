@@ -7,7 +7,6 @@
 #include "map.h"
 
 #define NET_CHANNELS 2
-#define TAU (3.14159 * 2)
 
 typedef struct _enet_net_t {
   ENetHost* client;
@@ -58,11 +57,7 @@ void net_update(net_t net, player_t players[MAX_PLAYERS], map_t* map, int my_id)
         if (dirty_flag & (DIRTY_FLAG_POSITION)) {
           players[id].net_this_pos.x = *((uint16_t*) ptr) * map->width / 65535.0; ptr += 2;
           players[id].net_this_pos.y = *((uint16_t*) ptr) * map->width / 65535.0; ptr += 2;
-          phi = *((uint16_t*) ptr) * TAU / 65535; ptr += 2;
-          players[id].phy.direction.x = cos(phi);
-          players[id].phy.direction.y = sin(phi);
-          players[id].plane.x = (2.0 / 3.0) * cos(phi + TAU / 4);
-          players[id].plane.y = (2.0 / 3.0) * sin(phi + TAU / 4);
+          players[id].phy.phi = *((uint16_t*) ptr) * TAU / 65535; ptr += 2;
         }
         if (dirty_flag & (DIRTY_FLAG_WEAPON)) {
           players[id].weapon = *((uint8_t*) ptr); ptr++;
@@ -85,7 +80,7 @@ void net_update(net_t net, player_t players[MAX_PLAYERS], map_t* map, int my_id)
   if (players[my_id].dirty_flag & (DIRTY_FLAG_POSITION)) {
     *((uint16_t*) ptr) = players[my_id].phy.position.x * 65535 / map->width; ptr += 2;
     *((uint16_t*) ptr) = players[my_id].phy.position.y * 65535 / map->height; ptr += 2;
-    *((uint16_t*) ptr) = atan2(players[my_id].phy.direction.y, players[my_id].phy.direction.x) * 65535 / TAU; ptr += 2;
+    *((uint16_t*) ptr) = players[my_id].phy.phi * 65535 / TAU; ptr += 2;
   }
   if (players[my_id].dirty_flag & DIRTY_FLAG_WEAPON) {
     *((uint8_t*) ptr) = players[my_id].weapon; ptr++;

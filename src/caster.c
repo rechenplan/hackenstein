@@ -42,8 +42,10 @@ void caster_draw_map(caster_t* caster, map_t* map, player_t* player) {
   vec2_t dir, plane;
 
   pos = player->phy.position;
-  dir = player->phy.direction;
-  plane = player->plane;
+  dir.x = cos(player->phy.phi);
+  dir.y = sin(player->phy.phi);
+  plane.x = (2.0 / 3.0) * cos(player->phy.phi + TAU / 4);
+  plane.y = (2.0 / 3.0) * sin(player->phy.phi + TAU / 4);
   lfb = caster->lfb;
   buffer = lfb_get_buffer(lfb);
   for (x = 0; x < lfb->width; x++) {
@@ -126,8 +128,10 @@ void caster_draw_sprites(caster_t* caster, sprite_bank_t* sprites, player_t* pla
   vec2_t dir, plane;
 
   pos = player->phy.position;
-  dir = player->phy.direction;
-  plane = player->plane;
+  dir.x = cos(player->phy.phi);
+  dir.y = sin(player->phy.phi);
+  plane.x = (2.0 / 3.0) * cos(player->phy.phi + TAU / 4);
+  plane.y = (2.0 / 3.0) * sin(player->phy.phi + TAU / 4);
   my_sprite = player->sprite;
   lfb = caster->lfb;
   buffer = lfb_get_buffer(lfb);
