@@ -23,7 +23,6 @@ typedef struct _sprite_t {
   int max_boom;
   int exploding;
   int bounce;
-  double vel;
 } sprite_t;
 
 typedef struct _sprite_bank_t {

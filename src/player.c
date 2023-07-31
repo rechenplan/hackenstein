@@ -63,8 +63,8 @@ void player_shoot(player_t* player, sprite_bank_t* sprites) {
 
       /* spray */
       projectile.phy.phi += (x + random_double) * weapon.spray / 200.0 - weapon.spray / 400.0;
-      projectile.phy.velocity.x = cos(projectile.phy.phi) * projectile.vel;
-      projectile.phy.velocity.y = sin(projectile.phy.phi) * projectile.vel;
+      projectile.phy.velocity.x = cos(projectile.phy.phi) * weapon.proj_speed;
+      projectile.phy.velocity.y = sin(projectile.phy.phi) * weapon.proj_speed;
       projectile.phy.velocity.z = (y + random_double) * weapon.spray / 10.0 - weapon.spray / 20.0;
 
       projectile.phy.position.x += cos(projectile.phy.phi) * (projectile.collision_radius + 0.1);
@@ -85,24 +85,28 @@ void player_update(player_t* player, sprite_bank_t* sprites, map_t* map, int ela
 
   player_sprite = sprite_get(sprites, player->sprite);
   if (local) {
+
     /* applly physics to local players */
     phy_update(&player->phy, map, 0, player_sprite->height, elapsed_time);
     player->dirty_flag |= DIRTY_FLAG_POSITION;
+
   } else {
+
     /* interpolate packets for remote players */
-    player->net_interp += elapsed_time / (1000.0 / NET_FRAME_LIMIT);
-    t = player->net_interp;
-    player->phy.position.x =  t * player->net_this_pos.x + (1 - t) * player->net_last_pos.x;
-    player->phy.position.y =  t * player->net_this_pos.y + (1 - t) * player->net_last_pos.y;
-    player->phy.position.z =  t * player->net_this_pos.z + (1 - t) * player->net_last_pos.z;
-    if (fabs(player->net_this_phi - player->net_last_phi) > TAU / 2) {
-      if (player->net_this_phi > player->net_last_phi) {
-        player->net_last_phi += TAU;
+    player->remote.interp += elapsed_time / (1000.0 / NET_FRAME_LIMIT);
+    t = player->remote.interp;
+    player->phy.position.x =  t * player->remote.current_pos.x + (1 - t) * player->remote.last_pos.x;
+    player->phy.position.y =  t * player->remote.current_pos.y + (1 - t) * player->remote.last_pos.y;
+    player->phy.position.z =  t * player->remote.current_pos.z + (1 - t) * player->remote.last_pos.z;
+    if (fabs(player->remote.current_phi - player->remote.last_phi) > TAU / 2) {
+      if (player->remote.current_phi > player->remote.last_phi) {
+        player->remote.last_phi += TAU;
       } else {
-        player->net_this_phi += TAU;
+        player->remote.current_phi += TAU;
       }
     }
-    player->phy.phi = fmod(player->net_last_phi + t * (player->net_this_phi - player->net_last_phi), TAU);
+    player->phy.phi = fmod(player->remote.last_phi + t * (player->remote.current_phi - player->remote.last_phi), TAU);
+
   }
 
   /* update position of sprite associated with player */
@@ -110,7 +114,7 @@ void player_update(player_t* player, sprite_bank_t* sprites, map_t* map, int ela
 
   /* detect player / sprite collisions */
   for (i = 0; i < sprites->size; i++) {
-    sprite = &sprites->bank[i];
+    sprite = sprite_get(sprites, i);
     if (!sprite->active || i == player->sprite) {
       continue;
     }
@@ -127,11 +131,11 @@ void player_update(player_t* player, sprite_bank_t* sprites, map_t* map, int ela
 void player_init(player_t* player, sprite_bank_t* sprites, int id) {
   sprite_t player_sprite;
   /* player */
+  memset(player, 0, sizeof(player_t));
   player->weapon = WEAPON_SHOTGUN;
-  player->last_packet_time = 0;
-  player->connected = 0;
   player->id = id;
   player->spec = id;
+
   /* sprite */
   player_sprite.active = 1;
   player_sprite.owner = id;

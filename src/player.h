@@ -14,23 +14,26 @@
 #define DIRTY_FLAG_HEALTH (1 << 2)
 #define DIRTY_FLAG_WEAPON (1 << 3)
 
+/* network data for remote players */
+typedef struct _player_remote_t {
+  vec3_t   current_pos;
+  float    current_phi;
+  vec3_t   last_pos;
+  float    last_phi;
+  double   interp;
+  int      packet_time;
+} player_remote_t;
+
 typedef struct _player_t {
-  /* network data for remote players */
-  vec3_t   net_this_pos;
-  vec3_t   net_last_pos;
-  float    net_this_phi;
-  float    net_last_phi;
-  double   net_interp;
-  int      last_packet_time;
-  int      connected;
+  phy_t           phy;
+  player_remote_t remote;
+  uint8_t         id;
 
   uint8_t  dirty_flag;
-  uint8_t  deaths[MAX_PLAYERS];
-  phy_t    phy;
-  uint8_t  id;
   uint8_t  weapon;
   float    health;
   uint8_t  shooting;
+
   int16_t  shot_timer;
   int16_t  swap_timer;
   int16_t  spec_timer;

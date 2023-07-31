@@ -50,17 +50,16 @@ void net_update(net_t net, player_t players[MAX_PLAYERS], map_t* map, int my_id,
       ptr = (char*) event.packet->data;
       id = *((uint8_t*) ptr); ptr++;
       if (id != my_id) {
-        players[id].last_packet_time = current_time;
-        players[id].connected = 1;
+        players[id].remote.packet_time = current_time;
         dirty_flag = *((uint8_t*) ptr); ptr++;
         if (dirty_flag & (DIRTY_FLAG_POSITION)) {
-          players[id].net_last_pos = players[id].phy.position;
-          players[id].net_last_phi = players[id].phy.phi;
-          players[id].net_interp = 0;
-          players[id].net_this_pos.x = *((uint16_t*) ptr) * map->width / 65535.0; ptr += 2;
-          players[id].net_this_pos.y = *((uint16_t*) ptr) * map->width / 65535.0; ptr += 2;
-          players[id].net_this_pos.z = *((uint8_t*) ptr) / 255.0; ptr++;
-          players[id].net_this_phi = *((uint16_t*) ptr) * TAU / 65535; ptr += 2;
+          players[id].remote.last_pos = players[id].phy.position;
+          players[id].remote.last_phi = players[id].phy.phi;
+          players[id].remote.interp = 0;
+          players[id].remote.current_pos.x = *((uint16_t*) ptr) * map->width / 65535.0; ptr += 2;
+          players[id].remote.current_pos.y = *((uint16_t*) ptr) * map->width / 65535.0; ptr += 2;
+          players[id].remote.current_pos.z = *((uint8_t*) ptr) / 255.0; ptr++;
+          players[id].remote.current_phi = *((uint16_t*) ptr) * TAU / 65535; ptr += 2;
         }
         if (dirty_flag & (DIRTY_FLAG_WEAPON)) {
           players[id].weapon = *((uint8_t*) ptr); ptr++;

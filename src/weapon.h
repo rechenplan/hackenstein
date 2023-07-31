@@ -5,6 +5,7 @@
 
 typedef struct _weapon_t {
   sprite_t proj;
+  double proj_speed;
   double spray;
   int repeat_rate;
   int proj_cnt;

@@ -11,7 +11,7 @@ weapon_t weapon_get(int i) {
       weapon.bouncy = 0;
       weapon.proj_cnt = 1;
       weapon.proj.active = 1;
-      weapon.proj.vel = 15.0;
+      weapon.proj_speed = 15.0;
       weapon.proj.height = 0.1;
       weapon.proj.width = 0.1;
       weapon.proj.color = GRAYSCALE(32);
@@ -30,7 +30,7 @@ weapon_t weapon_get(int i) {
       weapon.bouncy = 0;
       weapon.proj_cnt = 1;
       weapon.proj.active = 1;
-      weapon.proj.vel = 15.0;
+      weapon.proj_speed = 15.0;
       weapon.proj.height = 0.1;
       weapon.proj.width = 0.1;
       weapon.proj.color = GRAYSCALE(32);
@@ -49,7 +49,7 @@ weapon_t weapon_get(int i) {
       weapon.bouncy = 0.5;
       weapon.proj_cnt = 1;
       weapon.proj.active = 1;
-      weapon.proj.vel = 1.0;
+      weapon.proj_speed = 1.0;
       weapon.proj.height = 0.1;
       weapon.proj.width = 0.2;
       weapon.proj.color = GRAYSCALE(32);
@@ -68,7 +68,7 @@ weapon_t weapon_get(int i) {
       weapon.bouncy = 0;
       weapon.proj_cnt = 1;
       weapon.proj.active = 1;
-      weapon.proj.vel = 15.0;
+      weapon.proj_speed = 15.0;
       weapon.proj.height = 0.1;
       weapon.proj.width = 0.1;
       weapon.proj.color = GRAYSCALE(32);
@@ -87,7 +87,7 @@ weapon_t weapon_get(int i) {
       weapon.bouncy = 1.0;
       weapon.proj_cnt = 8;
       weapon.proj.active = 1;
-      weapon.proj.vel = 15.0;
+      weapon.proj_speed = 15.0;
       weapon.proj.height = 0.1;
       weapon.proj.width = 0.1;
       weapon.proj.color = GRAYSCALE(32);
