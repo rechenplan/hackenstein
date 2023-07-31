@@ -24,6 +24,8 @@ typedef struct _player_t {
 
   vec3_t   net_this_pos;
   vec3_t   net_last_pos;
+  float    net_this_phi;
+  float    net_last_phi;
   double   net_interp;
 
   uint8_t  dirty_flag;

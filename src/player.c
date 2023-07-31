@@ -47,7 +47,6 @@ void player_shoot(player_t* player, sprite_bank_t* sprites) {
   double x, y;
   sprite_t projectile;
   weapon_t weapon;
-  double phi;
   double random_double;
   int prng = 125;
 
@@ -102,6 +101,14 @@ void player_update(player_t* player, sprite_bank_t* sprites, map_t* map, int ela
     player->phy.position.x =  t * player->net_this_pos.x + (1 - t) * player->net_last_pos.x;
     player->phy.position.y =  t * player->net_this_pos.y + (1 - t) * player->net_last_pos.y;
     player->phy.position.z =  t * player->net_this_pos.z + (1 - t) * player->net_last_pos.z;
+    if (fabs(player->net_this_phi - player->net_last_phi) > TAU / 2) {
+      if (player->net_this_phi > player->net_last_phi) {
+        player->net_last_phi += TAU;
+      } else {
+        player->net_this_phi += TAU;
+      }
+    }
+    player->phy.phi = fmod(player->net_last_phi + t * (player->net_this_phi - player->net_last_phi), TAU);
   }
   /* update sprite position */
   player_sprite->phy = player->phy;
