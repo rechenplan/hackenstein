@@ -1,9 +1,9 @@
 #ifndef GLOBAL_H
 #define GLOBAL_H
 
-#define MAX_PLAYERS (2)
+#define MAX_PLAYERS (64)
 
-#define NET_FRAME_LIMIT (16)
+#define NET_FRAME_LIMIT (8)
 #define PHY_FRAME_LIMIT (60)
 #define GFX_FRAME_LIMIT (60)
 

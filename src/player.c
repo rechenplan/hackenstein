@@ -11,16 +11,19 @@
 #include <stdio.h>
 
 /* per second */
+#define TAU (3.14159 * 2)
+
 #define PUSH_BACK (0.5)
 #define PLAYER_FRICTION (1.0 / 100000.0)
 #define PLAYER_BOUNCY (0.0)
 #define PLAYER_MOVE_SPEED (50.0)
-#define PLAYER_ROT_SPEED (3.14159 / 2)
+#define PLAYER_ROT_SPEED (TAU / 4)
 
 void player_respawn(player_t* player, sprite_bank_t* sprites) {
   sprite_t* player_sprite;
 
   player->weapon = WEAPON_SHOTGUN;
+  player->dirty_flag = 0;
   player->health = 100;
   player->shot_timer = 0;
   player->spec_timer = 0;
@@ -40,6 +43,8 @@ void player_respawn(player_t* player, sprite_bank_t* sprites) {
   player->plane.y = 2.0 / 3.0;
   player_sprite = sprite_get(sprites, player->sprite);
   player_sprite->phy = player->phy;
+  player->dirty_flag = DIRTY_FLAG_HEALTH | DIRTY_FLAG_POSITION | DIRTY_FLAG_WEAPON;
+
 }
 
 void player_shoot(player_t* player, sprite_bank_t* sprites) {
@@ -99,6 +104,7 @@ void player_update(player_t* player, sprite_bank_t* sprites, map_t* map, int ela
   player_sprite = sprite_get(sprites, player->sprite);
   if (local) {
     phy_update(&player->phy, map, 0, player_sprite->height, elapsed_time);
+    player->dirty_flag |= DIRTY_FLAG_POSITION;
   } else {
     /* interpolate packets */
     player->net_interp += elapsed_time / (1000.0 / NET_FRAME_LIMIT);
@@ -182,6 +188,7 @@ int player_process_input(player_t* player, input_t* input, int elapsed_time) {
   if (input_is_pressed(input, INPUT_CHANGE_GUN)) {
     if (player->swap_timer <= 0) {
       player->weapon = (player->weapon + 1) % MAX_WEAPON;
+      player->dirty_flag |= DIRTY_FLAG_WEAPON;
       player->swap_timer = 250;
     }
   }
@@ -194,7 +201,7 @@ int player_process_input(player_t* player, input_t* input, int elapsed_time) {
   if (input_is_pressed(input, INPUT_SHOOT)) {
     if (player->shot_timer <= 0) {
       player->shooting = (rand() % 255) + 1;
-      printf("%d\n", player->shooting);
+      player->dirty_flag |= DIRTY_FLAG_SHOOTING;
     }
   }
   if (player->shot_timer > 0) {
@@ -220,6 +227,7 @@ void player_harm(player_t* player, sprite_bank_t* sprites, int harm, vec3_t velo
   player->phy.velocity.x += (velocity.x / speed) * harm * PUSH_BACK;
   player->phy.velocity.y += (velocity.y / speed) * harm * PUSH_BACK;
   player->health -= harm;
+  player->dirty_flag |= DIRTY_FLAG_HEALTH;
   if (player->health <= 0) {
     player_respawn(player, sprites);
   }

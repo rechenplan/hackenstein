@@ -9,9 +9,9 @@ render_t render_init() {
     "hackenstein",
     SDL_WINDOWPOS_UNDEFINED,
     SDL_WINDOWPOS_UNDEFINED,
-    0,
-    0,
-    SDL_WINDOW_FULLSCREEN_DESKTOP);
+    512,
+    288,
+    0); /* SDL_WINDOW_FULLSCREEN_DESKTOP); */
 
   return window;
 }

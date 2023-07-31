@@ -8,6 +8,11 @@
 #include "map.h"
 #include "phy.h"
 
+#define DIRTY_FLAG_POSITION (1 << 0)
+#define DIRTY_FLAG_SHOOTING (1 << 1)
+#define DIRTY_FLAG_HEALTH (1 << 2)
+#define DIRTY_FLAG_WEAPON (1 << 3)
+
 typedef struct _player_t {
   phy_t    phy; /* 28 bytes need to be sent (position & direction) */
 
@@ -17,10 +22,11 @@ typedef struct _player_t {
   int8_t   health;
   uint8_t  shooting;
 
-
   vec3_t   net_this_pos;
   vec3_t   net_last_pos;
-  float    net_interp;
+  double   net_interp;
+
+  uint8_t  dirty_flag;
 
   vec2_t   plane; /* don't need to end this (can be reconstructed from dir) */
   int16_t  shot_timer;
