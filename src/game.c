@@ -35,13 +35,11 @@ void game_init(game_t* game, char* host, int port, int my_id, int start_time) {
   sprite_init(&game->sprites, MAX_SPRITES);
   for (i = 0; i < MAX_PLAYERS; i++) {
     player_init(&game->players[i], &game->sprites, i);
-    /* TODO: remove this. it's for debugging */
-    player_respawn(&game->players[i], &game->sprites);
   }
   lfb_init(&game->lfb, LFB_WIDTH, LFB_HEIGHT);
   caster_init(&game->caster, &game->lfb);
   hud_init(&game->hud, 8);
-  player_respawn(&game->players[game->my_id], &game->sprites);
+  player_respawn(&game->players[game->my_id]);
 }
 
 int game_update(game_t* game, int current_time, int *sleep) {

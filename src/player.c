@@ -11,15 +11,12 @@
 #include <stdio.h>
 
 /* per second */
-#define PUSH_BACK (0.5)
 #define PLAYER_FRICTION (1.0 / 100000.0)
 #define PLAYER_BOUNCY (0.0)
 #define PLAYER_MOVE_SPEED (50.0)
 #define PLAYER_ROT_SPEED (TAU / 4)
 
-void player_respawn(player_t* player, sprite_bank_t* sprites) {
-  sprite_t* player_sprite;
-
+void player_respawn(player_t* player) {
   player->dirty_flag = 0;
   player->health = 100;
   player->shot_timer = 0;
@@ -35,10 +32,7 @@ void player_respawn(player_t* player, sprite_bank_t* sprites) {
   player->phy.velocity.z = 0;
   player->phy.friction = PLAYER_FRICTION;
   player->phy.bouncy = PLAYER_BOUNCY;
-  player_sprite = sprite_get(sprites, player->sprite);
-  player_sprite->phy = player->phy;
   player->dirty_flag = DIRTY_FLAG_HEALTH | DIRTY_FLAG_POSITION;
-
 }
 
 void player_shoot(player_t* player, sprite_bank_t* sprites) {
@@ -73,8 +67,8 @@ void player_shoot(player_t* player, sprite_bank_t* sprites) {
       projectile.phy.velocity.y = sin(projectile.phy.phi) * projectile.vel;
       projectile.phy.velocity.z = (y + random_double) * weapon.spray / 10.0 - weapon.spray / 20.0;
 
-      projectile.phy.position.x += cos(projectile.phy.phi) * (projectile.harm_radius + 0.1);
-      projectile.phy.position.y += sin(projectile.phy.phi) * (projectile.harm_radius + 0.1);
+      projectile.phy.position.x += cos(projectile.phy.phi) * (projectile.collision_radius + 0.1);
+      projectile.phy.position.y += sin(projectile.phy.phi) * (projectile.collision_radius + 0.1);
       sprite_create(sprites, &projectile);
     }
     player->shot_timer = weapon.repeat_rate;
@@ -91,10 +85,11 @@ void player_update(player_t* player, sprite_bank_t* sprites, map_t* map, int ela
 
   player_sprite = sprite_get(sprites, player->sprite);
   if (local) {
+    /* applly physics to local players */
     phy_update(&player->phy, map, 0, player_sprite->height, elapsed_time);
     player->dirty_flag |= DIRTY_FLAG_POSITION;
   } else {
-    /* interpolate packets */
+    /* interpolate packets for remote players */
     player->net_interp += elapsed_time / (1000.0 / NET_FRAME_LIMIT);
     t = player->net_interp;
     player->phy.position.x =  t * player->net_this_pos.x + (1 - t) * player->net_last_pos.x;
@@ -109,20 +104,22 @@ void player_update(player_t* player, sprite_bank_t* sprites, map_t* map, int ela
     }
     player->phy.phi = fmod(player->net_last_phi + t * (player->net_this_phi - player->net_last_phi), TAU);
   }
-  /* update sprite position */
+
+  /* update position of sprite associated with player */
   player_sprite->phy = player->phy;
-  /* detect damage on local players */
+
+  /* detect player / sprite collisions */
   for (i = 0; i < sprites->size; i++) {
     sprite = &sprites->bank[i];
+    if (!sprite->active || i == player->sprite) {
+      continue;
+    }
     distance = sqrt(SQUARED(sprite->phy.position.x - player->phy.position.x) + SQUARED(sprite->phy.position.y - player->phy.position.y));
-    if (sprite->harm && (distance < sprite->harm_radius) && !sprite->boom) {
+    if (distance < sprite->collision_radius) {
       if (local) {
-        player_harm(player, sprites, sprite->harm / (1 + distance), sprite->phy.velocity);
+        player_harm(player, sprite->harm);
       }
-      sprite->boom = 1;
-      sprite->phy.velocity.x = 0;
-      sprite->phy.velocity.y = 0;
-      sprite->phy.velocity.z = 0;
+      sprite_collide(sprite);
     }
   }
 }
@@ -142,7 +139,9 @@ void player_init(player_t* player, sprite_bank_t* sprites, int id) {
   player_sprite.width = 0.5;
   player_sprite.color = GRAYSCALE(64);
   player_sprite.harm = 0;
-  player_sprite.harm_radius = 0;
+  player_sprite.collision_radius = 0.5;
+  player_sprite.collision_type = 0;
+  player_sprite.exploding = 0;
   player_sprite.boom = 0;
   player_sprite.bounce = 0;
   player->sprite = sprite_create(sprites, &player_sprite);
@@ -211,16 +210,10 @@ int player_process_input(player_t* player, input_t* input, int elapsed_time) {
 void player_cleanup(player_t* player) {
 }
 
-void player_harm(player_t* player, sprite_bank_t* sprites, int harm, vec3_t velocity) {
-  double speed;
-
-  printf("Harming for %d\n", harm);
-  speed = sqrt(SQUARED(velocity.x) + SQUARED(velocity.y));
-  player->phy.velocity.x += (velocity.x / speed) * harm * PUSH_BACK;
-  player->phy.velocity.y += (velocity.y / speed) * harm * PUSH_BACK;
-  player->health -= harm;
-  player->dirty_flag |= DIRTY_FLAG_HEALTH;
-  if (player->health <= 0) {
-    player_respawn(player, sprites);
-  }
+void player_harm(player_t* player, float damage) {
+    player->health -= damage;
+    player->dirty_flag |= DIRTY_FLAG_HEALTH;
+    if (player->health <= 0) {
+      player_respawn(player);
+    }
 }

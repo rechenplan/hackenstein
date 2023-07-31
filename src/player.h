@@ -7,6 +7,7 @@
 #include "input.h"
 #include "map.h"
 #include "phy.h"
+#include "global.h"
 
 #define DIRTY_FLAG_POSITION (1 << 0)
 #define DIRTY_FLAG_SHOOTING (1 << 1)
@@ -24,10 +25,11 @@ typedef struct _player_t {
   int      connected;
 
   uint8_t  dirty_flag;
+  uint8_t  deaths[MAX_PLAYERS];
   phy_t    phy;
   uint8_t  id;
   uint8_t  weapon;
-  int8_t   health;
+  float    health;
   uint8_t  shooting;
   int16_t  shot_timer;
   int16_t  swap_timer;
@@ -37,11 +39,12 @@ typedef struct _player_t {
 } player_t;
 
 void player_init(player_t* player, sprite_bank_t* sprites, int id);
-void player_respawn(player_t* player, sprite_bank_t* sprites);
+void player_respawn(player_t* player);
 void player_update(player_t* player, sprite_bank_t* sprites, map_t* map, int elapsed_time, int local);
 void player_shoot(player_t* player, sprite_bank_t* sprites);
 int  player_process_input(player_t* player, input_t* input, int elapsed_time);
 void player_cleanup(player_t* player);
-void player_harm(player_t* player, sprite_bank_t* sprites, int harm, vec3_t velocity);
+void player_sprite_collision(player_t* player, sprite_t* sprite, int elapsed_time);
+void player_harm(player_t* player, float damage);
 
 #endif

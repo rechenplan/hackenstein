@@ -15,7 +15,7 @@ void sprite_init(sprite_bank_t* sprites, int size) {
 int sprite_create(sprite_bank_t* sprites, sprite_t* sprite) {
   int i;
   for (i = 0; i < sprites->size; i++) {
-    if (!sprites->bank[i].active)
+    if (!sprite_is_used(&sprites->bank[i]))
       break;
   }
   if (i == sprites->size) {
@@ -25,8 +25,9 @@ int sprite_create(sprite_bank_t* sprites, sprite_t* sprite) {
   return i;
 }
 
-void sprite_destroy(sprite_bank_t* sprites, int i) {
-  sprites->bank[i].active = 0;
+void sprite_destroy(sprite_t* sprite) {
+  sprite->active = 0;
+  sprite->exploding = 0;
 }
 
 sprite_t* sprite_get(sprite_bank_t* sprites, int i) {
@@ -62,32 +63,51 @@ void sprite_sort_by_dist(sprite_bank_t* sprites, vec3_t pos) {
   qsort(sprites->order, sprites->size, sizeof(int), sprite_dist_comp);
 }
 
+static void sprite_explode(sprite_t* sprite) {
+  sprite->active = 0;
+  sprite->exploding = 1;
+  sprite->phy.velocity.x = 0;
+  sprite->phy.velocity.y = 0;
+  sprite->phy.velocity.z = 0;
+}
+
+void sprite_collide(sprite_t* sprite) {
+  switch (sprite->collision_type) {
+    case COLLISION_EXPLODE:
+      sprite_explode(sprite);
+      break;
+  }
+}
+
 void sprite_update(sprite_bank_t* sprites, map_t* map, int elapsed_time) {
   int i;
   sprite_t* sprite;
 
   for (i = 0; i < sprites->size; i++) {
     sprite = sprite_get(sprites, i);
+    if (sprite->exploding) {
+      sprite->boom = sprite->boom + (sprite->max_boom - sprite->boom) / 8 + 1;
+      if (sprite->boom >= sprite->max_boom) {
+        sprite_destroy(sprite);
+      }
+    }
+
     if (!sprite->active) {
       continue;
     }
 
-    if (phy_update(&sprite->phy, map, sprite->bounce, sprite->height, elapsed_time) && sprite->harm) {
+    /* if collision with wall */
+    if (phy_update(&sprite->phy, map, sprite->bounce, sprite->height, elapsed_time)) {
       if (sprite->bounce) {
-        if (sprite->bounce > 0)
-          sprite->bounce--;
-      } else if (!sprite->boom) {
-        sprite->boom = 1;
-        sprite->phy.velocity.x = 0;
-        sprite->phy.velocity.y = 0;
-        sprite->phy.velocity.z = 0;
+        sprite->bounce--;
+      } else {
+        sprite_collide(sprite);
       }
     }
-    if (sprite->boom) {
-      sprite->boom = sprite->boom + (sprite->harm - sprite->boom) / 8 + 1;
-      if (sprite->boom >= sprite->harm) {
-        sprite->active = 0;
-      }
-    }
+
   }
+}
+
+int sprite_is_used(sprite_t* sprite) {
+  return (sprite->active || sprite->exploding);
 }

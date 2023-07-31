@@ -9,17 +9,19 @@ weapon_t weapon_get(int i) {
       weapon.repeat_rate = 1000;
       weapon.friction = 0.999;
       weapon.bouncy = 0;
-
       weapon.proj_cnt = 1;
       weapon.proj.active = 1;
       weapon.proj.vel = 15.0;
       weapon.proj.height = 0.1;
       weapon.proj.width = 0.1;
       weapon.proj.color = GRAYSCALE(32);
-      weapon.proj.harm = 200;
-      weapon.proj.harm_radius = 2.0;
+      weapon.proj.harm = 10;
+      weapon.proj.collision_radius = 2.0;
       weapon.proj.boom = 0;
+      weapon.proj.max_boom = 100;
       weapon.proj.bounce = 0;
+      weapon.proj.exploding = 0;
+      weapon.proj.collision_type = COLLISION_EXPLODE;
       break;
     case WEAPON_SMG:
       weapon.spray = 4.0;
@@ -32,10 +34,13 @@ weapon_t weapon_get(int i) {
       weapon.proj.height = 0.1;
       weapon.proj.width = 0.1;
       weapon.proj.color = GRAYSCALE(32);
-      weapon.proj.harm = 15;
-      weapon.proj.harm_radius = 0.5;
+      weapon.proj.harm = 10;
+      weapon.proj.collision_radius = 2.0;
       weapon.proj.boom = 0;
+      weapon.proj.max_boom = 100;
       weapon.proj.bounce = 0;
+      weapon.proj.exploding = 0;
+      weapon.proj.collision_type = COLLISION_EXPLODE;
       break;
     case WEAPON_MINE:
       weapon.spray = 1.0;
@@ -48,10 +53,13 @@ weapon_t weapon_get(int i) {
       weapon.proj.height = 0.1;
       weapon.proj.width = 0.2;
       weapon.proj.color = GRAYSCALE(32);
-      weapon.proj.harm = 200;
-      weapon.proj.harm_radius = 3.0;
+      weapon.proj.harm = 10;
+      weapon.proj.collision_radius = 2.0;
       weapon.proj.boom = 0;
-      weapon.proj.bounce = -1;
+      weapon.proj.max_boom = 100;
+      weapon.proj.bounce = 0;
+      weapon.proj.exploding = 0;
+      weapon.proj.collision_type = COLLISION_EXPLODE;
       break;
     case WEAPON_RIFLE:
       weapon.spray = 1.0;
@@ -64,10 +72,13 @@ weapon_t weapon_get(int i) {
       weapon.proj.height = 0.1;
       weapon.proj.width = 0.1;
       weapon.proj.color = GRAYSCALE(32);
-      weapon.proj.harm = 75;
-      weapon.proj.harm_radius = 0.5;
+      weapon.proj.harm = 10;
+      weapon.proj.collision_radius = 2.0;
       weapon.proj.boom = 0;
+      weapon.proj.max_boom = 100;
       weapon.proj.bounce = 0;
+      weapon.proj.exploding = 0;
+      weapon.proj.collision_type = COLLISION_EXPLODE;
       break;
     case WEAPON_SHOTGUN:
       weapon.spray = 15.0;
@@ -80,10 +91,13 @@ weapon_t weapon_get(int i) {
       weapon.proj.height = 0.1;
       weapon.proj.width = 0.1;
       weapon.proj.color = GRAYSCALE(32);
-      weapon.proj.harm = 8;
-      weapon.proj.harm_radius = 0.5;
+      weapon.proj.harm = 5;
+      weapon.proj.collision_radius = 0.5;
       weapon.proj.boom = 0;
+      weapon.proj.max_boom = 5;
       weapon.proj.bounce = 1;
+      weapon.proj.exploding = 0;
+      weapon.proj.collision_type = COLLISION_EXPLODE;
       break;
   }
   return weapon;

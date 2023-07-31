@@ -138,7 +138,7 @@ void caster_draw_sprites(caster_t* caster, sprite_bank_t* sprites, player_t* pla
   sprite_sort_by_dist(sprites, pos);
   for (i = 0; i < sprites->size; i++) {
     sprite = sprite_get(sprites, sprites->order[i]);
-    if (!sprite->active || sprites->order[i] == my_sprite) {
+    if (!sprite_is_used(sprite) || sprites->order[i] == my_sprite) {
       continue;
     }
     /* compute */
