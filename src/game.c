@@ -60,7 +60,7 @@ int game_update(game_t* game, int current_time, int *sleep) {
   correct_net_frame = (current_time - game->start_time) * NET_FRAME_LIMIT / 1000;
   if (game->net_frame <= correct_net_frame) {
     if (game->net) {
-      net_update(game->net, game->players, &game->map, game->my_id);
+      net_update(game->net, game->players, &game->map, game->my_id, current_time);
     }
     for (i = 0; i < MAX_PLAYERS; i++) {
       player_shoot(&game->players[i], &game->sprites);

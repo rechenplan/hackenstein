@@ -33,7 +33,7 @@ void* net_init(char* host, int port) {
   return net;
 }
 
-void net_update(net_t net, player_t players[MAX_PLAYERS], map_t* map, int my_id) {
+void net_update(net_t net, player_t players[MAX_PLAYERS], map_t* map, int my_id, int current_time) {
   ENetEvent event;
   ENetPacket* packet;
   char* ptr;
@@ -50,13 +50,16 @@ void net_update(net_t net, player_t players[MAX_PLAYERS], map_t* map, int my_id)
       ptr = (char*) event.packet->data;
       id = *((uint8_t*) ptr); ptr++;
       if (id != my_id) {
-        players[id].net_last_pos = players[id].phy.position;
-        players[id].net_last_phi = players[id].phy.phi;
-        players[id].net_interp = 0;
+        players[id].last_packet_time = current_time;
+        players[id].connected = 1;
         dirty_flag = *((uint8_t*) ptr); ptr++;
         if (dirty_flag & (DIRTY_FLAG_POSITION)) {
+          players[id].net_last_pos = players[id].phy.position;
+          players[id].net_last_phi = players[id].phy.phi;
+          players[id].net_interp = 0;
           players[id].net_this_pos.x = *((uint16_t*) ptr) * map->width / 65535.0; ptr += 2;
           players[id].net_this_pos.y = *((uint16_t*) ptr) * map->width / 65535.0; ptr += 2;
+          players[id].net_this_pos.z = *((uint8_t*) ptr) / 255.0; ptr++;
           players[id].net_this_phi = *((uint16_t*) ptr) * TAU / 65535; ptr += 2;
         }
         if (dirty_flag & (DIRTY_FLAG_WEAPON)) {
@@ -80,6 +83,7 @@ void net_update(net_t net, player_t players[MAX_PLAYERS], map_t* map, int my_id)
   if (players[my_id].dirty_flag & (DIRTY_FLAG_POSITION)) {
     *((uint16_t*) ptr) = players[my_id].phy.position.x * 65535 / map->width; ptr += 2;
     *((uint16_t*) ptr) = players[my_id].phy.position.y * 65535 / map->height; ptr += 2;
+    *((uint8_t*) ptr) = players[my_id].phy.position.z * 255; ptr++;
     *((uint16_t*) ptr) = players[my_id].phy.phi * 65535 / TAU; ptr += 2;
   }
   if (players[my_id].dirty_flag & DIRTY_FLAG_WEAPON) {

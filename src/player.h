@@ -14,29 +14,26 @@
 #define DIRTY_FLAG_WEAPON (1 << 3)
 
 typedef struct _player_t {
-  phy_t    phy; /* 28 bytes need to be sent (position & direction) */
-
-  /* these 4 bytes need to be sent */
-  uint8_t  id;
-  uint8_t  weapon;
-  int8_t   health;
-  uint8_t  shooting;
-
+  /* network data for remote players */
   vec3_t   net_this_pos;
   vec3_t   net_last_pos;
   float    net_this_phi;
   float    net_last_phi;
   double   net_interp;
+  int      last_packet_time;
+  int      connected;
 
   uint8_t  dirty_flag;
-
-  vec2_t   plane; /* don't need to end this (can be reconstructed from dir) */
+  phy_t    phy;
+  uint8_t  id;
+  uint8_t  weapon;
+  int8_t   health;
+  uint8_t  shooting;
   int16_t  shot_timer;
   int16_t  swap_timer;
   int16_t  spec_timer;
   uint16_t sprite;
   uint8_t  spec;
-  uint8_t  connected;
 } player_t;
 
 void player_init(player_t* player, sprite_bank_t* sprites, int id);

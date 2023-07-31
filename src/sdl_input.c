@@ -41,7 +41,7 @@ void input_update(input_t* input) {
         case SDLK_o:
           input->state |= (1 << INPUT_CHANGE_GUN);
           break;
-        case SDLK_l:
+        case SDLK_TAB:
           input->state |= (1 << INPUT_CHANGE_SPEC);
           break;
       }
@@ -75,7 +75,7 @@ void input_update(input_t* input) {
         case SDLK_o:
           input->state &= ~(1 << INPUT_CHANGE_GUN);
           break;
-        case SDLK_l:
+        case SDLK_TAB:
           input->state &= ~(1 << INPUT_CHANGE_SPEC);
           break;
       }

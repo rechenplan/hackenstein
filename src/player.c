@@ -20,7 +20,6 @@
 void player_respawn(player_t* player, sprite_bank_t* sprites) {
   sprite_t* player_sprite;
 
-  player->weapon = WEAPON_SHOTGUN;
   player->dirty_flag = 0;
   player->health = 100;
   player->shot_timer = 0;
@@ -38,7 +37,7 @@ void player_respawn(player_t* player, sprite_bank_t* sprites) {
   player->phy.bouncy = PLAYER_BOUNCY;
   player_sprite = sprite_get(sprites, player->sprite);
   player_sprite->phy = player->phy;
-  player->dirty_flag = DIRTY_FLAG_HEALTH | DIRTY_FLAG_POSITION | DIRTY_FLAG_WEAPON;
+  player->dirty_flag = DIRTY_FLAG_HEALTH | DIRTY_FLAG_POSITION;
 
 }
 
@@ -130,13 +129,15 @@ void player_update(player_t* player, sprite_bank_t* sprites, map_t* map, int ela
 
 void player_init(player_t* player, sprite_bank_t* sprites, int id) {
   sprite_t player_sprite;
-
+  /* player */
+  player->weapon = WEAPON_SHOTGUN;
+  player->last_packet_time = 0;
+  player->connected = 0;
+  player->id = id;
+  player->spec = id;
+  /* sprite */
   player_sprite.active = 1;
-  player_sprite.owner = 0;
-  /* player_sprite.phy */
-  player_sprite.phy.position.z = 0.0;
-  player_sprite.vel = 0;
-  /* player_sprite.friction */
+  player_sprite.owner = id;
   player_sprite.height = 0.8;
   player_sprite.width = 0.5;
   player_sprite.color = GRAYSCALE(64);
@@ -144,11 +145,7 @@ void player_init(player_t* player, sprite_bank_t* sprites, int id) {
   player_sprite.harm_radius = 0;
   player_sprite.boom = 0;
   player_sprite.bounce = 0;
-
   player->sprite = sprite_create(sprites, &player_sprite);
-  player->id = id;
-  player->spec = id;
-  player->connected = 0;
 }
 
 int player_process_input(player_t* player, input_t* input, int elapsed_time) {
