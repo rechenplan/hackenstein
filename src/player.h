@@ -14,9 +14,8 @@
 #define DIRTY_FLAG_HEALTH (1 << 2)
 #define DIRTY_FLAG_WEAPON (1 << 3)
 
-#define SHARE_WEAPON (0)
+#define SHARE_SHOOTING (0)
 #define SHARE_HEALTH (1)
-#define SHARE_SHOOTING (2)
 
 /* network data for remote players */
 typedef struct _player_remote_t {
@@ -43,8 +42,7 @@ typedef struct _player_t {
   uint8_t         spec;
   uint8_t         weapon;
   uint8_t         share_flag;
-  float           health;
-  uint16_t        share[8];
+  int16_t         share[8];
 } player_t;
 
 void player_init(player_t* player, sprite_bank_t* sprites, int id);

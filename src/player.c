@@ -18,7 +18,6 @@
 
 void player_respawn(player_t* player) {
   player->share_flag = 0;
-  player->health = 100;
   player->timer.shot = 0;
   player->timer.spec = 0;
   player->timer.swap = 0;
@@ -31,6 +30,7 @@ void player_respawn(player_t* player) {
   player->phy.velocity.z = 0;
   player->phy.friction = PLAYER_FRICTION;
   player->phy.bouncy = PLAYER_BOUNCY;
+  player_share(player, SHARE_HEALTH, 100);
 }
 
 void player_share(player_t* player, int idx, uint16_t value) {
@@ -40,6 +40,9 @@ void player_share(player_t* player, int idx, uint16_t value) {
 
 void player_process_share(player_t* player, sprite_bank_t* sprites) {
   player_shoot(player, sprites);
+  if (player->share[SHARE_HEALTH] <= 0) {
+    player_respawn(player);
+  }
 }
 
 void player_shoot(player_t* player, sprite_bank_t* sprites) {
@@ -222,8 +225,5 @@ void player_cleanup(player_t* player) {
 }
 
 void player_harm(player_t* player, float damage) {
-    player->health -= damage;
-    if (player->health <= 0) {
-      player_respawn(player);
-    }
+    player_share(player, SHARE_HEALTH, player->share[SHARE_HEALTH] - damage);
 }

@@ -6,7 +6,7 @@ void hud_init(hud_t* hud, int cross_hair_size) {
   return;
 }
 
-void hud_update(hud_t* hud, player_t* player, lfb_t* lfb) {
+void hud_update(hud_t* hud, int health, lfb_t* lfb) {
   int center_x, center_y, i, j, health_x;
   pixel_t* buffer;
 
@@ -22,7 +22,7 @@ void hud_update(hud_t* hud, player_t* player, lfb_t* lfb) {
   health_x = (lfb->width - 100) / 2;
   for (j = lfb->height - 16; j < lfb->height - 8; j++) {
     for (i = 0; i < 100; i++) {
-      if (i < player->health) {
+      if (i < health) {
         buffer[i + health_x + j * lfb->width] = GRAYSCALE(255);
       } else {
         buffer[i + health_x + j * lfb->width] = 0xffff0000;

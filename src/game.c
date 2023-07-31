@@ -82,7 +82,7 @@ int game_update(game_t* game, int current_time, int *sleep) {
   correct_gfx_frame = (current_time - game->start_time) * GFX_FRAME_LIMIT / 1000;
   if (game->gfx_frame <= correct_gfx_frame) {
     caster_update(&game->caster, &game->map, &game->sprites, spec_player);
-    hud_update(&game->hud, spec_player, &game->lfb);
+    hud_update(&game->hud, spec_player->share[SHARE_HEALTH], &game->lfb);
     render_update(game->render, &game->lfb);
     game->gfx_frame++;
     frame_computed = 1;
