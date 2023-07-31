@@ -18,6 +18,10 @@ typedef struct _player_t {
   uint8_t  shooting;
 
 
+  vec3_t   net_this_pos;
+  vec3_t   net_last_pos;
+  float    net_interp;
+
   vec2_t   plane; /* don't need to end this (can be reconstructed from dir) */
   int16_t  shot_timer;
   int16_t  swap_timer;

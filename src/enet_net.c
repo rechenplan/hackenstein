@@ -49,12 +49,14 @@ void net_update(net_t net, player_t players[MAX_PLAYERS], int my_id) {
       ptr = (char*) event.packet->data;
       id = *((uint8_t*) ptr); ptr++;
       if (id != my_id) {
+        players[id].net_last_pos = players[id].net_this_pos; /* * players[id].net_interp; (maybe) */
+        players[id].net_interp = 0;
         players[id].weapon = *((uint8_t*) ptr); ptr++;
         players[id].health = *((int8_t*) ptr); ptr++;
         players[id].shooting = *((uint8_t*) ptr); ptr++;
-        players[id].phy.position.x = *((float*) ptr); ptr += 4;
-        players[id].phy.position.y = *((float*) ptr); ptr += 4;
-        players[id].phy.position.z = *((float*) ptr); ptr += 4;
+        players[id].net_this_pos.x = *((float*) ptr); ptr += 4;
+        players[id].net_this_pos.y = *((float*) ptr); ptr += 4;
+        players[id].net_this_pos.z = *((float*) ptr); ptr += 4;
         players[id].phy.direction.x = cos(*((float*) ptr));
         players[id].phy.direction.y = sin(*((float*) ptr)); ptr += 4;
         players[id].phy.friction = *((float*) ptr); ptr += 4;

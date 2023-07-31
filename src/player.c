@@ -15,7 +15,7 @@
 #define PLAYER_FRICTION (1.0 / 100000.0)
 #define PLAYER_BOUNCY (0.0)
 #define PLAYER_MOVE_SPEED (50.0)
-#define PLAYER_ROT_SPEED (3.14159 / 4)
+#define PLAYER_ROT_SPEED (3.14159 / 2)
 
 void player_respawn(player_t* player, sprite_bank_t* sprites) {
   sprite_t* player_sprite;
@@ -94,10 +94,19 @@ void player_update(player_t* player, sprite_bank_t* sprites, map_t* map, int ela
   sprite_t* player_sprite;
   sprite_t* sprite;
   int i = 0;
-  double distance;
+  double distance, t;
 
   player_sprite = sprite_get(sprites, player->sprite);
-  phy_update(&player->phy, map, 0, player_sprite->height, elapsed_time);
+  if (local) {
+    phy_update(&player->phy, map, 0, player_sprite->height, elapsed_time);
+  } else {
+    /* interpolate packets */
+    player->net_interp += elapsed_time / (1000.0 / NET_FRAME_LIMIT);
+    t = player->net_interp;
+    player->phy.position.x =  t * player->net_this_pos.x + (1 - t) * player->net_last_pos.x;
+    player->phy.position.y =  t * player->net_this_pos.y + (1 - t) * player->net_last_pos.y;
+    player->phy.position.z =  t * player->net_this_pos.z + (1 - t) * player->net_last_pos.z;
+  }
   /* update sprite position */
   player_sprite->phy = player->phy;
   /* detect damage on local players */
