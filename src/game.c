@@ -61,7 +61,7 @@ int game_update(game_t* game, int current_time, int *sleep) {
       net_update(game->net, game->players, &game->map, game->my_id, current_time);
     }
     for (i = 0; i < MAX_PLAYERS; i++) {
-      player_shoot(&game->players[i], &game->sprites);
+      player_process_share(&game->players[i], &game->sprites);
     }
     game->net_frame++;
     frame_computed = 1;

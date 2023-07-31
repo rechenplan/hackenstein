@@ -17,12 +17,11 @@
 #define PLAYER_ROT_SPEED (TAU / 4)
 
 void player_respawn(player_t* player) {
-  player->dirty_flag = 0;
+  player->share_flag = 0;
   player->health = 100;
-  player->shot_timer = 0;
-  player->spec_timer = 0;
-  player->swap_timer = 0;
-  player->shooting = 0;
+  player->timer.shot = 0;
+  player->timer.spec = 0;
+  player->timer.swap = 0;
   player->phy.position.x = (rand() % 30) + 1.5;
   player->phy.position.y = (rand() % 30) + 1.5;
   player->phy.position.z = 0;
@@ -32,7 +31,15 @@ void player_respawn(player_t* player) {
   player->phy.velocity.z = 0;
   player->phy.friction = PLAYER_FRICTION;
   player->phy.bouncy = PLAYER_BOUNCY;
-  player->dirty_flag = DIRTY_FLAG_HEALTH | DIRTY_FLAG_POSITION;
+}
+
+void player_share(player_t* player, int idx, uint16_t value) {
+  player->share_flag |= (1 << idx);
+  player->share[idx] = value;
+}
+
+void player_process_share(player_t* player, sprite_bank_t* sprites) {
+  player_shoot(player, sprites);
 }
 
 void player_shoot(player_t* player, sprite_bank_t* sprites) {
@@ -42,10 +49,13 @@ void player_shoot(player_t* player, sprite_bank_t* sprites) {
   weapon_t weapon;
   double random_double;
   int prng = 125;
+  int weapon_id;
 
-  if (player->shooting) {
-    weapon = weapon_get(player->weapon);
-    random_double = player->shooting / 256.0;
+  if (player->share[SHARE_SHOOTING]) {
+    weapon_id = player->share[SHARE_SHOOTING] >> 8;
+    weapon = weapon_get(weapon_id);
+    random_double = (player->share[SHARE_SHOOTING] & 255) / 256.0;
+    printf("%d %f\n", weapon_id, random_double);
     for (i = 0; i < weapon.proj_cnt; i++) {
       prng = (prng * 3) % 257;
       x = (prng / 257.0 - 0.5);
@@ -71,8 +81,8 @@ void player_shoot(player_t* player, sprite_bank_t* sprites) {
       projectile.phy.position.y += sin(projectile.phy.phi) * (projectile.collision_radius + 0.1);
       sprite_create(sprites, &projectile);
     }
-    player->shot_timer = weapon.repeat_rate;
-    player->shooting = 0;
+    player->timer.shot = weapon.repeat_rate;
+    player->share[SHARE_SHOOTING] = 0;
   }
 }
 
@@ -88,7 +98,6 @@ void player_update(player_t* player, sprite_bank_t* sprites, map_t* map, int ela
 
     /* applly physics to local players */
     phy_update(&player->phy, map, 0, player_sprite->height, elapsed_time);
-    player->dirty_flag |= DIRTY_FLAG_POSITION;
 
   } else {
 
@@ -181,32 +190,30 @@ int player_process_input(player_t* player, input_t* input, int elapsed_time) {
     player->phy.phi -= rot_speed;
   }
   if (input_is_pressed(input, INPUT_CHANGE_GUN)) {
-    if (player->swap_timer <= 0) {
+    if (player->timer.swap <= 0) {
       player->weapon = (player->weapon + 1) % MAX_WEAPON;
-      player->dirty_flag |= DIRTY_FLAG_WEAPON;
-      player->swap_timer = 250;
+      player->timer.swap = 250;
     }
   }
   if (input_is_pressed(input, INPUT_CHANGE_SPEC)) {
-    if (player->spec_timer <= 0) {
+    if (player->timer.spec <= 0) {
       player->spec = (player->spec + 1) % MAX_PLAYERS;
-      player->spec_timer = 250;
+      player->timer.spec = 250;
     }
   }
   if (input_is_pressed(input, INPUT_SHOOT)) {
-    if (player->shot_timer <= 0) {
-      player->shooting = (rand() % 255) + 1;
-      player->dirty_flag |= DIRTY_FLAG_SHOOTING;
+    if (player->timer.shot <= 0) {
+      player_share(player, SHARE_SHOOTING, (player->weapon << 8) | ((rand() % 255) + 1));
     }
   }
-  if (player->shot_timer > 0) {
-    player->shot_timer -= elapsed_time;
+  if (player->timer.shot > 0) {
+    player->timer.shot -= elapsed_time;
   }
-  if (player->swap_timer > 0) {
-    player->swap_timer -= elapsed_time;
+  if (player->timer.swap > 0) {
+    player->timer.swap -= elapsed_time;
   }
-  if (player->spec_timer > 0) {
-    player->spec_timer -= elapsed_time;
+  if (player->timer.spec > 0) {
+    player->timer.spec -= elapsed_time;
   }
   return input_is_pressed(input, INPUT_EXIT);
 }
@@ -216,7 +223,6 @@ void player_cleanup(player_t* player) {
 
 void player_harm(player_t* player, float damage) {
     player->health -= damage;
-    player->dirty_flag |= DIRTY_FLAG_HEALTH;
     if (player->health <= 0) {
       player_respawn(player);
     }

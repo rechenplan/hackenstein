@@ -38,9 +38,10 @@ void net_update(net_t net, player_t players[MAX_PLAYERS], map_t* map, int my_id,
   ENetPacket* packet;
   char* ptr;
   uint8_t id;
-  uint8_t dirty_flag;
+  uint8_t share_flag;
   enet_net_t* enet;
   char player_packet[PLAYER_PACKET_SIZE];
+  int i;
 
   enet = (enet_net_t*) net;
 
@@ -51,24 +52,23 @@ void net_update(net_t net, player_t players[MAX_PLAYERS], map_t* map, int my_id,
       id = *((uint8_t*) ptr); ptr++;
       if (id != my_id) {
         players[id].remote.packet_time = current_time;
-        dirty_flag = *((uint8_t*) ptr); ptr++;
-        if (dirty_flag & (DIRTY_FLAG_POSITION)) {
-          players[id].remote.last_pos = players[id].phy.position;
-          players[id].remote.last_phi = players[id].phy.phi;
-          players[id].remote.interp = 0;
-          players[id].remote.current_pos.x = *((uint16_t*) ptr) * map->width / 65535.0; ptr += 2;
-          players[id].remote.current_pos.y = *((uint16_t*) ptr) * map->width / 65535.0; ptr += 2;
-          players[id].remote.current_pos.z = *((uint8_t*) ptr) / 255.0; ptr++;
-          players[id].remote.current_phi = *((uint16_t*) ptr) * TAU / 65535; ptr += 2;
-        }
-        if (dirty_flag & (DIRTY_FLAG_WEAPON)) {
-          players[id].weapon = *((uint8_t*) ptr); ptr++;
-        }
-        if (dirty_flag & (DIRTY_FLAG_SHOOTING)) {
-          players[id].shooting = *((uint8_t*) ptr); ptr++;
-        }
-        if (dirty_flag & (DIRTY_FLAG_HEALTH)) {
-          players[id].health = *((int8_t*) ptr); ptr++;
+
+        players[id].remote.last_pos = players[id].phy.position;
+        players[id].remote.last_phi = players[id].phy.phi;
+        players[id].remote.interp = 0;
+
+        players[id].remote.current_phi = *((uint16_t*) ptr) * TAU / 65535; ptr += 2;
+        players[id].remote.current_pos.x = *((uint16_t*) ptr) * map->width / 65535.0; ptr += 2;
+        players[id].remote.current_pos.y = *((uint16_t*) ptr) * map->width / 65535.0; ptr += 2;
+        players[id].remote.current_pos.z = *((uint8_t*) ptr) / 255.0; ptr++;
+        share_flag = *((uint8_t*) ptr); ptr++;
+        i = 0;
+        while (share_flag) {
+          if (share_flag & 1) {
+            players[id].share[i] = *((uint16_t*) ptr); ptr += 2;
+          }
+          share_flag >>= 1;
+          i++;
         }
       }
       enet_packet_destroy(event.packet);
@@ -78,23 +78,21 @@ void net_update(net_t net, player_t players[MAX_PLAYERS], map_t* map, int my_id,
   /* send our data */
   ptr = player_packet;
   *((uint8_t*) ptr) = players[my_id].id; ptr++;
-  *((uint8_t*) ptr) = players[my_id].dirty_flag; ptr++;
-  if (players[my_id].dirty_flag & (DIRTY_FLAG_POSITION)) {
-    *((uint16_t*) ptr) = players[my_id].phy.position.x * 65535 / map->width; ptr += 2;
-    *((uint16_t*) ptr) = players[my_id].phy.position.y * 65535 / map->height; ptr += 2;
-    *((uint8_t*) ptr) = players[my_id].phy.position.z * 255; ptr++;
-    *((uint16_t*) ptr) = players[my_id].phy.phi * 65535 / TAU; ptr += 2;
+
+  *((uint16_t*) ptr) = players[my_id].phy.phi * 65535 / TAU; ptr += 2;
+  *((uint16_t*) ptr) = players[my_id].phy.position.x * 65535 / map->width; ptr += 2;
+  *((uint16_t*) ptr) = players[my_id].phy.position.y * 65535 / map->height; ptr += 2;
+  *((uint8_t*) ptr) = players[my_id].phy.position.z * 255; ptr++;
+  *((uint8_t*) ptr) = players[my_id].share_flag; ptr++;
+
+  i = 0;
+  while (players[my_id].share_flag) {
+    if (players[my_id].share_flag & 1) {
+      *((uint16_t*) ptr) = players[my_id].share[i]; ptr += 2;
+    }
+    players[my_id].share_flag >>= 1;
+    i++;
   }
-  if (players[my_id].dirty_flag & DIRTY_FLAG_WEAPON) {
-    *((uint8_t*) ptr) = players[my_id].weapon; ptr++;
-  }
-  if (players[my_id].dirty_flag & DIRTY_FLAG_SHOOTING) {
-    *((uint8_t*) ptr) = players[my_id].shooting; ptr++;
-  }
-  if (players[my_id].dirty_flag & DIRTY_FLAG_HEALTH) {
-    *((uint8_t*) ptr) = players[my_id].health; ptr++;
-  }
-  players[my_id].dirty_flag = 0;
 
   packet = enet_packet_create(player_packet, ptr - player_packet, 0);
   if (packet) {
