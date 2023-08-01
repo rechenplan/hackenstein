@@ -63,7 +63,7 @@ void player_update(player_t* player, object_bank_t* objects, map_t* map, int ela
   /* detect player / object collisions */
   for (i = 0; i < objects->size; i++) {
     object = &objects->bank[i];
-    if (!object->active || object == player->object) {
+    if (!object->active || !object->is_player) {
       continue;
     }
     distance = SQUARED(object->physics.position.x - player->object->physics.position.x) + SQUARED(object->physics.position.y - player->object->physics.position.y);
@@ -74,6 +74,7 @@ void player_update(player_t* player, object_bank_t* objects, map_t* map, int ela
       object_collide(object);
     }
   }
+
 }
 
 void player_init(player_t* player, object_bank_t* objects, int id) {
@@ -185,7 +186,7 @@ void player_shoot(player_t* player, object_bank_t* objects) {
     weapon_id = player->share[SHARE_SHOOTING] >> 8;
     weapon = weapon_get(weapon_id);
     random_double = (player->share[SHARE_SHOOTING] & 255) / 256.0;
-    for (i = 0; i < weapon.proj_cnt; i++) {
+    for (i = 0; i < weapon.projectile_count; i++) {
       prng = (prng * 3) % 257;
       x = (prng / 257.0 - 0.5);
       prng = (prng * 3) % 257;
@@ -193,20 +194,18 @@ void player_shoot(player_t* player, object_bank_t* objects) {
 
       projectile = object_create(objects);
 
-      memcpy(projectile, &weapon.proj, sizeof(object_t));
+      memcpy(projectile, &weapon.projectile, sizeof(object_t));
       projectile->owner = player->id;
 
       projectile->physics.position.x = player->object->physics.position.x;
       projectile->physics.position.y = player->object->physics.position.y;
       projectile->physics.position.z = player->object->physics.position.z;
       projectile->physics.rotation = player->object->physics.rotation;
-      projectile->physics.friction = weapon.friction;
-      projectile->physics.bouncy = weapon.bouncy;
 
       /* spray */
       projectile->physics.rotation += (x + random_double) * weapon.spray / 200.0 - weapon.spray / 400.0;
-      projectile->physics.velocity.x = cos(projectile->physics.rotation) * weapon.proj_speed;
-      projectile->physics.velocity.y = sin(projectile->physics.rotation) * weapon.proj_speed;
+      projectile->physics.velocity.x = cos(projectile->physics.rotation) * weapon.projectile_speed;
+      projectile->physics.velocity.y = sin(projectile->physics.rotation) * weapon.projectile_speed;
       projectile->physics.velocity.z = (y + random_double) * weapon.spray / 10.0 - weapon.spray / 20.0;
 
       projectile->physics.position.x += cos(projectile->physics.rotation) * (projectile->collision_radius + 0.1);

@@ -4,11 +4,11 @@
 #include "object.h"
 
 typedef struct _weapon_t {
-  object_t proj;
-  double proj_speed;
+  object_t projectile;
+  double projectile_speed;
   double spray;
   int repeat_rate;
-  int proj_cnt;
+  int projectile_count;
   double bouncy;
   double friction;
 } weapon_t;
