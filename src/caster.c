@@ -41,11 +41,11 @@ void caster_draw_map(caster_t* caster, map_t* map, player_t* player) {
   vec3_t pos;
   vec2_t dir, plane;
 
-  pos = player->physics.position;
-  dir.x = cos(player->physics.rotation);
-  dir.y = sin(player->physics.rotation);
-  plane.x = (2.0 / 3.0) * cos(player->physics.rotation + TAU / 4);
-  plane.y = (2.0 / 3.0) * sin(player->physics.rotation + TAU / 4);
+  pos = player->object->physics.position;
+  dir.x = cos(player->object->physics.rotation);
+  dir.y = sin(player->object->physics.rotation);
+  plane.x = (2.0 / 3.0) * cos(player->object->physics.rotation + TAU / 4);
+  plane.y = (2.0 / 3.0) * sin(player->object->physics.rotation + TAU / 4);
   lfb = caster->lfb;
   buffer = lfb_get_buffer(lfb);
   for (x = 0; x < lfb->width; x++) {
@@ -127,11 +127,11 @@ void caster_draw_objects(caster_t* caster, object_bank_t* objects, player_t* pla
   vec3_t pos;
   vec2_t dir, plane;
 
-  pos = player->physics.position;
-  dir.x = cos(player->physics.rotation);
-  dir.y = sin(player->physics.rotation);
-  plane.x = (2.0 / 3.0) * cos(player->physics.rotation + TAU / 4);
-  plane.y = (2.0 / 3.0) * sin(player->physics.rotation + TAU / 4);
+  pos = player->object->physics.position;
+  dir.x = cos(player->object->physics.rotation);
+  dir.y = sin(player->object->physics.rotation);
+  plane.x = (2.0 / 3.0) * cos(player->object->physics.rotation + TAU / 4);
+  plane.y = (2.0 / 3.0) * sin(player->object->physics.rotation + TAU / 4);
   lfb = caster->lfb;
   buffer = lfb_get_buffer(lfb);
   object_sort_by_dist(objects, pos);

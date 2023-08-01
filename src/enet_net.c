@@ -40,7 +40,7 @@ void net_update(net_t net, player_t players[MAX_PLAYERS], map_t* map, int my_id,
   uint8_t id;
   uint8_t share_flag;
   enet_net_t* enet;
-  char player_packet[PLAYER_PACKET_SIZE];
+  char player_packet[PLAYER_PACKET_MAX_SIZE];
   int i;
 
   enet = (enet_net_t*) net;
@@ -53,8 +53,8 @@ void net_update(net_t net, player_t players[MAX_PLAYERS], map_t* map, int my_id,
       if (id != my_id) {
         players[id].remote.packet_time = current_time;
 
-        players[id].remote.last_position = players[id].physics.position;
-        players[id].remote.last_rotation = players[id].physics.rotation;
+        players[id].remote.last_position = players[id].object->physics.position;
+        players[id].remote.last_rotation = players[id].object->physics.rotation;
         players[id].remote.interp = 0;
 
         players[id].remote.current_rotation = *((uint16_t*) ptr) * TAU / 65535; ptr += 2;
@@ -79,10 +79,10 @@ void net_update(net_t net, player_t players[MAX_PLAYERS], map_t* map, int my_id,
   ptr = player_packet;
   *((uint8_t*) ptr) = players[my_id].id; ptr++;
 
-  *((uint16_t*) ptr) = players[my_id].physics.rotation * 65535 / TAU; ptr += 2;
-  *((uint16_t*) ptr) = players[my_id].physics.position.x * 65535 / map->width; ptr += 2;
-  *((uint16_t*) ptr) = players[my_id].physics.position.y * 65535 / map->height; ptr += 2;
-  *((uint8_t*) ptr) = players[my_id].physics.position.z * 255; ptr++;
+  *((uint16_t*) ptr) = players[my_id].object->physics.rotation * 65535 / TAU; ptr += 2;
+  *((uint16_t*) ptr) = players[my_id].object->physics.position.x * 65535 / map->width; ptr += 2;
+  *((uint16_t*) ptr) = players[my_id].object->physics.position.y * 65535 / map->height; ptr += 2;
+  *((uint8_t*) ptr) = players[my_id].object->physics.position.z * 255; ptr++;
   *((uint8_t*) ptr) = players[my_id].share_flag; ptr++;
 
   i = 0;

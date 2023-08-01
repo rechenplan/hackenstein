@@ -34,7 +34,6 @@ typedef struct _player_timers_t {
 } player_timers_t;
 
 typedef struct _player_t {
-  physics_t       physics;
   object_t*       object;
   player_remote_t remote;
   player_timers_t timer;

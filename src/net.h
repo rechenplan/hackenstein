@@ -10,7 +10,7 @@
 #include "lfb.h"
 #include "map.h"
 
-#define PLAYER_PACKET_SIZE (28)
+#define PLAYER_PACKET_MAX_SIZE (64)
 
 typedef void* net_t;
 
