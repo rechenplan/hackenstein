@@ -10,7 +10,6 @@ static void mod_spawn_pickup(vec3_t pos, object_bank_t* objects) {
   object_t* pickup;
   pickup = object_create(objects);
   pickup->physics.position = pos;
-  pickup->physics.velocity = 
   pickup->next_respawn = 60;
   pickup->respawn_time = -1;
   pickup->physics.friction = 0.999;
