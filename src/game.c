@@ -12,6 +12,7 @@
 #include "map.h"
 #include "hud.h"
 #include "net.h"
+#include "mod.h"
 
 void game_init(game_t* game, char* host, int port, int my_id, int start_time) {
   int i, j;
@@ -19,9 +20,9 @@ void game_init(game_t* game, char* host, int port, int my_id, int start_time) {
   game->start_time = start_time;
   game->last_time = start_time;
   game->net_frame = 0;
+  game->my_id = my_id;
   game->physics_frame = 0;
   game->gfx_frame = 0;
-  game->my_id = my_id;
   game->render = render_init();
   game->net = net_init(host, port);
   map_init(&game->map, 32, 32, 1);
@@ -34,17 +35,15 @@ void game_init(game_t* game, char* host, int port, int my_id, int start_time) {
   input_init(&game->input);
   object_init(&game->objects, MAX_SPRITES);
   for (i = 0; i < MAX_PLAYERS; i++) {
-    player_init(&game->players[i], &game->objects, i);
+    player_init(&game->players[i], &game->objects, i == my_id);
   }
   lfb_init(&game->lfb, LFB_WIDTH, LFB_HEIGHT);
   caster_init(&game->caster, &game->lfb);
   hud_init(&game->hud, 8);
-  player_respawn(&game->players[game->my_id]);
 }
 
 int game_update(game_t* game, int current_time, int *sleep) {
   int done, i, correct_net_frame, correct_physics_frame, correct_gfx_frame;
-  int local;
   int frame_computed;
   player_t* myself;
   player_t* spec_player;
@@ -61,7 +60,7 @@ int game_update(game_t* game, int current_time, int *sleep) {
       net_update(game->net, game->players, &game->map, game->my_id, current_time);
     }
     for (i = 0; i < MAX_PLAYERS; i++) {
-      player_process_share(&game->players[i], &game->objects);
+      mod_player_update(&game->players[i], &game->objects);
     }
     game->net_frame++;
     frame_computed = 1;
@@ -72,8 +71,7 @@ int game_update(game_t* game, int current_time, int *sleep) {
   if (game->physics_frame <= correct_physics_frame) {
     done = player_process_input(myself, &game->input, 1000 / PHY_FRAME_LIMIT);
     for (i = 0; i < MAX_PLAYERS; i++) {
-      local = (i == game->my_id);
-      player_update(&game->players[i], &game->objects, local, 1000 / PHY_FRAME_LIMIT);
+      player_update(&game->players[i], &game->objects, 1000 / PHY_FRAME_LIMIT);
     }
     object_update(&game->objects, &game->map, 1000 / PHY_FRAME_LIMIT);
     game->physics_frame++;

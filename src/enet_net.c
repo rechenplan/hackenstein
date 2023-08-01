@@ -77,7 +77,7 @@ void net_update(net_t net, player_t players[MAX_PLAYERS], map_t* map, int my_id,
 
   /* send our data */
   ptr = player_packet;
-  *((uint8_t*) ptr) = players[my_id].id; ptr++;
+  *((uint8_t*) ptr) = my_id; ptr++;
 
   *((uint16_t*) ptr) = players[my_id].object->physics.rotation * 65535 / TAU; ptr += 2;
   *((uint16_t*) ptr) = players[my_id].object->physics.position.x * 65535 / map->width; ptr += 2;
