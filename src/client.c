@@ -64,7 +64,7 @@ int client_update(client_t* client, int current_time, int *sleep) {
       net_update(client->net, client->players, &client->map, client->my_id, &client->game, current_time);
     }
     for (i = 0; i < MAX_PLAYERS; i++) {
-      game_player_update(&client->game, &client->players[i]);
+      game_player_update(&client->game, &client->players[i], 1000 / NET_FRAME_LIMIT);
     }
     client->net_frame++;
     frame_computed = 1;

@@ -25,7 +25,7 @@ int WinMain(HINSTANCE instance, HINSTANCE prev_instance, LPSTR args, int show) {
     }
     frame++;
     if (frame == FPS_COUNTER_RESO) {
-      printf("%f fps\n", client.gfx_frame * 1000.0 / (current_time - start_time));
+      /*printf("%f fps\n", client.gfx_frame * 1000.0 / (current_time - start_time));*/
       frame = 0;
     }
   }
