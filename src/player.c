@@ -10,11 +10,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-void player_share(player_t* player, int idx, uint16_t value) {
-  player->share_flag |= (1 << idx);
-  player->share[idx] = value;
-}
-
 #define SQUARED(x) ((x)*(x))
 
 void player_net_interpolate(player_t* player, int elapsed_time) {

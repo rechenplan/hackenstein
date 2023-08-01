@@ -49,7 +49,7 @@ int game_update(game_t* game, int current_time, int *sleep) {
   player_t* spec_player;
 
   myself = &game->players[game->my_id];
-  spec_player = &game->players[myself->spec];
+  spec_player = myself;
   frame_computed = 0;
   done = 0;
 

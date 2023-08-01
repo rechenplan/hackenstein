@@ -6,8 +6,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+static void mod_share(player_t* player, int idx, uint16_t value) {
+  player->share_flag |= (1 << idx);
+  player->share[idx] = value;
+}
+
 static void mod_harm(player_t* player, object_t* object) {
-    player_share(player, SHARE_HEALTH, player->share[SHARE_HEALTH] - object->bullet.harm);
+    mod_share(player, SHARE_HEALTH, player->share[SHARE_HEALTH] - object->bullet.harm);
 }
 
 static void mod_shoot_check(player_t* player, object_bank_t* objects) {
@@ -56,7 +61,6 @@ static void mod_shoot_check(player_t* player, object_bank_t* objects) {
 static void mod_respawn(player_t* player) {
   player->share_flag = 0;
   player->timer.shot = 0;
-  player->timer.spec = 0;
   player->timer.swap = 0;
   player->object->physics.position.x = (rand() % 30) + 1.5;
   player->object->physics.position.y = (rand() % 30) + 1.5;
@@ -67,7 +71,7 @@ static void mod_respawn(player_t* player) {
   player->object->physics.velocity.z = 0;
   player->object->physics.friction = PLAYER_FRICTION;
   player->object->physics.bouncy = PLAYER_BOUNCY;
-  player_share(player, SHARE_HEALTH, 100);
+  mod_share(player, SHARE_HEALTH, 100);
 }
 
 void mod_player_init(player_t* player, object_bank_t* objects) {
@@ -100,6 +104,7 @@ void mod_player_update(player_t* player, object_bank_t* objects) {
   }
 }
 
+/* TODO: change this to trigger on key down only. right now it triggers every physics frame. */
 void mod_player_process_input(player_t* player, input_t* input, int elapsed_time) {
   if (input_is_pressed(input, INPUT_CHANGE_GUN)) {
     if (player->timer.swap <= 0) {
@@ -108,16 +113,9 @@ void mod_player_process_input(player_t* player, input_t* input, int elapsed_time
     }
   }
 
-  if (input_is_pressed(input, INPUT_CHANGE_SPEC)) {
-    if (player->timer.spec <= 0) {
-      player->spec = (player->spec + 1) % MAX_PLAYERS;
-      player->timer.spec = 250;
-    }
-  }
-
   if (input_is_pressed(input, INPUT_SHOOT)) {
     if (player->timer.shot <= 0) {
-      player_share(player, SHARE_SHOOTING, (player->weapon << 8) | ((rand() % 255) + 1));
+      mod_share(player, SHARE_SHOOTING, (player->weapon << 8) | ((rand() % 255) + 1));
     }
   }
 
@@ -126,9 +124,6 @@ void mod_player_process_input(player_t* player, input_t* input, int elapsed_time
   }
   if (player->timer.swap > 0) {
     player->timer.swap -= elapsed_time;
-  }
-  if (player->timer.spec > 0) {
-    player->timer.spec -= elapsed_time;
   }
   return;
 }
