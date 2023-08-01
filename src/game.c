@@ -1,3 +1,4 @@
+#include "game.h"
 #include "player.h"
 #include "object.h"
 #include "weapon.h"
@@ -70,7 +71,7 @@ static void game_shoot_check(player_t* player, object_bank_t* objects) {
       projectile->physics.position.x += cos(projectile->physics.rotation) * (projectile->collision_radius + 0.1);
       projectile->physics.position.y += sin(projectile->physics.rotation) * (projectile->collision_radius + 0.1);
     }
-    player->timer.shot = weapon.repeat_rate;
+    player->timer.shot = 5;
     player->share[SHARE_SHOOTING] = 0;
   }
 }
@@ -105,6 +106,16 @@ void game_player_init(player_t* player, object_bank_t* objects) {
   game_respawn(player);
 }
 
+void game_map_load(map_t* map) {
+  int i, j;
+  for (j = 1; j < map->height; j++) {
+    for (i = 1; i < map->width; i++) {
+      map_set_cell(map, i, j, 0);
+    }
+  }
+  map_set_cell(map, 7, 7, 1);
+}
+
 void game_player_cleanup(player_t* player) {
 }
 
@@ -120,28 +131,34 @@ void game_player_update(player_t* player, object_bank_t* objects) {
     game_spawn_pickup(player->object->physics.position, objects);
     game_respawn(player);
   }
+
+  if (player->timer.shot > 0) {
+    player->timer.shot--;
+  }
+
+  if (player->timer.swap > 0) {
+    player->timer.swap--;
+  }
 }
 
-/* TODO: change this to trigger on key down only. right now it triggers every physics frame. */
-void game_player_process_input(player_t* player, input_t* input, int elapsed_time) {
-  if (input_is_pressed(input, INPUT_CHANGE_GUN)) {
+
+void game_key_up(player_t* player, int key) {
+  return;
+}
+
+void game_key_down(player_t* player, int key) {
+  if (key == 'o') {
     if (player->timer.swap <= 0) {
       player->weapon = (player->weapon + 1) % MAX_WEAPON;
       player->timer.swap = 250;
     }
   }
 
-  if (input_is_pressed(input, INPUT_SHOOT)) {
+  if (key == ' ') {
     if (player->timer.shot <= 0) {
       game_share(player, SHARE_SHOOTING, (player->weapon << 8) | ((rand() % 255) + 1));
     }
   }
 
-  if (player->timer.shot > 0) {
-    player->timer.shot -= elapsed_time;
-  }
-  if (player->timer.swap > 0) {
-    player->timer.swap -= elapsed_time;
-  }
   return;
 }

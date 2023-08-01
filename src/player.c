@@ -60,7 +60,7 @@ void player_init(player_t* player, object_bank_t* objects, int local) {
   /* player */
   memset(player, 0, sizeof(player_t));
   player->local = local;
-  game_player_init(player);
+  game_player_init(player, objects);
 }
 
 void player_cleanup(player_t* player) {
@@ -69,11 +69,14 @@ void player_cleanup(player_t* player) {
 
 int player_process_input(player_t* player, input_t* input, int elapsed_time) {
   double move_speed, rot_speed;
+  char key_down[INPUT_KEY_SIZE];
+  char key_up[INPUT_KEY_SIZE];
+  int i;
 
   move_speed = PLAYER_MOVE_SPEED * elapsed_time / 1000.0;
   rot_speed = PLAYER_ROT_SPEED * elapsed_time / 1000.0;
 
-  input_update(input);
+  input_update(input, key_down, key_up);
 
   if (input_is_pressed(input, INPUT_FORWARD)) {
     player->object->physics.velocity.x += cos(player->object->physics.rotation) * move_speed;
@@ -103,7 +106,17 @@ int player_process_input(player_t* player, input_t* input, int elapsed_time) {
     player->object->physics.rotation -= rot_speed;
   }
 
-  game_player_process_input(player, input, elapsed_time);
+  for (i = 0; i < INPUT_KEY_SIZE; i++) {
+    if (key_down[i]) {
+      game_key_down(player, i);
+    }
+  }
+
+  for (i = 0; i < INPUT_KEY_SIZE; i++) {
+    if (key_up[i]) {
+      game_key_up(player, i);
+    }
+  }
 
   return input_is_pressed(input, INPUT_EXIT);
 }

@@ -15,7 +15,7 @@
 #include "game.h"
 
 void client_init(client_t* client, char* host, int port, int my_id, int start_time) {
-  int i, j;
+  int i;
 
   client->start_time = start_time;
   client->last_time = start_time;
@@ -26,12 +26,7 @@ void client_init(client_t* client, char* host, int port, int my_id, int start_ti
   client->render = render_init();
   client->net = net_init(host, port);
   map_init(&client->map, 32, 32, 1);
-  for (j = 1; j < client->map.height; j++) {
-    for (i = 1; i < client->map.width; i++) {
-      map_set_cell(&client->map, i, j, 0);
-    }
-  }
-  map_set_cell(&client->map, 7, 7, 1);
+  game_map_load(&client->map);
   input_init(&client->input);
   object_init(&client->objects, MAX_SPRITES);
   for (i = 0; i < MAX_PLAYERS; i++) {

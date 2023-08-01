@@ -5,15 +5,23 @@ void input_init(input_t* input) {
   input->state = 0;
 }
 
-void input_update(input_t* input) {
+void input_update(input_t* input, char* key_down, char* key_up) {
   SDL_Event event;
+  int key;
+
+  memset(key_down, 0, INPUT_KEY_SIZE);
+  memset(key_up, 0, INPUT_KEY_SIZE);
 
   while (SDL_PollEvent(&event)) {
     if (event.type == SDL_QUIT) {
       input->state |= (1 << INPUT_EXIT);
     }
     if (event.type == SDL_KEYDOWN) {
-      switch (event.key.keysym.sym) {
+      key = event.key.keysym.sym;
+      if (key >= 0 && key < INPUT_KEY_SIZE) {
+        key_down[key] = 1;
+      }
+      switch (key) {
         case SDLK_w:
           input->state |= (1 << INPUT_FORWARD);
           break;
@@ -32,21 +40,16 @@ void input_update(input_t* input) {
         case SDLK_SEMICOLON:
           input->state |= (1 << INPUT_ROTATE_RIGHT);
           break;
-        case SDLK_SPACE:
-          input->state |= (1 << INPUT_SHOOT);
-          break;
         case SDLK_ESCAPE:
           input->state |= (1 << INPUT_EXIT);
-          break;
-        case SDLK_o:
-          input->state |= (1 << INPUT_CHANGE_GUN);
-          break;
-        case SDLK_TAB:
-          input->state |= (1 << INPUT_CHANGE_SPEC);
           break;
       }
     }
     if (event.type == SDL_KEYUP) {
+      key = event.key.keysym.sym;
+      if (key >= 0 && key < INPUT_KEY_SIZE) {
+        key_up[key] = 1;
+      }
       switch (event.key.keysym.sym) {
         case SDLK_w:
           input->state &= ~(1 << INPUT_FORWARD);
@@ -66,17 +69,8 @@ void input_update(input_t* input) {
         case SDLK_SEMICOLON:
           input->state &= ~(1 << INPUT_ROTATE_RIGHT);
           break;
-        case SDLK_SPACE:
-          input->state &= ~(1 << INPUT_SHOOT);
-          break;
         case SDLK_ESCAPE:
           input->state &= ~(1 << INPUT_EXIT);
-          break;
-        case SDLK_o:
-          input->state &= ~(1 << INPUT_CHANGE_GUN);
-          break;
-        case SDLK_TAB:
-          input->state &= ~(1 << INPUT_CHANGE_SPEC);
           break;
       }
     }
