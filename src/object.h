@@ -21,7 +21,7 @@ typedef struct _object_t {
 
   /* general object data */
   int                 active;
-  int                 owner;
+  struct _player_t*   owner;
   physics_t           physics;
   double              height;
   double              width;

@@ -82,7 +82,7 @@ void player_init(player_t* player, object_bank_t* objects, int id) {
   player->object = object_create(objects);
 
   player->object->active = 1;
-  player->object->owner = player->id;
+  player->object->owner = player;
   player->object->height = 0.8;
   player->object->width = 0.5;
   player->object->color = GRAYSCALE(64);
@@ -193,7 +193,7 @@ void player_shoot(player_t* player, object_bank_t* objects) {
       projectile = object_create(objects);
 
       memcpy(projectile, &weapon.projectile, sizeof(object_t));
-      projectile->owner = player->id;
+      projectile->owner = player;
 
       projectile->physics.position.x = player->object->physics.position.x;
       projectile->physics.position.y = player->object->physics.position.y;
