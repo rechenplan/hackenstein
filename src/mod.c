@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+/* should be made available to scripts */
+
 static void mod_share(player_t* player, int idx, uint16_t value) {
   player->share_flag |= (1 << idx);
   player->share[idx] = value;
