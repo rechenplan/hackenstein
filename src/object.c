@@ -46,7 +46,7 @@ static int object_dist_comp(const void *a, const void *b) {
 
   i = *((int*) a);
   j = *((int*) b);
-  return SORT_BANK->distance[i] > SORT_BANK->distance[j];
+  return SORT_BANK->distance[i] < SORT_BANK->distance[j];
 }
 
 void object_sort_by_dist(object_bank_t* objects, vec3_t pos) {
