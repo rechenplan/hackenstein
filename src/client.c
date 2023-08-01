@@ -12,7 +12,7 @@
 #include "map.h"
 #include "hud.h"
 #include "net.h"
-#include "mod.h"
+#include "game.h"
 
 void client_init(client_t* client, char* host, int port, int my_id, int start_time) {
   int i, j;
@@ -60,7 +60,7 @@ int client_update(client_t* client, int current_time, int *sleep) {
       net_update(client->net, client->players, &client->map, client->my_id, current_time);
     }
     for (i = 0; i < MAX_PLAYERS; i++) {
-      mod_player_update(&client->players[i], &client->objects);
+      game_player_update(&client->players[i], &client->objects);
     }
     client->net_frame++;
     frame_computed = 1;

@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-static void mod_spawn_pickup(vec3_t pos, object_bank_t* objects) {
+static void game_spawn_pickup(vec3_t pos, object_bank_t* objects) {
   object_t* pickup;
   pickup = object_create(objects);
   pickup->physics.position = pos;
@@ -23,16 +23,16 @@ static void mod_spawn_pickup(vec3_t pos, object_bank_t* objects) {
   pickup->type = OBJECT_TYPE_PICKUP;
 }
 
-static void mod_share(player_t* player, int idx, uint16_t value) {
+static void game_share(player_t* player, int idx, uint16_t value) {
   player->share_flag |= (1 << idx);
   player->share[idx] = value;
 }
 
-static void mod_harm(player_t* player, object_t* object) {
-    mod_share(player, SHARE_HEALTH, player->share[SHARE_HEALTH] - object->harm);
+static void game_harm(player_t* player, object_t* object) {
+    game_share(player, SHARE_HEALTH, player->share[SHARE_HEALTH] - object->harm);
 }
 
-static void mod_shoot_check(player_t* player, object_bank_t* objects) {
+static void game_shoot_check(player_t* player, object_bank_t* objects) {
   int i;
   double x, y;
   object_t* projectile;
@@ -75,7 +75,7 @@ static void mod_shoot_check(player_t* player, object_bank_t* objects) {
   }
 }
 
-static void mod_respawn(player_t* player) {
+static void game_respawn(player_t* player) {
   player->share_flag = 0;
   player->timer.shot = 0;
   player->timer.swap = 0;
@@ -88,10 +88,10 @@ static void mod_respawn(player_t* player) {
   player->object->physics.velocity.z = 0;
   player->object->physics.friction = PLAYER_FRICTION;
   player->object->physics.bouncy = PLAYER_BOUNCY;
-  mod_share(player, SHARE_HEALTH, 100);
+  game_share(player, SHARE_HEALTH, 100);
 }
 
-void mod_player_init(player_t* player, object_bank_t* objects) {
+void game_player_init(player_t* player, object_bank_t* objects) {
   player->weapon = WEAPON_SHOTGUN;
   player->object = object_create(objects);
   player->object->active = 1;
@@ -102,28 +102,28 @@ void mod_player_init(player_t* player, object_bank_t* objects) {
   player->object->collision_radius = 0.5;
   player->object->type = OBJECT_TYPE_PLAYER;
   player->object->bounces_left = 0;
-  mod_respawn(player);
+  game_respawn(player);
 }
 
-void mod_player_cleanup(player_t* player) {
+void game_player_cleanup(player_t* player) {
 }
 
-void mod_player_collide_with_object(player_t* player, object_t* object) {
+void game_player_collide_with_object(player_t* player, object_t* object) {
   if (player->local) {
-    mod_harm(player, object);
+    game_harm(player, object);
   }
 }
 
-void mod_player_update(player_t* player, object_bank_t* objects) {
-  mod_shoot_check(player, objects);
+void game_player_update(player_t* player, object_bank_t* objects) {
+  game_shoot_check(player, objects);
   if (player->share[SHARE_HEALTH] <= 0) {
-    mod_spawn_pickup(player->object->physics.position, objects);
-    mod_respawn(player);
+    game_spawn_pickup(player->object->physics.position, objects);
+    game_respawn(player);
   }
 }
 
 /* TODO: change this to trigger on key down only. right now it triggers every physics frame. */
-void mod_player_process_input(player_t* player, input_t* input, int elapsed_time) {
+void game_player_process_input(player_t* player, input_t* input, int elapsed_time) {
   if (input_is_pressed(input, INPUT_CHANGE_GUN)) {
     if (player->timer.swap <= 0) {
       player->weapon = (player->weapon + 1) % MAX_WEAPON;
@@ -133,7 +133,7 @@ void mod_player_process_input(player_t* player, input_t* input, int elapsed_time
 
   if (input_is_pressed(input, INPUT_SHOOT)) {
     if (player->timer.shot <= 0) {
-      mod_share(player, SHARE_SHOOTING, (player->weapon << 8) | ((rand() % 255) + 1));
+      game_share(player, SHARE_SHOOTING, (player->weapon << 8) | ((rand() % 255) + 1));
     }
   }
 

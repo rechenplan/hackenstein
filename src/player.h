@@ -39,7 +39,7 @@ typedef struct _player_t {
   player_remote_t remote;
   uint8_t         local;
 
-  /* mod stuff */
+  /* game stuff */
   player_timers_t timer;
   uint8_t         weapon;
   uint8_t         share_flag;

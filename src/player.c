@@ -5,7 +5,7 @@
 #include "render.h"
 #include "physics.h"
 #include "global.h"
-#include "mod.h"
+#include "game.h"
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -49,7 +49,7 @@ void player_update(player_t* player, object_bank_t* objects, int elapsed_time) {
     }
     distance = SQUARED(object->physics.position.x - player->object->physics.position.x) + SQUARED(object->physics.position.y - player->object->physics.position.y);
     if (distance < object->collision_radius * object->collision_radius) {
-      mod_player_collide_with_object(player, object);
+      game_player_collide_with_object(player, object);
       object_collide_with_player(object);
     }
   }
@@ -60,11 +60,11 @@ void player_init(player_t* player, object_bank_t* objects, int local) {
   /* player */
   memset(player, 0, sizeof(player_t));
   player->local = local;
-  mod_player_init(player);
+  game_player_init(player);
 }
 
 void player_cleanup(player_t* player) {
-  mod_player_cleanup(player);
+  game_player_cleanup(player);
 }
 
 int player_process_input(player_t* player, input_t* input, int elapsed_time) {
@@ -103,7 +103,7 @@ int player_process_input(player_t* player, input_t* input, int elapsed_time) {
     player->object->physics.rotation -= rot_speed;
   }
 
-  mod_player_process_input(player, input, elapsed_time);
+  game_player_process_input(player, input, elapsed_time);
 
   return input_is_pressed(input, INPUT_EXIT);
 }

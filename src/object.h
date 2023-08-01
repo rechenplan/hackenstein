@@ -35,7 +35,7 @@ typedef struct _object_t {
   /* type specific data */
   int                 type;
 
-  /* move me to mod */
+  /* move me to game */
   int                 harm;
 
 } object_t;
