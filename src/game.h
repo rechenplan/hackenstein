@@ -5,6 +5,12 @@
 #include "object.h"
 #include "map.h"
 
+typedef struct _game_data_t {
+  uint8_t  weapon;
+  int16_t  shot_timer;
+  int16_t  swap_timer;
+} game_data_t;
+
 void game_map_load(map_t* map);
 
 /* called when player and object collide */

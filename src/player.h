@@ -28,20 +28,13 @@ typedef struct _player_remote_t {
   int      packet_time;
 } player_remote_t;
 
-typedef struct _player_timers_t {
-  int16_t  shot;
-  int16_t  swap;
-  int16_t  spec;
-} player_timers_t;
-
 typedef struct _player_t {
   object_t*       object;
   player_remote_t remote;
   uint8_t         local;
+  void*           data;
 
   /* game stuff */
-  player_timers_t timer;
-  uint8_t         weapon;
   uint8_t         share_flag;
   int16_t         share[8];
 } player_t;

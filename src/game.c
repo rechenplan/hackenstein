@@ -41,6 +41,7 @@ static void game_shoot_check(player_t* player, object_bank_t* objects) {
   double random_double;
   int prng = 125;
   int weapon_id;
+  game_data_t* game_data = (game_data_t*) player->data;
 
   if (player->share[SHARE_SHOOTING]) {
     weapon_id = player->share[SHARE_SHOOTING] >> 8;
@@ -71,15 +72,16 @@ static void game_shoot_check(player_t* player, object_bank_t* objects) {
       projectile->physics.position.x += cos(projectile->physics.rotation) * (projectile->collision_radius + 0.1);
       projectile->physics.position.y += sin(projectile->physics.rotation) * (projectile->collision_radius + 0.1);
     }
-    player->timer.shot = 5;
+    game_data->shot_timer = 5;
     player->share[SHARE_SHOOTING] = 0;
   }
 }
 
 static void game_respawn(player_t* player) {
+  game_data_t* game_data = (game_data_t*) player->data;
   player->share_flag = 0;
-  player->timer.shot = 0;
-  player->timer.swap = 0;
+  game_data->shot_timer = 0;
+  game_data->swap_timer = 0;
   player->object->physics.position.x = (rand() % 30) + 1.5;
   player->object->physics.position.y = (rand() % 30) + 1.5;
   player->object->physics.position.z = 0;
@@ -93,7 +95,11 @@ static void game_respawn(player_t* player) {
 }
 
 void game_player_init(player_t* player, object_bank_t* objects) {
-  player->weapon = WEAPON_SHOTGUN;
+  game_data_t* game_data;
+
+  player->data = malloc(sizeof(game_data_t));
+  game_data = (game_data_t*) player->data;
+  game_data->weapon = WEAPON_SHOTGUN;
   player->object = object_create(objects);
   player->object->active = 1;
   player->object->owner = player;
@@ -117,6 +123,7 @@ void game_map_load(map_t* map) {
 }
 
 void game_player_cleanup(player_t* player) {
+  free(player->data);
 }
 
 void game_player_collide_with_object(player_t* player, object_t* object) {
@@ -126,18 +133,19 @@ void game_player_collide_with_object(player_t* player, object_t* object) {
 }
 
 void game_player_update(player_t* player, object_bank_t* objects) {
+  game_data_t* game_data = (game_data_t*) player->data;
   game_shoot_check(player, objects);
   if (player->share[SHARE_HEALTH] <= 0) {
     game_spawn_pickup(player->object->physics.position, objects);
     game_respawn(player);
   }
 
-  if (player->timer.shot > 0) {
-    player->timer.shot--;
+  if (game_data->shot_timer > 0) {
+    game_data->shot_timer--;
   }
 
-  if (player->timer.swap > 0) {
-    player->timer.swap--;
+  if (game_data->swap_timer > 0) {
+    game_data->swap_timer--;
   }
 }
 
@@ -147,16 +155,18 @@ void game_key_up(player_t* player, int key) {
 }
 
 void game_key_down(player_t* player, int key) {
+  game_data_t* game_data = (game_data_t*) player->data;
+
   if (key == 'o') {
-    if (player->timer.swap <= 0) {
-      player->weapon = (player->weapon + 1) % MAX_WEAPON;
-      player->timer.swap = 250;
+    if (game_data->swap_timer <= 0) {
+      game_data->weapon = (game_data->weapon + 1) % MAX_WEAPON;
+      game_data->swap_timer = 250;
     }
   }
 
   if (key == ' ') {
-    if (player->timer.shot <= 0) {
-      game_share(player, SHARE_SHOOTING, (player->weapon << 8) | ((rand() % 255) + 1));
+    if (game_data->shot_timer <= 0) {
+      game_share(player, SHARE_SHOOTING, (game_data->weapon << 8) | ((rand() % 255) + 1));
     }
   }
 
