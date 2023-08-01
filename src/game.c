@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "sprite.h"
-#include "phy.h"
+#include "object.h"
+#include "physics.h"
 #include "player.h"
 #include "input.h"
 #include "caster.h"
@@ -19,7 +19,7 @@ void game_init(game_t* game, char* host, int port, int my_id, int start_time) {
   game->start_time = start_time;
   game->last_time = start_time;
   game->net_frame = 0;
-  game->phy_frame = 0;
+  game->physics_frame = 0;
   game->gfx_frame = 0;
   game->my_id = my_id;
   game->render = render_init();
@@ -32,9 +32,9 @@ void game_init(game_t* game, char* host, int port, int my_id, int start_time) {
   }
   map_set_cell(&game->map, 7, 7, 1);
   input_init(&game->input);
-  sprite_init(&game->sprites, MAX_SPRITES);
+  object_init(&game->objects, MAX_SPRITES);
   for (i = 0; i < MAX_PLAYERS; i++) {
-    player_init(&game->players[i], &game->sprites, i);
+    player_init(&game->players[i], &game->objects, i);
   }
   lfb_init(&game->lfb, LFB_WIDTH, LFB_HEIGHT);
   caster_init(&game->caster, &game->lfb);
@@ -43,7 +43,7 @@ void game_init(game_t* game, char* host, int port, int my_id, int start_time) {
 }
 
 int game_update(game_t* game, int current_time, int *sleep) {
-  int done, i, correct_net_frame, correct_phy_frame, correct_gfx_frame;
+  int done, i, correct_net_frame, correct_physics_frame, correct_gfx_frame;
   int local;
   int frame_computed;
   player_t* myself;
@@ -61,27 +61,27 @@ int game_update(game_t* game, int current_time, int *sleep) {
       net_update(game->net, game->players, &game->map, game->my_id, current_time);
     }
     for (i = 0; i < MAX_PLAYERS; i++) {
-      player_process_share(&game->players[i], &game->sprites);
+      player_process_share(&game->players[i], &game->objects);
     }
     game->net_frame++;
     frame_computed = 1;
   }
   /* physics frame */
-  correct_phy_frame = (current_time - game->start_time) * PHY_FRAME_LIMIT / 1000;
-  if (game->phy_frame <= correct_phy_frame) {
+  correct_physics_frame = (current_time - game->start_time) * PHY_FRAME_LIMIT / 1000;
+  if (game->physics_frame <= correct_physics_frame) {
     done = player_process_input(myself, &game->input, 1000 / PHY_FRAME_LIMIT);
     for (i = 0; i < MAX_PLAYERS; i++) {
       local = (i == game->my_id);
-      player_update(&game->players[i], &game->sprites, &game->map, 1000 / PHY_FRAME_LIMIT, local);
+      player_update(&game->players[i], &game->objects, &game->map, 1000 / PHY_FRAME_LIMIT, local);
     }
-    sprite_update(&game->sprites, &game->map, 1000 / PHY_FRAME_LIMIT);
-    game->phy_frame++;
+    object_update(&game->objects, &game->map, 1000 / PHY_FRAME_LIMIT);
+    game->physics_frame++;
     frame_computed = 1;
   }
   /* graphics frame */
   correct_gfx_frame = (current_time - game->start_time) * GFX_FRAME_LIMIT / 1000;
   if (game->gfx_frame <= correct_gfx_frame) {
-    caster_update(&game->caster, &game->map, &game->sprites, spec_player);
+    caster_update(&game->caster, &game->map, &game->objects, spec_player);
     hud_update(&game->hud, spec_player->share[SHARE_HEALTH], &game->lfb);
     render_update(game->render, &game->lfb);
     game->gfx_frame++;
@@ -98,7 +98,7 @@ void game_cleanup(game_t* game) {
   render_cleanup(game->render);
   map_cleanup(&game->map);
   input_cleanup(&game->input);
-  sprite_cleanup(&game->sprites);
+  object_cleanup(&game->objects);
   for (i = 0; i < MAX_PLAYERS; i++) {
     player_cleanup(&game->players[i]);
   }

@@ -1,10 +1,10 @@
 #ifndef WEAPON_H
 #define WEAPON_H
 
-#include "sprite.h"
+#include "object.h"
 
 typedef struct _weapon_t {
-  sprite_t proj;
+  object_t proj;
   double proj_speed;
   double spray;
   int repeat_rate;

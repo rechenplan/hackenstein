@@ -4,8 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "sprite.h"
-#include "phy.h"
+#include "object.h"
+#include "physics.h"
 #include "player.h"
 #include "input.h"
 #include "caster.h"
@@ -24,7 +24,7 @@ typedef struct _game_t {
   player_t players[MAX_PLAYERS];
   render_t render;
   map_t map;
-  sprite_bank_t sprites;
+  object_bank_t objects;
   input_t input;
   lfb_t lfb;
   caster_t caster;
@@ -34,7 +34,7 @@ typedef struct _game_t {
   int start_time;
   int last_time;
   int net_frame;
-  int phy_frame;
+  int physics_frame;
   int gfx_frame;
 } game_t;
 

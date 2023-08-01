@@ -1,8 +1,8 @@
 #ifndef NET_H
 #define NET_H
 
-#include "sprite.h"
-#include "phy.h"
+#include "object.h"
+#include "physics.h"
 #include "player.h"
 #include "input.h"
 #include "caster.h"

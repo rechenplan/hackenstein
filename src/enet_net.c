@@ -2,7 +2,7 @@
 #include <math.h>
 #include "net.h"
 #include "game.h"
-#include "sprite.h"
+#include "object.h"
 #include "player.h"
 #include "map.h"
 
@@ -53,8 +53,8 @@ void net_update(net_t net, player_t players[MAX_PLAYERS], map_t* map, int my_id,
       if (id != my_id) {
         players[id].remote.packet_time = current_time;
 
-        players[id].remote.last_position = players[id].physical.position;
-        players[id].remote.last_rotation = players[id].physical.rotation;
+        players[id].remote.last_position = players[id].physics.position;
+        players[id].remote.last_rotation = players[id].physics.rotation;
         players[id].remote.interp = 0;
 
         players[id].remote.current_rotation = *((uint16_t*) ptr) * TAU / 65535; ptr += 2;
@@ -79,10 +79,10 @@ void net_update(net_t net, player_t players[MAX_PLAYERS], map_t* map, int my_id,
   ptr = player_packet;
   *((uint8_t*) ptr) = players[my_id].id; ptr++;
 
-  *((uint16_t*) ptr) = players[my_id].physical.rotation * 65535 / TAU; ptr += 2;
-  *((uint16_t*) ptr) = players[my_id].physical.position.x * 65535 / map->width; ptr += 2;
-  *((uint16_t*) ptr) = players[my_id].physical.position.y * 65535 / map->height; ptr += 2;
-  *((uint8_t*) ptr) = players[my_id].physical.position.z * 255; ptr++;
+  *((uint16_t*) ptr) = players[my_id].physics.rotation * 65535 / TAU; ptr += 2;
+  *((uint16_t*) ptr) = players[my_id].physics.position.x * 65535 / map->width; ptr += 2;
+  *((uint16_t*) ptr) = players[my_id].physics.position.y * 65535 / map->height; ptr += 2;
+  *((uint8_t*) ptr) = players[my_id].physics.position.z * 255; ptr++;
   *((uint8_t*) ptr) = players[my_id].share_flag; ptr++;
 
   i = 0;

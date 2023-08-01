@@ -3,8 +3,8 @@
 
 #include "map.h"
 #include "lfb.h"
-#include "phy.h"
-#include "sprite.h"
+#include "physics.h"
+#include "object.h"
 #include "player.h"
 
 typedef struct _caster_t {
@@ -17,8 +17,8 @@ typedef struct _caster_t {
 
 void caster_init(caster_t* cast, lfb_t* lfb);
 void caster_cleanup(caster_t* caster);
-void caster_update(caster_t* caster, map_t* map, sprite_bank_t* sprites, player_t* player);
+void caster_update(caster_t* caster, map_t* map, object_bank_t* objects, player_t* player);
 void caster_draw_map(caster_t* caster, map_t* map, player_t* player);
-void caster_draw_sprites(caster_t* caster, sprite_bank_t* sprites, player_t* player);
+void caster_draw_objects(caster_t* caster, object_bank_t* objects, player_t* player);
 
 #endif

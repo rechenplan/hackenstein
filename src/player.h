@@ -1,12 +1,12 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include "sprite.h"
+#include "object.h"
 #include "render.h"
 #include "lfb.h"
 #include "input.h"
 #include "map.h"
-#include "phy.h"
+#include "physics.h"
 #include "global.h"
 
 #define DIRTY_FLAG_POSITION (1 << 0)
@@ -34,27 +34,27 @@ typedef struct _player_timers_t {
 } player_timers_t;
 
 typedef struct _player_t {
-  phy_t           physical;
+  physics_t       physics;
+  object_t*       object;
   player_remote_t remote;
   player_timers_t timer;
   uint8_t         id;
-  uint16_t        sprite;
   uint8_t         spec;
   uint8_t         weapon;
   uint8_t         share_flag;
   int16_t         share[8];
 } player_t;
 
-void player_init(player_t* player, sprite_bank_t* sprites, int id);
+void player_init(player_t* player, object_bank_t* objects, int id);
 void player_respawn(player_t* player);
-void player_update(player_t* player, sprite_bank_t* sprites, map_t* map, int elapsed_time, int local);
+void player_update(player_t* player, object_bank_t* objects, map_t* map, int elapsed_time, int local);
 int  player_process_input(player_t* player, input_t* input, int elapsed_time);
 void player_cleanup(player_t* player);
 
 void player_harm(player_t* player, float damage);
 
 void player_share(player_t* player, int idx, uint16_t value);
-void player_process_share(player_t* player, sprite_bank_t* sprites);
-void player_shoot(player_t* player, sprite_bank_t* sprites);
+void player_process_share(player_t* player, object_bank_t* objects);
+void player_shoot(player_t* player, object_bank_t* objects);
 
 #endif

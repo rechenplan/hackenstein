@@ -1,7 +1,7 @@
 #include "caster.h"
 #include "map.h"
 #include "lfb.h"
-#include "sprite.h"
+#include "object.h"
 #include "global.h"
 #include <math.h>
 #include <stdlib.h>
@@ -24,9 +24,9 @@ void caster_cleanup(caster_t* caster) {
   free(caster->line_end);
 }
 
-void caster_update(caster_t* caster, map_t* map, sprite_bank_t* sprites, player_t* player) {
+void caster_update(caster_t* caster, map_t* map, object_bank_t* objects, player_t* player) {
     caster_draw_map(caster, map, player);
-    caster_draw_sprites(caster, sprites, player);
+    caster_draw_objects(caster, objects, player);
 }
 
 void caster_draw_map(caster_t* caster, map_t* map, player_t* player) {
@@ -41,11 +41,11 @@ void caster_draw_map(caster_t* caster, map_t* map, player_t* player) {
   vec3_t pos;
   vec2_t dir, plane;
 
-  pos = player->physical.position;
-  dir.x = cos(player->physical.rotation);
-  dir.y = sin(player->physical.rotation);
-  plane.x = (2.0 / 3.0) * cos(player->physical.rotation + TAU / 4);
-  plane.y = (2.0 / 3.0) * sin(player->physical.rotation + TAU / 4);
+  pos = player->physics.position;
+  dir.x = cos(player->physics.rotation);
+  dir.y = sin(player->physics.rotation);
+  plane.x = (2.0 / 3.0) * cos(player->physics.rotation + TAU / 4);
+  plane.y = (2.0 / 3.0) * sin(player->physics.rotation + TAU / 4);
   lfb = caster->lfb;
   buffer = lfb_get_buffer(lfb);
   for (x = 0; x < lfb->width; x++) {
@@ -117,43 +117,42 @@ void caster_draw_map(caster_t* caster, map_t* map, player_t* player) {
   }
 }
 
-void caster_draw_sprites(caster_t* caster, sprite_bank_t* sprites, player_t* player) {
+void caster_draw_objects(caster_t* caster, object_bank_t* objects, player_t* player) {
   int i, x, y;
   lfb_t* lfb;
   pixel_t* buffer;
-  sprite_t* sprite;
-  double sprite_x, sprite_y, inv_det, transform_x, transform_y, sprite_size, screen_x, boom;
-  int draw_start_x, draw_end_x, draw_start_y, draw_end_y, my_sprite;
+  object_t* object;
+  double object_x, object_y, inv_det, transform_x, transform_y, object_size, screen_x, boom;
+  int draw_start_x, draw_end_x, draw_start_y, draw_end_y;
   vec3_t pos;
   vec2_t dir, plane;
 
-  pos = player->physical.position;
-  dir.x = cos(player->physical.rotation);
-  dir.y = sin(player->physical.rotation);
-  plane.x = (2.0 / 3.0) * cos(player->physical.rotation + TAU / 4);
-  plane.y = (2.0 / 3.0) * sin(player->physical.rotation + TAU / 4);
-  my_sprite = player->sprite;
+  pos = player->physics.position;
+  dir.x = cos(player->physics.rotation);
+  dir.y = sin(player->physics.rotation);
+  plane.x = (2.0 / 3.0) * cos(player->physics.rotation + TAU / 4);
+  plane.y = (2.0 / 3.0) * sin(player->physics.rotation + TAU / 4);
   lfb = caster->lfb;
   buffer = lfb_get_buffer(lfb);
-  sprite_sort_by_dist(sprites, pos);
-  for (i = 0; i < sprites->size; i++) {
-    sprite = sprite_get(sprites, sprites->order[i]);
-    if (!sprite_is_used(sprite) || sprites->order[i] == my_sprite) {
+  object_sort_by_dist(objects, pos);
+  for (i = 0; i < objects->size; i++) {
+    object = &objects->bank[objects->order[i]];
+    if (!object_is_used(object) || object == player->object) {
       continue;
     }
     /* compute */
-    sprite_x = sprite->physical.position.x - pos.x;
-    sprite_y = sprite->physical.position.y - pos.y;
+    object_x = object->physics.position.x - pos.x;
+    object_y = object->physics.position.y - pos.y;
     inv_det = 1.0 / (plane.x * dir.y - dir.x * plane.y);
-    transform_x = inv_det * (dir.y * sprite_x - dir.x * sprite_y);
-    transform_y = inv_det * (plane.x * sprite_y - plane.y * sprite_x);
+    transform_x = inv_det * (dir.y * object_x - dir.x * object_y);
+    transform_y = inv_det * (plane.x * object_y - plane.y * object_x);
     screen_x = (lfb->width / 2) * (1 + transform_x / transform_y);
-    sprite_size = WALL_HEIGHT / transform_y;
-    boom = 1.0 + sprite->boom / 5.0;
-    draw_end_x = screen_x + sprite->width * sprite_size * boom / 2;
-    draw_start_x = screen_x - sprite->width * sprite_size * boom / 2;
-    draw_end_y = (lfb->height + sprite->height * sprite_size * boom) / 2 - sprite_size * (sprite->physical.position.z - 0.5);
-    draw_start_y = (lfb->height - sprite->height * sprite_size * boom) / 2 - sprite_size * (sprite->physical.position.z - 0.5);
+    object_size = WALL_HEIGHT / transform_y;
+    boom = 1.0 + object->boom / 5.0;
+    draw_end_x = screen_x + object->width * object_size * boom / 2;
+    draw_start_x = screen_x - object->width * object_size * boom / 2;
+    draw_end_y = (lfb->height + object->height * object_size * boom) / 2 - object_size * (object->physics.position.z - 0.5);
+    draw_start_y = (lfb->height - object->height * object_size * boom) / 2 - object_size * (object->physics.position.z - 0.5);
     /* clamp */
     if (draw_end_x < 0) {
       draw_end_x = 0;
@@ -183,7 +182,7 @@ void caster_draw_sprites(caster_t* caster, sprite_bank_t* sprites, player_t* pla
     for (y = draw_start_y; y < draw_end_y; y++) {
       for (x = draw_start_x; x < draw_end_x; x++) {
         if (transform_y > 0 && transform_y < caster->z_buffer[x]) {
-          buffer[x + y * lfb->width] = sprite->boom ? 0xffff0000 : sprite->color;
+          buffer[x + y * lfb->width] = object->boom ? 0xffff0000 : object->color;
         }
       }
     }
