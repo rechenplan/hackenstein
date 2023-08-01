@@ -20,4 +20,3 @@ void mod_player_init(player_t* player);
 void mod_player_cleanup(player_t* player);
 
 #endif
-

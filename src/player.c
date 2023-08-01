@@ -44,13 +44,13 @@ void player_update(player_t* player, object_bank_t* objects, int elapsed_time) {
   /* detect player / object (including other players) collisions */
   for (i = 0; i < objects->size; i++) {
     object = &objects->bank[i];
-    if (!object->active || object == player->object) {
+    if (!object_is_valid(object) || object_is_exploding(object) || object_is_respawning(object) || object == player->object) {
       continue;
     }
     distance = SQUARED(object->physics.position.x - player->object->physics.position.x) + SQUARED(object->physics.position.y - player->object->physics.position.y);
     if (distance < object->collision_radius * object->collision_radius) {
       mod_player_collide_with_object(player, object);
-      object_collide(object);
+      object_collide_with_player(object);
     }
   }
 

@@ -3,6 +3,7 @@
 
 weapon_t weapon_get(int i) {
   weapon_t weapon;
+  memset(&weapon, 0, sizeof(weapon));
   switch (i) {
     case WEAPON_ROCKET:
       weapon.spray = 4.0;
@@ -16,12 +17,12 @@ weapon_t weapon_get(int i) {
       weapon.projectile.height = 0.1;
       weapon.projectile.width = 0.1;
       weapon.projectile.color = GRAYSCALE(32);
-      weapon.projectile.bullet.harm = 10;
+      weapon.projectile.harm = 10;
       weapon.projectile.collision_radius = 2.0;
-      weapon.projectile.bullet.boom = 0;
-      weapon.projectile.bullet.max_boom = 100;
+      weapon.projectile.boom = 0;
+      weapon.projectile.max_boom = 100;
       weapon.projectile.bounces_left = 0;
-      weapon.projectile.bullet.exploding = 0;
+      weapon.projectile.exploding = 0;
       weapon.projectile.type = OBJECT_TYPE_PROJECTILE;
       break;
     case WEAPON_SMG:
@@ -35,12 +36,12 @@ weapon_t weapon_get(int i) {
       weapon.projectile.height = 0.1;
       weapon.projectile.width = 0.1;
       weapon.projectile.color = GRAYSCALE(32);
-      weapon.projectile.bullet.harm = 10;
+      weapon.projectile.harm = 10;
       weapon.projectile.collision_radius = 2.0;
-      weapon.projectile.bullet.boom = 0;
-      weapon.projectile.bullet.max_boom = 100;
+      weapon.projectile.boom = 0;
+      weapon.projectile.max_boom = 100;
       weapon.projectile.bounces_left = 0;
-      weapon.projectile.bullet.exploding = 0;
+      weapon.projectile.exploding = 0;
       weapon.projectile.type = OBJECT_TYPE_PROJECTILE;
       break;
     case WEAPON_MINE:
@@ -54,12 +55,12 @@ weapon_t weapon_get(int i) {
       weapon.projectile.height = 0.1;
       weapon.projectile.width = 0.2;
       weapon.projectile.color = GRAYSCALE(32);
-      weapon.projectile.bullet.harm = 10;
+      weapon.projectile.harm = 10;
       weapon.projectile.collision_radius = 2.0;
-      weapon.projectile.bullet.boom = 0;
-      weapon.projectile.bullet.max_boom = 100;
+      weapon.projectile.boom = 0;
+      weapon.projectile.max_boom = 100;
       weapon.projectile.bounces_left = 0;
-      weapon.projectile.bullet.exploding = 0;
+      weapon.projectile.exploding = 0;
       weapon.projectile.type = OBJECT_TYPE_PROJECTILE;
       break;
     case WEAPON_RIFLE:
@@ -73,12 +74,12 @@ weapon_t weapon_get(int i) {
       weapon.projectile.height = 0.1;
       weapon.projectile.width = 0.1;
       weapon.projectile.color = GRAYSCALE(32);
-      weapon.projectile.bullet.harm = 10;
+      weapon.projectile.harm = 10;
       weapon.projectile.collision_radius = 2.0;
-      weapon.projectile.bullet.boom = 0;
-      weapon.projectile.bullet.max_boom = 100;
+      weapon.projectile.boom = 0;
+      weapon.projectile.max_boom = 100;
       weapon.projectile.bounces_left = 0;
-      weapon.projectile.bullet.exploding = 0;
+      weapon.projectile.exploding = 0;
       weapon.projectile.type = OBJECT_TYPE_PROJECTILE;
       break;
     case WEAPON_SHOTGUN:
@@ -92,12 +93,12 @@ weapon_t weapon_get(int i) {
       weapon.projectile.height = 0.1;
       weapon.projectile.width = 0.1;
       weapon.projectile.color = GRAYSCALE(32);
-      weapon.projectile.bullet.harm = 5;
+      weapon.projectile.harm = 5;
       weapon.projectile.collision_radius = 0.5;
-      weapon.projectile.bullet.boom = 0;
-      weapon.projectile.bullet.max_boom = 5;
+      weapon.projectile.boom = 0;
+      weapon.projectile.max_boom = 5;
       weapon.projectile.bounces_left = 1;
-      weapon.projectile.bullet.exploding = 0;
+      weapon.projectile.exploding = 0;
       weapon.projectile.type = OBJECT_TYPE_PROJECTILE;
       break;
   }

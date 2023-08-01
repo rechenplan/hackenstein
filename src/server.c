@@ -1,8 +1,6 @@
 #include "server.h"
 
 int WinMain(HINSTANCE inst, HINSTANCE p_inst, LPSTR arg, int show) {
-  player_t players[MAX_PLAYERS];
-
   ENetAddress address;
   ENetHost* server;
   ENetEvent event;
@@ -15,7 +13,7 @@ int WinMain(HINSTANCE inst, HINSTANCE p_inst, LPSTR arg, int show) {
     printf("ok\n");
   }
   address.host = ENET_HOST_ANY;
-  address.port = 26000;
+  address.port = 26001;
   printf("creating host...");
   server = enet_host_create(&address, MAX_PLAYERS, 16, 0, 0);
   if (!server) {

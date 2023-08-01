@@ -11,7 +11,7 @@ render_t render_init() {
     SDL_WINDOWPOS_UNDEFINED,
     512,
     288,
-    0); /* SDL_WINDOW_FULLSCREEN_DESKTOP); */
+    SDL_WINDOW_FULLSCREEN_DESKTOP);
 
   return window;
 }

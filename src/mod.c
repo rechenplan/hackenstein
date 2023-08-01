@@ -6,7 +6,23 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-/* should be made available to scripts */
+static void mod_spawn_pickup(vec3_t pos, object_bank_t* objects) {
+  object_t* pickup;
+  pickup = object_create(objects);
+  pickup->physics.position = pos;
+  pickup->physics.velocity = 
+  pickup->next_respawn = 60;
+  pickup->respawn_time = -1;
+  pickup->physics.friction = 0.999;
+  pickup->physics.bouncy = 1.0;
+  pickup->height = 0.25;
+  pickup->width = 0.25;
+  pickup->color = 0xffffff00;
+  pickup->harm = -10;
+  pickup->collision_radius = 2.0;
+  pickup->boom = 0;
+  pickup->type = OBJECT_TYPE_PICKUP;
+}
 
 static void mod_share(player_t* player, int idx, uint16_t value) {
   player->share_flag |= (1 << idx);
@@ -14,7 +30,7 @@ static void mod_share(player_t* player, int idx, uint16_t value) {
 }
 
 static void mod_harm(player_t* player, object_t* object) {
-    mod_share(player, SHARE_HEALTH, player->share[SHARE_HEALTH] - object->bullet.harm);
+    mod_share(player, SHARE_HEALTH, player->share[SHARE_HEALTH] - object->harm);
 }
 
 static void mod_shoot_check(player_t* player, object_bank_t* objects) {
@@ -94,7 +110,7 @@ void mod_player_cleanup(player_t* player) {
 }
 
 void mod_player_collide_with_object(player_t* player, object_t* object) {
-  if (player->local && object->type == OBJECT_TYPE_PROJECTILE) {
+  if (player->local) {
     mod_harm(player, object);
   }
 }
@@ -102,6 +118,7 @@ void mod_player_collide_with_object(player_t* player, object_t* object) {
 void mod_player_update(player_t* player, object_bank_t* objects) {
   mod_shoot_check(player, objects);
   if (player->share[SHARE_HEALTH] <= 0) {
+    mod_spawn_pickup(player->object->physics.position, objects);
     mod_respawn(player);
   }
 }
