@@ -6,36 +6,40 @@
 #include "map.h"
 #include "physics.h"
 
-#define COLLISION_NONE (0)
-#define COLLISION_EXPLODE (1)
+#define OBJECT_TYPE_PLAYER     (0)
+#define OBJECT_TYPE_PROJECTILE (1)
+#define OBJECT_TYPE_PICKUP     (2)
 
-typedef struct _object_t {
-  int active;
-
-  int owner;
-  physics_t physics;
-  double height;
-  double width;
-  pixel_t color;
-  int bounces_left;
-  double collision_radius;
-  int is_player;
-
-  int collision_type;
+typedef struct _projectile_object_t {
   int boom;
   int max_boom;
   int exploding;
+  int harm;
+} projectile_object_t;
 
-  /* SCRIPTME */
-  float harm;
+typedef struct _object_t {
+
+  /* general object data */
+  int                 active;
+  int                 owner;
+  physics_t           physics;
+  double              height;
+  double              width;
+  pixel_t             color;
+  int                 bounces_left;
+  double              collision_radius;
+
+  /* type specific data */
+  int                 type;
+  projectile_object_t bullet;
 
 } object_t;
 
 typedef struct _object_bank_t {
   object_t* bank;
-  int* order;
-  double* distance;
-  int size;
+  int*      order;
+  double*   distance;
+  int       size;
 } object_bank_t;
 
 void object_collide(object_t* object);

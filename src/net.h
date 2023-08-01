@@ -1,9 +1,9 @@
 #ifndef NET_H
 #define NET_H
 
+#include "player.h"
 #include "object.h"
 #include "physics.h"
-#include "player.h"
 #include "input.h"
 #include "caster.h"
 #include "render.h"

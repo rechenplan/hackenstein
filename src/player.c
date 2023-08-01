@@ -21,55 +21,48 @@ void player_share(player_t* player, int idx, uint16_t value) {
   player->share[idx] = value;
 }
 
-void player_process_share(player_t* player, object_bank_t* objects) {
-  player_shoot(player, objects);
-  if (player->share[SHARE_HEALTH] <= 0) {
-    player_respawn(player);
-  }
-}
-
 #define SQUARED(x) ((x)*(x))
 
-void player_update(player_t* player, object_bank_t* objects, map_t* map, int elapsed_time, int local) {
+void player_net_interpolate(player_t* player, int elapsed_time) {
+  double t;
+
+  player->remote.interp += elapsed_time / (1000.0 / NET_FRAME_LIMIT);
+  t = player->remote.interp;
+  player->object->physics.position.x =  t * player->remote.current_position.x + (1 - t) * player->remote.last_position.x;
+  player->object->physics.position.y =  t * player->remote.current_position.y + (1 - t) * player->remote.last_position.y;
+  player->object->physics.position.z =  t * player->remote.current_position.z + (1 - t) * player->remote.last_position.z;
+  if (fabs(player->remote.current_rotation - player->remote.last_rotation) > TAU / 2) {
+    if (player->remote.current_rotation > player->remote.last_rotation) {
+      player->remote.last_rotation += TAU;
+    } else {
+      player->remote.current_rotation += TAU;
+    }
+  }
+  player->object->physics.rotation = fmod(player->remote.last_rotation + t * (player->remote.current_rotation - player->remote.last_rotation), TAU);
+}
+
+void player_update(player_t* player, object_bank_t* objects, int local, int elapsed_time) {
 
   int i = 0;
-  double distance, t;
+  double distance;
   object_t* object;
 
-  if (local) {
-
-    /* apply physics to local players */
-    physics_update(&player->object->physics, map, 0, player->object->height, elapsed_time);
-
-  } else {
-
-    /* interpolate packets for remote players */
-    player->remote.interp += elapsed_time / (1000.0 / NET_FRAME_LIMIT);
-    t = player->remote.interp;
-    player->object->physics.position.x =  t * player->remote.current_position.x + (1 - t) * player->remote.last_position.x;
-    player->object->physics.position.y =  t * player->remote.current_position.y + (1 - t) * player->remote.last_position.y;
-    player->object->physics.position.z =  t * player->remote.current_position.z + (1 - t) * player->remote.last_position.z;
-    if (fabs(player->remote.current_rotation - player->remote.last_rotation) > TAU / 2) {
-      if (player->remote.current_rotation > player->remote.last_rotation) {
-        player->remote.last_rotation += TAU;
-      } else {
-        player->remote.current_rotation += TAU;
-      }
-    }
-    player->object->physics.rotation = fmod(player->remote.last_rotation + t * (player->remote.current_rotation - player->remote.last_rotation), TAU);
-
+  /* interpolate positions of remote players */
+  if (!local) {
+    player_net_interpolate(player, elapsed_time);
   }
 
-  /* detect player / object collisions */
+  /* detect player / object (including other players) collisions */
   for (i = 0; i < objects->size; i++) {
     object = &objects->bank[i];
-    if (!object->active || !object->is_player) {
+    if (!object->active || object == player->object) {
       continue;
     }
     distance = SQUARED(object->physics.position.x - player->object->physics.position.x) + SQUARED(object->physics.position.y - player->object->physics.position.y);
     if (distance < object->collision_radius * object->collision_radius) {
-      if (local) {
-        player_harm(player, object->harm);
+      /*lua_player_object_collision(player, object);*/
+      if (local && object->type == OBJECT_TYPE_PROJECTILE) {
+        player_harm(player, object->bullet.harm);
       }
       object_collide(object);
     }
@@ -89,15 +82,12 @@ void player_init(player_t* player, object_bank_t* objects, int id) {
   player->object = object_create(objects);
 
   player->object->active = 1;
-  player->object->owner = id;
+  player->object->owner = player->id;
   player->object->height = 0.8;
   player->object->width = 0.5;
   player->object->color = GRAYSCALE(64);
-  player->object->harm = 0;
   player->object->collision_radius = 0.5;
-  player->object->collision_type = COLLISION_NONE;
-  player->object->exploding = 0;
-  player->object->boom = 0;
+  player->object->type = OBJECT_TYPE_PLAYER;
   player->object->bounces_left = 0;
   /* ^^^ */
 }
@@ -165,6 +155,14 @@ int player_process_input(player_t* player, input_t* input, int elapsed_time) {
   /* ^^^ */
 
   return input_is_pressed(input, INPUT_EXIT);
+}
+
+/* SCRIPTME */
+void player_process_share(player_t* player, object_bank_t* objects) {
+  player_shoot(player, objects);
+  if (player->share[SHARE_HEALTH] <= 0) {
+    player_respawn(player);
+  }
 }
 
 /* SCRIPTME */

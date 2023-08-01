@@ -4,9 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include "player.h"
 #include "object.h"
 #include "physics.h"
-#include "player.h"
 #include "input.h"
 #include "caster.h"
 #include "render.h"

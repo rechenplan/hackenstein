@@ -30,7 +30,7 @@ object_t* object_create(object_bank_t* objects) {
 
 void object_destroy(object_t* object) {
   object->active = 0;
-  object->exploding = 0;
+  object->bullet.exploding = 0;
 }
 
 void object_cleanup(object_bank_t* objects) {
@@ -62,19 +62,28 @@ void object_sort_by_dist(object_bank_t* objects, vec3_t pos) {
   qsort(objects->order, objects->size, sizeof(int), object_dist_comp);
 }
 
-static void object_explode(object_t* object) {
-  object->exploding = 1;
+static void object_collide_projectile(object_t* projectile) {
+  /* a projectile collided with player or a wall */
+  projectile->bullet.exploding = 1;
+  projectile->active = 0;
+  projectile->physics.velocity.x = 0;
+  projectile->physics.velocity.y = 0;
+  projectile->physics.velocity.z = 0;
+  return;
+}
 
-  object->active = 0;
-  object->physics.velocity.x = 0;
-  object->physics.velocity.y = 0;
-  object->physics.velocity.z = 0;
+static void object_collide_player(object_t* player) {
+  /* a player colliding with an object or a wall */
+  return;
 }
 
 void object_collide(object_t* object) {
-  switch (object->collision_type) {
-    case COLLISION_EXPLODE:
-      object_explode(object);
+  switch (object->type) {
+    case OBJECT_TYPE_PLAYER:
+      object_collide_player(object);
+      break;
+    case OBJECT_TYPE_PROJECTILE:
+      object_collide_projectile(object);
       break;
   }
 }
@@ -83,12 +92,15 @@ void object_update(object_bank_t* objects, map_t* map, int elapsed_time) {
   int i;
   object_t* object;
 
+  /* update all objects */
   for (i = 0; i < objects->size; i++) {
 
     object = object_get(objects, i);
-    if (object->exploding) {
-      object->boom = object->boom + (object->max_boom - object->boom) / 8 + 1;
-      if (object->boom >= object->max_boom) {
+
+    /* if exploding, adjust boom radius until it reaches max boom */
+    if (object->type == OBJECT_TYPE_PROJECTILE && object->bullet.exploding) {
+      object->bullet.boom = object->bullet.boom + (object->bullet.max_boom - object->bullet.boom) / 8 + 1;
+      if (object->bullet.boom >= object->bullet.max_boom) {
         object_destroy(object);
       }
     }
@@ -97,18 +109,17 @@ void object_update(object_bank_t* objects, map_t* map, int elapsed_time) {
       continue;
     }
 
-    /* if collision with wall */
+    /* object / wall collisions (notice this includes player objects) */
     if (physics_update(&object->physics, map, object->bounces_left, object->height, elapsed_time)) {
-      if (object->bounces_left) {
+      if (object->bounces_left > 0) {
         object->bounces_left--;
-      } else {
+      } else if (!object->bounces_left) {
         object_collide(object);
       }
     }
-
   }
 }
 
 int object_is_used(object_t* object) {
-  return (object->active || object->exploding);
+  return (object->active || object->bullet.exploding);
 }

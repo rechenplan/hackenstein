@@ -66,18 +66,20 @@ int game_update(game_t* game, int current_time, int *sleep) {
     game->net_frame++;
     frame_computed = 1;
   }
+
   /* physics frame */
   correct_physics_frame = (current_time - game->start_time) * PHY_FRAME_LIMIT / 1000;
   if (game->physics_frame <= correct_physics_frame) {
     done = player_process_input(myself, &game->input, 1000 / PHY_FRAME_LIMIT);
     for (i = 0; i < MAX_PLAYERS; i++) {
       local = (i == game->my_id);
-      player_update(&game->players[i], &game->objects, &game->map, 1000 / PHY_FRAME_LIMIT, local);
+      player_update(&game->players[i], &game->objects, local, 1000 / PHY_FRAME_LIMIT);
     }
     object_update(&game->objects, &game->map, 1000 / PHY_FRAME_LIMIT);
     game->physics_frame++;
     frame_computed = 1;
   }
+
   /* graphics frame */
   correct_gfx_frame = (current_time - game->start_time) * GFX_FRAME_LIMIT / 1000;
   if (game->gfx_frame <= correct_gfx_frame) {
@@ -87,6 +89,7 @@ int game_update(game_t* game, int current_time, int *sleep) {
     game->gfx_frame++;
     frame_computed = 1;
   }
+
   *sleep = !frame_computed;
   game->last_time = current_time;
   return done;

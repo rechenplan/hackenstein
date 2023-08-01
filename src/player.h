@@ -46,7 +46,8 @@ typedef struct _player_t {
 
 void player_init(player_t* player, object_bank_t* objects, int id);
 void player_respawn(player_t* player);
-void player_update(player_t* player, object_bank_t* objects, map_t* map, int elapsed_time, int local);
+void player_net_interpolate(player_t* player, int elapsed_time);
+void player_update(player_t* player, object_bank_t* objects, int local, int elapsed_time);
 int  player_process_input(player_t* player, input_t* input, int elapsed_time);
 void player_cleanup(player_t* player);
 

@@ -4,8 +4,8 @@
 #include "map.h"
 #include "lfb.h"
 #include "physics.h"
-#include "object.h"
 #include "player.h"
+#include "object.h"
 
 typedef struct _caster_t {
   lfb_t* lfb;

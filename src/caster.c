@@ -148,7 +148,7 @@ void caster_draw_objects(caster_t* caster, object_bank_t* objects, player_t* pla
     transform_y = inv_det * (plane.x * object_y - plane.y * object_x);
     screen_x = (lfb->width / 2) * (1 + transform_x / transform_y);
     object_size = WALL_HEIGHT / transform_y;
-    boom = 1.0 + object->boom / 5.0;
+    boom = object->type == OBJECT_TYPE_PROJECTILE && object->bullet.exploding ? 1.0 + object->bullet.boom / 5.0 : 1.0;
     draw_end_x = screen_x + object->width * object_size * boom / 2;
     draw_start_x = screen_x - object->width * object_size * boom / 2;
     draw_end_y = (lfb->height + object->height * object_size * boom) / 2 - object_size * (object->physics.position.z - 0.5);
@@ -182,7 +182,7 @@ void caster_draw_objects(caster_t* caster, object_bank_t* objects, player_t* pla
     for (y = draw_start_y; y < draw_end_y; y++) {
       for (x = draw_start_x; x < draw_end_x; x++) {
         if (transform_y > 0 && transform_y < caster->z_buffer[x]) {
-          buffer[x + y * lfb->width] = object->boom ? 0xffff0000 : object->color;
+          buffer[x + y * lfb->width] = object->bullet.boom ? 0xffff0000 : object->color;
         }
       }
     }
