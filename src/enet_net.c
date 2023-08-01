@@ -53,14 +53,14 @@ void net_update(net_t net, player_t players[MAX_PLAYERS], map_t* map, int my_id,
       if (id != my_id) {
         players[id].remote.packet_time = current_time;
 
-        players[id].remote.last_pos = players[id].phy.position;
-        players[id].remote.last_phi = players[id].phy.phi;
+        players[id].remote.last_position = players[id].physical.position;
+        players[id].remote.last_rotation = players[id].physical.rotation;
         players[id].remote.interp = 0;
 
-        players[id].remote.current_phi = *((uint16_t*) ptr) * TAU / 65535; ptr += 2;
-        players[id].remote.current_pos.x = *((uint16_t*) ptr) * map->width / 65535.0; ptr += 2;
-        players[id].remote.current_pos.y = *((uint16_t*) ptr) * map->width / 65535.0; ptr += 2;
-        players[id].remote.current_pos.z = *((uint8_t*) ptr) / 255.0; ptr++;
+        players[id].remote.current_rotation = *((uint16_t*) ptr) * TAU / 65535; ptr += 2;
+        players[id].remote.current_position.x = *((uint16_t*) ptr) * map->width / 65535.0; ptr += 2;
+        players[id].remote.current_position.y = *((uint16_t*) ptr) * map->width / 65535.0; ptr += 2;
+        players[id].remote.current_position.z = *((uint8_t*) ptr) / 255.0; ptr++;
         share_flag = *((uint8_t*) ptr); ptr++;
         i = 0;
         while (share_flag) {
@@ -79,10 +79,10 @@ void net_update(net_t net, player_t players[MAX_PLAYERS], map_t* map, int my_id,
   ptr = player_packet;
   *((uint8_t*) ptr) = players[my_id].id; ptr++;
 
-  *((uint16_t*) ptr) = players[my_id].phy.phi * 65535 / TAU; ptr += 2;
-  *((uint16_t*) ptr) = players[my_id].phy.position.x * 65535 / map->width; ptr += 2;
-  *((uint16_t*) ptr) = players[my_id].phy.position.y * 65535 / map->height; ptr += 2;
-  *((uint8_t*) ptr) = players[my_id].phy.position.z * 255; ptr++;
+  *((uint16_t*) ptr) = players[my_id].physical.rotation * 65535 / TAU; ptr += 2;
+  *((uint16_t*) ptr) = players[my_id].physical.position.x * 65535 / map->width; ptr += 2;
+  *((uint16_t*) ptr) = players[my_id].physical.position.y * 65535 / map->height; ptr += 2;
+  *((uint8_t*) ptr) = players[my_id].physical.position.z * 255; ptr++;
   *((uint8_t*) ptr) = players[my_id].share_flag; ptr++;
 
   i = 0;

@@ -41,11 +41,11 @@ void caster_draw_map(caster_t* caster, map_t* map, player_t* player) {
   vec3_t pos;
   vec2_t dir, plane;
 
-  pos = player->phy.position;
-  dir.x = cos(player->phy.phi);
-  dir.y = sin(player->phy.phi);
-  plane.x = (2.0 / 3.0) * cos(player->phy.phi + TAU / 4);
-  plane.y = (2.0 / 3.0) * sin(player->phy.phi + TAU / 4);
+  pos = player->physical.position;
+  dir.x = cos(player->physical.rotation);
+  dir.y = sin(player->physical.rotation);
+  plane.x = (2.0 / 3.0) * cos(player->physical.rotation + TAU / 4);
+  plane.y = (2.0 / 3.0) * sin(player->physical.rotation + TAU / 4);
   lfb = caster->lfb;
   buffer = lfb_get_buffer(lfb);
   for (x = 0; x < lfb->width; x++) {
@@ -127,11 +127,11 @@ void caster_draw_sprites(caster_t* caster, sprite_bank_t* sprites, player_t* pla
   vec3_t pos;
   vec2_t dir, plane;
 
-  pos = player->phy.position;
-  dir.x = cos(player->phy.phi);
-  dir.y = sin(player->phy.phi);
-  plane.x = (2.0 / 3.0) * cos(player->phy.phi + TAU / 4);
-  plane.y = (2.0 / 3.0) * sin(player->phy.phi + TAU / 4);
+  pos = player->physical.position;
+  dir.x = cos(player->physical.rotation);
+  dir.y = sin(player->physical.rotation);
+  plane.x = (2.0 / 3.0) * cos(player->physical.rotation + TAU / 4);
+  plane.y = (2.0 / 3.0) * sin(player->physical.rotation + TAU / 4);
   my_sprite = player->sprite;
   lfb = caster->lfb;
   buffer = lfb_get_buffer(lfb);
@@ -142,8 +142,8 @@ void caster_draw_sprites(caster_t* caster, sprite_bank_t* sprites, player_t* pla
       continue;
     }
     /* compute */
-    sprite_x = sprite->phy.position.x - pos.x;
-    sprite_y = sprite->phy.position.y - pos.y;
+    sprite_x = sprite->physical.position.x - pos.x;
+    sprite_y = sprite->physical.position.y - pos.y;
     inv_det = 1.0 / (plane.x * dir.y - dir.x * plane.y);
     transform_x = inv_det * (dir.y * sprite_x - dir.x * sprite_y);
     transform_y = inv_det * (plane.x * sprite_y - plane.y * sprite_x);
@@ -152,8 +152,8 @@ void caster_draw_sprites(caster_t* caster, sprite_bank_t* sprites, player_t* pla
     boom = 1.0 + sprite->boom / 5.0;
     draw_end_x = screen_x + sprite->width * sprite_size * boom / 2;
     draw_start_x = screen_x - sprite->width * sprite_size * boom / 2;
-    draw_end_y = (lfb->height + sprite->height * sprite_size * boom) / 2 - sprite_size * (sprite->phy.position.z - 0.5);
-    draw_start_y = (lfb->height - sprite->height * sprite_size * boom) / 2 - sprite_size * (sprite->phy.position.z - 0.5);
+    draw_end_y = (lfb->height + sprite->height * sprite_size * boom) / 2 - sprite_size * (sprite->physical.position.z - 0.5);
+    draw_start_y = (lfb->height - sprite->height * sprite_size * boom) / 2 - sprite_size * (sprite->physical.position.z - 0.5);
     /* clamp */
     if (draw_end_x < 0) {
       draw_end_x = 0;

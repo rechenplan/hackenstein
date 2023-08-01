@@ -12,7 +12,7 @@
 typedef struct _sprite_t {
   int active;
   int owner;
-  phy_t phy;
+  phy_t physical;
   double height;
   double width;
   pixel_t color;

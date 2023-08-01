@@ -57,7 +57,7 @@ void sprite_sort_by_dist(sprite_bank_t* sprites, vec3_t pos) {
   for (i = 0; i < sprites->size; i++) {
     sprite = sprite_get(sprites, i);
     sprites->order[i] = i;
-    sprites->distance[i] = (sprite->phy.position.x - pos.x) * (sprite->phy.position.x - pos.x) + (sprite->phy.position.y - pos.y) * (sprite->phy.position.y - pos.y);
+    sprites->distance[i] = (sprite->physical.position.x - pos.x) * (sprite->physical.position.x - pos.x) + (sprite->physical.position.y - pos.y) * (sprite->physical.position.y - pos.y);
   }
   SORT_BANK = sprites;
   qsort(sprites->order, sprites->size, sizeof(int), sprite_dist_comp);
@@ -66,9 +66,9 @@ void sprite_sort_by_dist(sprite_bank_t* sprites, vec3_t pos) {
 static void sprite_explode(sprite_t* sprite) {
   sprite->active = 0;
   sprite->exploding = 1;
-  sprite->phy.velocity.x = 0;
-  sprite->phy.velocity.y = 0;
-  sprite->phy.velocity.z = 0;
+  sprite->physical.velocity.x = 0;
+  sprite->physical.velocity.y = 0;
+  sprite->physical.velocity.z = 0;
 }
 
 void sprite_collide(sprite_t* sprite) {
@@ -97,7 +97,7 @@ void sprite_update(sprite_bank_t* sprites, map_t* map, int elapsed_time) {
     }
 
     /* if collision with wall */
-    if (phy_update(&sprite->phy, map, sprite->bounce, sprite->height, elapsed_time)) {
+    if (phy_update(&sprite->physical, map, sprite->bounce, sprite->height, elapsed_time)) {
       if (sprite->bounce) {
         sprite->bounce--;
       } else {

@@ -21,15 +21,15 @@ void player_respawn(player_t* player) {
   player->timer.shot = 0;
   player->timer.spec = 0;
   player->timer.swap = 0;
-  player->phy.position.x = (rand() % 30) + 1.5;
-  player->phy.position.y = (rand() % 30) + 1.5;
-  player->phy.position.z = 0;
-  player->phy.phi = 0;
-  player->phy.velocity.x = 0;
-  player->phy.velocity.y = 0;
-  player->phy.velocity.z = 0;
-  player->phy.friction = PLAYER_FRICTION;
-  player->phy.bouncy = PLAYER_BOUNCY;
+  player->physical.position.x = (rand() % 30) + 1.5;
+  player->physical.position.y = (rand() % 30) + 1.5;
+  player->physical.position.z = 0;
+  player->physical.rotation = 0;
+  player->physical.velocity.x = 0;
+  player->physical.velocity.y = 0;
+  player->physical.velocity.z = 0;
+  player->physical.friction = PLAYER_FRICTION;
+  player->physical.bouncy = PLAYER_BOUNCY;
   player_share(player, SHARE_HEALTH, 100);
 }
 
@@ -58,7 +58,6 @@ void player_shoot(player_t* player, sprite_bank_t* sprites) {
     weapon_id = player->share[SHARE_SHOOTING] >> 8;
     weapon = weapon_get(weapon_id);
     random_double = (player->share[SHARE_SHOOTING] & 255) / 256.0;
-    printf("%d %f\n", weapon_id, random_double);
     for (i = 0; i < weapon.proj_cnt; i++) {
       prng = (prng * 3) % 257;
       x = (prng / 257.0 - 0.5);
@@ -67,21 +66,21 @@ void player_shoot(player_t* player, sprite_bank_t* sprites) {
       projectile = weapon.proj;
       projectile.owner = player->id;
 
-      projectile.phy.position.x = player->phy.position.x;
-      projectile.phy.position.y = player->phy.position.y;
-      projectile.phy.position.z = player->phy.position.z;
-      projectile.phy.phi = player->phy.phi;
-      projectile.phy.friction = weapon.friction;
-      projectile.phy.bouncy = weapon.bouncy;
+      projectile.physical.position.x = player->physical.position.x;
+      projectile.physical.position.y = player->physical.position.y;
+      projectile.physical.position.z = player->physical.position.z;
+      projectile.physical.rotation = player->physical.rotation;
+      projectile.physical.friction = weapon.friction;
+      projectile.physical.bouncy = weapon.bouncy;
 
       /* spray */
-      projectile.phy.phi += (x + random_double) * weapon.spray / 200.0 - weapon.spray / 400.0;
-      projectile.phy.velocity.x = cos(projectile.phy.phi) * weapon.proj_speed;
-      projectile.phy.velocity.y = sin(projectile.phy.phi) * weapon.proj_speed;
-      projectile.phy.velocity.z = (y + random_double) * weapon.spray / 10.0 - weapon.spray / 20.0;
+      projectile.physical.rotation += (x + random_double) * weapon.spray / 200.0 - weapon.spray / 400.0;
+      projectile.physical.velocity.x = cos(projectile.physical.rotation) * weapon.proj_speed;
+      projectile.physical.velocity.y = sin(projectile.physical.rotation) * weapon.proj_speed;
+      projectile.physical.velocity.z = (y + random_double) * weapon.spray / 10.0 - weapon.spray / 20.0;
 
-      projectile.phy.position.x += cos(projectile.phy.phi) * (projectile.collision_radius + 0.1);
-      projectile.phy.position.y += sin(projectile.phy.phi) * (projectile.collision_radius + 0.1);
+      projectile.physical.position.x += cos(projectile.physical.rotation) * (projectile.collision_radius + 0.1);
+      projectile.physical.position.y += sin(projectile.physical.rotation) * (projectile.collision_radius + 0.1);
       sprite_create(sprites, &projectile);
     }
     player->timer.shot = weapon.repeat_rate;
@@ -99,30 +98,30 @@ void player_update(player_t* player, sprite_bank_t* sprites, map_t* map, int ela
   player_sprite = sprite_get(sprites, player->sprite);
   if (local) {
 
-    /* applly physics to local players */
-    phy_update(&player->phy, map, 0, player_sprite->height, elapsed_time);
+    /* apply physics to local players */
+    phy_update(&player->physical, map, 0, player_sprite->height, elapsed_time);
 
   } else {
 
     /* interpolate packets for remote players */
     player->remote.interp += elapsed_time / (1000.0 / NET_FRAME_LIMIT);
     t = player->remote.interp;
-    player->phy.position.x =  t * player->remote.current_pos.x + (1 - t) * player->remote.last_pos.x;
-    player->phy.position.y =  t * player->remote.current_pos.y + (1 - t) * player->remote.last_pos.y;
-    player->phy.position.z =  t * player->remote.current_pos.z + (1 - t) * player->remote.last_pos.z;
-    if (fabs(player->remote.current_phi - player->remote.last_phi) > TAU / 2) {
-      if (player->remote.current_phi > player->remote.last_phi) {
-        player->remote.last_phi += TAU;
+    player->physical.position.x =  t * player->remote.current_position.x + (1 - t) * player->remote.last_position.x;
+    player->physical.position.y =  t * player->remote.current_position.y + (1 - t) * player->remote.last_position.y;
+    player->physical.position.z =  t * player->remote.current_position.z + (1 - t) * player->remote.last_position.z;
+    if (fabs(player->remote.current_rotation - player->remote.last_rotation) > TAU / 2) {
+      if (player->remote.current_rotation > player->remote.last_rotation) {
+        player->remote.last_rotation += TAU;
       } else {
-        player->remote.current_phi += TAU;
+        player->remote.current_rotation += TAU;
       }
     }
-    player->phy.phi = fmod(player->remote.last_phi + t * (player->remote.current_phi - player->remote.last_phi), TAU);
+    player->physical.rotation = fmod(player->remote.last_rotation + t * (player->remote.current_rotation - player->remote.last_rotation), TAU);
 
   }
 
   /* update position of sprite associated with player */
-  player_sprite->phy = player->phy;
+  player_sprite->physical = player->physical;
 
   /* detect player / sprite collisions */
   for (i = 0; i < sprites->size; i++) {
@@ -130,7 +129,7 @@ void player_update(player_t* player, sprite_bank_t* sprites, map_t* map, int ela
     if (!sprite->active || i == player->sprite) {
       continue;
     }
-    distance = sqrt(SQUARED(sprite->phy.position.x - player->phy.position.x) + SQUARED(sprite->phy.position.y - player->phy.position.y));
+    distance = sqrt(SQUARED(sprite->physical.position.x - player->physical.position.x) + SQUARED(sprite->physical.position.y - player->physical.position.y));
     if (distance < sprite->collision_radius) {
       if (local) {
         player_harm(player, sprite->harm);
@@ -171,26 +170,26 @@ int player_process_input(player_t* player, input_t* input, int elapsed_time) {
 
   input_update(input);
   if (input_is_pressed(input, INPUT_FORWARD)) {
-    player->phy.velocity.x += cos(player->phy.phi) * move_speed;
-    player->phy.velocity.y += sin(player->phy.phi) * move_speed;
+    player->physical.velocity.x += cos(player->physical.rotation) * move_speed;
+    player->physical.velocity.y += sin(player->physical.rotation) * move_speed;
   }
   if (input_is_pressed(input, INPUT_BACK)) {
-    player->phy.velocity.x -= cos(player->phy.phi) * move_speed;
-    player->phy.velocity.y -= sin(player->phy.phi) * move_speed;
+    player->physical.velocity.x -= cos(player->physical.rotation) * move_speed;
+    player->physical.velocity.y -= sin(player->physical.rotation) * move_speed;
   }
   if (input_is_pressed(input, INPUT_RIGHT)) {
-    player->phy.velocity.x -= sin(player->phy.phi) * move_speed;
-    player->phy.velocity.y += cos(player->phy.phi) * move_speed;
+    player->physical.velocity.x -= sin(player->physical.rotation) * move_speed;
+    player->physical.velocity.y += cos(player->physical.rotation) * move_speed;
   }
   if (input_is_pressed(input, INPUT_LEFT)) {
-    player->phy.velocity.x += sin(player->phy.phi) * move_speed;
-    player->phy.velocity.y -= cos(player->phy.phi) * move_speed;
+    player->physical.velocity.x += sin(player->physical.rotation) * move_speed;
+    player->physical.velocity.y -= cos(player->physical.rotation) * move_speed;
   }
   if (input_is_pressed(input, INPUT_ROTATE_RIGHT)) {
-    player->phy.phi += rot_speed;
+    player->physical.rotation += rot_speed;
   }
   if (input_is_pressed(input, INPUT_ROTATE_LEFT)) {
-    player->phy.phi -= rot_speed;
+    player->physical.rotation -= rot_speed;
   }
   if (input_is_pressed(input, INPUT_CHANGE_GUN)) {
     if (player->timer.swap <= 0) {

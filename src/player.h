@@ -19,10 +19,10 @@
 
 /* network data for remote players */
 typedef struct _player_remote_t {
-  vec3_t   current_pos;
-  float    current_phi;
-  vec3_t   last_pos;
-  float    last_phi;
+  vec3_t   current_position;
+  float    current_rotation;
+  vec3_t   last_position;
+  float    last_rotation;
   double   interp;
   int      packet_time;
 } player_remote_t;
@@ -34,7 +34,7 @@ typedef struct _player_timers_t {
 } player_timers_t;
 
 typedef struct _player_t {
-  phy_t           phy;
+  phy_t           physical;
   player_remote_t remote;
   player_timers_t timer;
   uint8_t         id;
