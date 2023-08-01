@@ -1,4 +1,6 @@
 #include "client.h"
+#include "game.h"
+#include "net.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -11,11 +13,9 @@
 #include "lfb.h"
 #include "map.h"
 #include "hud.h"
-#include "net.h"
-#include "game.h"
 
 void client_init(client_t* client, char* host, int port, int my_id, int start_time) {
-  int i;
+  int i, j;
 
   client->start_time = start_time;
   client->last_time = start_time;
@@ -25,16 +25,25 @@ void client_init(client_t* client, char* host, int port, int my_id, int start_ti
   client->gfx_frame = 0;
   client->render = render_init();
   client->net = net_init(host, port);
-  map_init(&client->map, 32, 32, 1);
-  game_map_load(&client->map);
   input_init(&client->input);
   object_init(&client->objects, MAX_SPRITES);
-  for (i = 0; i < MAX_PLAYERS; i++) {
-    player_init(&client->players[i], &client->objects, i == my_id);
-  }
   lfb_init(&client->lfb, LFB_WIDTH, LFB_HEIGHT);
   caster_init(&client->caster, &client->lfb);
   hud_init(&client->hud, 8);
+  game_init(&client->game, &client->players[my_id], client->net, &client->objects);
+  for (i = 0; i < MAX_PLAYERS; i++) {
+    player_init(&client->players[i], &client->objects, i == my_id);
+    game_player_init(&client->game, &client->players[i]);
+  }
+  map_init(&client->map, 32, 32, 1);
+  for (j = 0; j < client->map.height; j++) {
+    for (i = 0; i < client->map.width; i++) {
+      map_set_cell(&client->map, i, j, 0);
+    }
+  }
+  map_set_cell(&client->map, 7, 7, 1);
+  game_map_load(&client->game, &client->map);
+
 }
 
 int client_update(client_t* client, int current_time, int *sleep) {
@@ -52,10 +61,10 @@ int client_update(client_t* client, int current_time, int *sleep) {
   correct_net_frame = (current_time - client->start_time) * NET_FRAME_LIMIT / 1000;
   if (client->net_frame <= correct_net_frame) {
     if (client->net) {
-      net_update(client->net, client->players, &client->map, client->my_id, current_time);
+      net_update(client->net, client->players, &client->map, client->my_id, &client->game, current_time);
     }
     for (i = 0; i < MAX_PLAYERS; i++) {
-      game_player_update(&client->players[i], &client->objects);
+      game_player_update(&client->game, &client->players[i]);
     }
     client->net_frame++;
     frame_computed = 1;
@@ -64,9 +73,9 @@ int client_update(client_t* client, int current_time, int *sleep) {
   /* physics frame */
   correct_physics_frame = (current_time - client->start_time) * PHY_FRAME_LIMIT / 1000;
   if (client->physics_frame <= correct_physics_frame) {
-    done = player_process_input(myself, &client->input, 1000 / PHY_FRAME_LIMIT);
+    done = player_process_input(myself, &client->input, &client->game, 1000 / PHY_FRAME_LIMIT);
     for (i = 0; i < MAX_PLAYERS; i++) {
-      player_update(&client->players[i], &client->objects, 1000 / PHY_FRAME_LIMIT);
+      player_update(&client->players[i], &client->objects, &client->game, 1000 / PHY_FRAME_LIMIT);
     }
     object_update(&client->objects, &client->map, 1000 / PHY_FRAME_LIMIT);
     client->physics_frame++;
@@ -77,7 +86,7 @@ int client_update(client_t* client, int current_time, int *sleep) {
   correct_gfx_frame = (current_time - client->start_time) * GFX_FRAME_LIMIT / 1000;
   if (client->gfx_frame <= correct_gfx_frame) {
     caster_update(&client->caster, &client->map, &client->objects, spec_player);
-    hud_update(&client->hud, spec_player->share[SHARE_HEALTH], &client->lfb);
+    hud_update(&client->hud, 100, &client->lfb);
     render_update(client->render, &client->lfb);
     client->gfx_frame++;
     frame_computed = 1;
@@ -96,6 +105,7 @@ void client_cleanup(client_t* client) {
   input_cleanup(&client->input);
   object_cleanup(&client->objects);
   for (i = 0; i < MAX_PLAYERS; i++) {
+    game_player_cleanup(&client->game, &client->players[i]);
     player_cleanup(&client->players[i]);
   }
   lfb_cleanup(&client->lfb);
@@ -104,4 +114,5 @@ void client_cleanup(client_t* client) {
   if (client->net) {
     net_cleanup(client->net);
   }
+  game_cleanup(&client->game);
 }

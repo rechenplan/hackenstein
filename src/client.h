@@ -1,9 +1,8 @@
-#ifndef GAME_H
-#define GAME_H
+#ifndef CLIENT_H
+#define CLIENT_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
+#include "game.h"
+#include "net.h"
 #include "player.h"
 #include "object.h"
 #include "physics.h"
@@ -13,7 +12,6 @@
 #include "lfb.h"
 #include "map.h"
 #include "hud.h"
-#include "net.h"
 #include "global.h"
 
 #define MAX_SPRITES (128)
@@ -31,6 +29,7 @@ typedef struct _client_t {
   hud_t hud;
   int my_id;
   net_t net;
+  game_t game;
   int start_time;
   int last_time;
   int net_frame;

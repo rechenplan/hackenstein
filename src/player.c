@@ -30,7 +30,7 @@ void player_net_interpolate(player_t* player, int elapsed_time) {
   player->object->physics.rotation = fmod(player->remote.last_rotation + t * (player->remote.current_rotation - player->remote.last_rotation), TAU);
 }
 
-void player_update(player_t* player, object_bank_t* objects, int elapsed_time) {
+void player_update(player_t* player, object_bank_t* objects, game_t* game, int elapsed_time) {
 
   int i = 0;
   double distance;
@@ -49,7 +49,7 @@ void player_update(player_t* player, object_bank_t* objects, int elapsed_time) {
     }
     distance = SQUARED(object->physics.position.x - player->object->physics.position.x) + SQUARED(object->physics.position.y - player->object->physics.position.y);
     if (distance < object->collision_radius * object->collision_radius) {
-      game_player_collide_with_object(player, object);
+      game_player_collide_with_object(game, player, object);
       object_collide_with_player(object);
     }
   }
@@ -57,17 +57,27 @@ void player_update(player_t* player, object_bank_t* objects, int elapsed_time) {
 }
 
 void player_init(player_t* player, object_bank_t* objects, int local) {
-  /* player */
   memset(player, 0, sizeof(player_t));
   player->local = local;
-  game_player_init(player, objects);
+  player->object = object_create(objects);
+  player->object->physics.position.x = 1.5 + (rand() % 30);
+  player->object->physics.position.y = 1.5 + (rand() % 30);
+  player->object->physics.position.z = 0;
+  player->object->physics.friction = PLAYER_FRICTION;
+  player->object->physics.bouncy = PLAYER_BOUNCY;
+  player->object->owner = player;
+  player->object->color = GRAYSCALE(64);
+  player->object->type = OBJECT_TYPE_PLAYER;
+  player->object->bounces_left = 0;
+  player->object->height = 0.8;
+  player->object->width = 0.5;
 }
 
 void player_cleanup(player_t* player) {
-  game_player_cleanup(player);
+  object_destroy(player->object);
 }
 
-int player_process_input(player_t* player, input_t* input, int elapsed_time) {
+int player_process_input(player_t* player, input_t* input, game_t* game, int elapsed_time) {
   double move_speed, rot_speed;
   char key_down[INPUT_KEY_SIZE];
   char key_up[INPUT_KEY_SIZE];
@@ -108,13 +118,13 @@ int player_process_input(player_t* player, input_t* input, int elapsed_time) {
 
   for (i = 0; i < INPUT_KEY_SIZE; i++) {
     if (key_down[i]) {
-      game_key_down(player, i);
+      game_key_down(game, i);
     }
   }
 
   for (i = 0; i < INPUT_KEY_SIZE; i++) {
     if (key_up[i]) {
-      game_key_up(player, i);
+      game_key_up(game, i);
     }
   }
 

@@ -1,10 +1,11 @@
 #include <enet/enet.h>
 #include <math.h>
-#include "net.h"
 #include "client.h"
 #include "player.h"
 #include "object.h"
 #include "map.h"
+#include "game.h"
+#include "net.h"
 
 #define NET_CHANNELS 2
 
@@ -33,70 +34,69 @@ void* net_init(char* host, int port) {
   return net;
 }
 
-void net_update(net_t net, player_t players[MAX_PLAYERS], map_t* map, int my_id, int current_time) {
+void net_update(net_t net, player_t players[MAX_PLAYERS], map_t* map, int my_id, game_t* game, int current_time) {
   ENetEvent event;
   ENetPacket* packet;
   char* ptr;
   uint8_t id;
-  uint8_t share_flag;
   enet_net_t* enet;
   char player_packet[PLAYER_PACKET_MAX_SIZE];
-  int i;
 
   enet = (enet_net_t*) net;
 
   /* receive data from server */
   while (enet_host_service(enet->client, &event, 0) > 0) {
-    if (event.type == ENET_EVENT_TYPE_RECEIVE && event.channelID == 0) {
-      ptr = (char*) event.packet->data;
-      id = *((uint8_t*) ptr); ptr++;
-      if (id != my_id) {
-        players[id].remote.packet_time = current_time;
+    if (event.type == ENET_EVENT_TYPE_RECEIVE) {
+      /* position packet */
+      if (event.channelID == 0) {
+        ptr = (char*) event.packet->data;
+        id = *((uint8_t*) ptr); ptr++;
+        if (id != my_id) {
+          players[id].remote.packet_time = current_time;
+          players[id].remote.last_position = players[id].object->physics.position;
+          players[id].remote.last_rotation = players[id].object->physics.rotation;
+          players[id].remote.interp = 0;
 
-        players[id].remote.last_position = players[id].object->physics.position;
-        players[id].remote.last_rotation = players[id].object->physics.rotation;
-        players[id].remote.interp = 0;
-
-        players[id].remote.current_rotation = *((uint16_t*) ptr) * TAU / 65535; ptr += 2;
-        players[id].remote.current_position.x = *((uint16_t*) ptr) * map->width / 65535.0; ptr += 2;
-        players[id].remote.current_position.y = *((uint16_t*) ptr) * map->width / 65535.0; ptr += 2;
-        players[id].remote.current_position.z = *((uint8_t*) ptr) / 255.0; ptr++;
-        share_flag = *((uint8_t*) ptr); ptr++;
-        i = 0;
-        while (share_flag) {
-          if (share_flag & 1) {
-            players[id].share[i] = *((uint16_t*) ptr); ptr += 2;
-          }
-          share_flag >>= 1;
-          i++;
+          players[id].remote.current_rotation = *((uint16_t*) ptr) * TAU / 65535; ptr += 2;
+          players[id].remote.current_position.x = *((uint16_t*) ptr) * map->width / 65535.0; ptr += 2;
+          players[id].remote.current_position.y = *((uint16_t*) ptr) * map->width / 65535.0; ptr += 2;
+          players[id].remote.current_position.z = *((uint8_t*) ptr) / 255.0; ptr++;
+        }
+      }
+      /* game packet */
+      if (event.channelID == 1) {
+        ptr = (char*) event.packet->data;
+        id = *((uint8_t*) ptr); ptr++;
+        if (id != my_id) {
+          game_receive_packet(game, &players[id], event.packet->data, event.packet->dataLength);
         }
       }
       enet_packet_destroy(event.packet);
     }
   }
 
-  /* send our data */
+  /* send location */
   ptr = player_packet;
   *((uint8_t*) ptr) = my_id; ptr++;
-
   *((uint16_t*) ptr) = players[my_id].object->physics.rotation * 65535 / TAU; ptr += 2;
   *((uint16_t*) ptr) = players[my_id].object->physics.position.x * 65535 / map->width; ptr += 2;
   *((uint16_t*) ptr) = players[my_id].object->physics.position.y * 65535 / map->height; ptr += 2;
   *((uint8_t*) ptr) = players[my_id].object->physics.position.z * 255; ptr++;
-  *((uint8_t*) ptr) = players[my_id].share_flag; ptr++;
-
-  i = 0;
-  while (players[my_id].share_flag) {
-    if (players[my_id].share_flag & 1) {
-      *((uint16_t*) ptr) = players[my_id].share[i]; ptr += 2;
-    }
-    players[my_id].share_flag >>= 1;
-    i++;
-  }
-
   packet = enet_packet_create(player_packet, ptr - player_packet, 0);
   if (packet) {
     enet_peer_send(enet->peer, 0, packet);
+    enet_host_flush(enet->client);
+  }
+}
+
+void net_send_packet(net_t net, uint8_t* data, int length) {
+  ENetPacket* packet;
+  enet_net_t* enet;
+
+  enet = (enet_net_t*) net;
+  packet = enet_packet_create(data, length, 0);
+  if (packet) {
+    enet_peer_send(enet->peer, 1, packet);
     enet_host_flush(enet->client);
   }
 }

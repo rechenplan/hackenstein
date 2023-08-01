@@ -1,6 +1,7 @@
 #include <SDL2/SDL.h>
 #include "client.h"
 #include "global.h"
+#include <stdio.h>
 #include <windows.h>
 
 #define FPS_COUNTER_RESO (100)
