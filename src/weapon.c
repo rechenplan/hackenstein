@@ -19,7 +19,7 @@ weapon_t weapon_get(int i) {
       weapon.proj.collision_radius = 2.0;
       weapon.proj.boom = 0;
       weapon.proj.max_boom = 100;
-      weapon.proj.bounce = 0;
+      weapon.proj.bounces_left = 0;
       weapon.proj.exploding = 0;
       weapon.proj.collision_type = COLLISION_EXPLODE;
       break;
@@ -38,7 +38,7 @@ weapon_t weapon_get(int i) {
       weapon.proj.collision_radius = 2.0;
       weapon.proj.boom = 0;
       weapon.proj.max_boom = 100;
-      weapon.proj.bounce = 0;
+      weapon.proj.bounces_left = 0;
       weapon.proj.exploding = 0;
       weapon.proj.collision_type = COLLISION_EXPLODE;
       break;
@@ -57,7 +57,7 @@ weapon_t weapon_get(int i) {
       weapon.proj.collision_radius = 2.0;
       weapon.proj.boom = 0;
       weapon.proj.max_boom = 100;
-      weapon.proj.bounce = 0;
+      weapon.proj.bounces_left = 0;
       weapon.proj.exploding = 0;
       weapon.proj.collision_type = COLLISION_EXPLODE;
       break;
@@ -76,7 +76,7 @@ weapon_t weapon_get(int i) {
       weapon.proj.collision_radius = 2.0;
       weapon.proj.boom = 0;
       weapon.proj.max_boom = 100;
-      weapon.proj.bounce = 0;
+      weapon.proj.bounces_left = 0;
       weapon.proj.exploding = 0;
       weapon.proj.collision_type = COLLISION_EXPLODE;
       break;
@@ -95,7 +95,7 @@ weapon_t weapon_get(int i) {
       weapon.proj.collision_radius = 0.5;
       weapon.proj.boom = 0;
       weapon.proj.max_boom = 5;
-      weapon.proj.bounce = 1;
+      weapon.proj.bounces_left = 1;
       weapon.proj.exploding = 0;
       weapon.proj.collision_type = COLLISION_EXPLODE;
       break;

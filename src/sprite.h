@@ -6,7 +6,7 @@
 #include "map.h"
 #include "phy.h"
 
-#define COLLIION_NONE (0)
+#define COLLISION_NONE (0)
 #define COLLISION_EXPLODE (1)
 
 typedef struct _sprite_t {
@@ -22,7 +22,7 @@ typedef struct _sprite_t {
   int boom;
   int max_boom;
   int exploding;
-  int bounce;
+  int bounces_left;
 } sprite_t;
 
 typedef struct _sprite_bank_t {

@@ -97,9 +97,9 @@ void sprite_update(sprite_bank_t* sprites, map_t* map, int elapsed_time) {
     }
 
     /* if collision with wall */
-    if (phy_update(&sprite->physical, map, sprite->bounce, sprite->height, elapsed_time)) {
-      if (sprite->bounce) {
-        sprite->bounce--;
+    if (phy_update(&sprite->physical, map, sprite->bounces_left, sprite->height, elapsed_time)) {
+      if (sprite->bounces_left) {
+        sprite->bounces_left--;
       } else {
         sprite_collide(sprite);
       }
