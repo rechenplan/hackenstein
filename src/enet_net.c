@@ -1,7 +1,7 @@
 #include <enet/enet.h>
 #include <math.h>
 #include "net.h"
-#include "game.h"
+#include "client.h"
 #include "player.h"
 #include "object.h"
 #include "map.h"
