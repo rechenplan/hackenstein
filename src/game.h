@@ -23,12 +23,10 @@ typedef struct _game_t {
 void game_init(game_t* game, object_t* me, map_t* map, net_t net, object_bank_t* objects);
 void game_cleanup(game_t* game);
 
-void game_on_load(game_t* game);
-void game_on_collide(game_t* game, object_t* player, object_t* object);
+void game_on_tick(game_t* game, int elapsed_time);
+void game_on_collide(game_t* game, object_t* object);
 void game_on_key_down(game_t* game, int key);
 void game_on_key_up(game_t* game, int key);
-void game_on_join(game_t* game, object_t* player);
-void game_on_leave(game_t* game, object_t* player);
 void game_on_receive(game_t* game, char* message);
 
 #endif

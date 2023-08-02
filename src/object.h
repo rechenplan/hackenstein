@@ -15,11 +15,11 @@ typedef struct _object_t {
   /* belongs here */
   int                 active;
   struct _player_t*   owner;
-  physics_t           physics;
   int                 next_respawn;
-  int                 bounces_left;
   int                 boom;
   int                 exploding;
+  physics_t           physics;
+  int                 on_collision;
 
   /* belongs on blueprint */
   int                 type;
@@ -29,7 +29,7 @@ typedef struct _object_t {
   double              collision_radius;
   int                 respawn_time;
   int                 max_boom;
-  int                 max_bounces;
+  int                 bounces_left;
 
 } object_t;
 

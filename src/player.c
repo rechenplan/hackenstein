@@ -49,7 +49,9 @@ void player_update(player_t* player, object_bank_t* objects, game_t* game, int e
     }
     distance = SQUARED(object->physics.position.x - player->object->physics.position.x) + SQUARED(object->physics.position.y - player->object->physics.position.y);
     if (distance < object->collision_radius * object->collision_radius) {
-      game_on_collide(game, player->object, object);
+      if (player->local) {
+        game_on_collide(game, object);
+      }
       object_collide_with_player(object);
     }
   }

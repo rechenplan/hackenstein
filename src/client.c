@@ -40,9 +40,6 @@ void client_init(client_t* client, char* host, int port, int my_id, int start_ti
     player_init(&client->players[i], &client->objects, i == my_id);
   }
   game_init(&client->game, client->players[my_id].object, &client->map, client->net, &client->objects);
-  for (i = 0; i < MAX_PLAYERS; i++) {
-    game_on_join(&client->game, client->players[i].object);
-  }
 }
 
 int client_update(client_t* client, int current_time, int *sleep) {
@@ -62,6 +59,7 @@ int client_update(client_t* client, int current_time, int *sleep) {
     if (client->net) {
       net_update(client->net, client->players, &client->map, client->my_id, &client->game, current_time);
     }
+    game_on_tick(&client->game, 1000 / NET_FRAME_LIMIT);
     client->net_frame++;
     frame_computed = 1;
   }
@@ -101,7 +99,6 @@ void client_cleanup(client_t* client) {
   input_cleanup(&client->input);
   object_cleanup(&client->objects);
   for (i = 0; i < MAX_PLAYERS; i++) {
-    game_on_leave(&client->game, client->players[i].object);
     player_cleanup(&client->players[i]);
   }
   lfb_cleanup(&client->lfb);
