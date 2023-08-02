@@ -29,7 +29,7 @@ int WinMain(HINSTANCE inst, HINSTANCE p_inst, LPSTR arg, int show) {
         printf("connection received.\n");
         break;
       case ENET_EVENT_TYPE_RECEIVE:
-        enet_host_broadcast(server, 0, event.packet);
+        enet_host_broadcast(server, event.channelID, event.packet);
         break;
       case ENET_EVENT_TYPE_DISCONNECT:
         printf("disconnect received.\n");

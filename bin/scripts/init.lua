@@ -1,12 +1,12 @@
 function map_load(map)
-  print("lua: map_load()")
 end
 
 function collision(player, object)
-  print("lua: collision()")
 end
 
 function key_down(key)
+  print("You sent '" .. string.char(key) .."'")
+  broadcast(string.char(key))
 end
 
 function key_up(key)
@@ -19,4 +19,8 @@ function player_init(player)
 end
 
 function player_cleanup(player)
+end
+
+function receive(message)
+  print("You received '" .. message .. "'")
 end

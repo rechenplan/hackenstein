@@ -1,3 +1,4 @@
+
 #include "game.h"
 #include "player.h"
 #include "object.h"
@@ -7,22 +8,48 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-/*
+static int l_broadcast(lua_State* state) {
+  const char* str;
+  game_t* game;
 
-  create_object
-  net_send_packet
+  lua_getglobal(state, "_GAME");
+  game = (game_t*) lua_touserdata(state, -1);
+  str = luaL_checkstring(state, 1);
+  net_send_message(game->net, str);
+  return 0;
+}
 
-*/
+static int l_map_set_cell(lua_State* state) {
+  map_t* map;
+  int x, y;
+  cell_t cell;
+
+  map = (map_t*) lua_touserdata(state, 1);
+  x = luaL_checknumber(state, 2);
+  y = luaL_checknumber(state, 3);
+  cell = luaL_checknumber(state, 4);
+  map_set_cell(map, x, y, cell);
+  return 0;
+}
+
+static int l_map_get_cell(lua_State* state) {
+  map_t* map;
+  int x, y;
+  cell_t cell;
+
+  map = (map_t*) lua_touserdata(state, 1);
+  x = luaL_checknumber(state, 2);
+  y = luaL_checknumber(state, 3);
+  lua_pushnumber(state, map_get_cell(map, x, y));
+  return 1;
+}
+
 
 static void game_api_create_object(game_t* game, object_t* blueprint) {
   object_t* object;
   object = object_create(game->objects);
   memcpy(object, blueprint, sizeof(object_t));
   object->active = 1;
-}
-
-static void game_api_broadcast(game_t* game, unsigned char* buffer, int length) {
-  net_send_packet(game->net, buffer, length);
 }
 
 void game_init(game_t* game, player_t* local_player, net_t net, object_bank_t* objects) {
@@ -34,6 +61,19 @@ void game_init(game_t* game, player_t* local_player, net_t net, object_bank_t* o
   if (luaL_dofile(game->lua, "scripts/init.lua") != LUA_OK) {
     printf("Error executing init.lua:\n%s", lua_tostring(game->lua, -1));
   }
+
+  lua_pushcfunction(game->lua, l_broadcast);
+  lua_setglobal(game->lua, "broadcast");
+
+  lua_pushcfunction(game->lua, l_map_set_cell);
+  lua_setglobal(game->lua, "set_map");
+
+  lua_pushcfunction(game->lua, l_map_get_cell);
+  lua_setglobal(game->lua, "get_map");
+
+  lua_pushlightuserdata(game->lua, game);
+  lua_setglobal(game->lua, "_GAME");
+
 }
 
 void game_cleanup(game_t* game) {
@@ -42,20 +82,20 @@ void game_cleanup(game_t* game) {
 
 void game_map_load(game_t* game, map_t* map) {
   lua_getglobal(game->lua, "map_load");
-  memcpy(lua_newuserdata(game->lua, sizeof(map_t)), map, sizeof(map_t));
+  lua_pushlightuserdata(game->lua, map);
   lua_pcall(game->lua, 1, 0, 0);
 }
 
 void game_player_collide_with_object(game_t* game, player_t* player, object_t* object) {
   lua_getglobal(game->lua, "collision");
-  memcpy(lua_newuserdata(game->lua, sizeof(player_t)), player, sizeof(player_t));
-  memcpy(lua_newuserdata(game->lua, sizeof(object_t)), object, sizeof(object_t));
+  lua_pushlightuserdata(game->lua, player);
+  lua_pushlightuserdata(game->lua, object);
   lua_pcall(game->lua, 2, 0, 0);
 }
 
 void game_player_update(game_t* game, player_t* player, int elapsed_time) {
   lua_getglobal(game->lua, "update");
-  memcpy(lua_newuserdata(game->lua, sizeof(player_t)), player, sizeof(player_t));
+  lua_pushlightuserdata(game->lua, player);
   lua_pushnumber(game->lua, elapsed_time);
   lua_pcall(game->lua, 1, 0, 0);
 }
@@ -74,15 +114,18 @@ void game_key_up(game_t* game, int key) {
 
 void game_player_init(game_t* game, player_t* player) {
   lua_getglobal(game->lua, "player_init");
-  memcpy(lua_newuserdata(game->lua, sizeof(player_t)), player, sizeof(player_t));
+  lua_pushlightuserdata(game->lua, player);
   lua_pcall(game->lua, 1, 0, 0);
 }
 
 void game_player_cleanup(game_t* game, player_t* player) {
   lua_getglobal(game->lua, "player_cleanup");
-  memcpy(lua_newuserdata(game->lua, sizeof(player_t)), player, sizeof(player_t));
+  lua_pushlightuserdata(game->lua, player);
   lua_pcall(game->lua, 1, 0, 0);
 }
 
-void game_receive_packet(game_t* game, player_t* source, unsigned char* data, int data_len) {
+void game_receive_message(game_t* game, char* message) {
+  lua_getglobal(game->lua, "receive");
+  lua_pushstring(game->lua, message);
+  lua_pcall(game->lua, 1, 0, 0);
 }

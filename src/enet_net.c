@@ -7,7 +7,7 @@
 #include "game.h"
 #include "net.h"
 
-#define NET_CHANNELS 2
+#define NET_CHANNELS 16
 
 typedef struct _enet_net_t {
   ENetHost* client;
@@ -23,7 +23,7 @@ void* net_init(char* host, int port) {
   if (enet_initialize() != 0) {
     return NULL;
   }
-  net->client = enet_host_create(NULL, 1, NET_CHANNELS, 0, 0);
+  net->client = enet_host_create(NULL, 1, 0, 0, 0);
   enet_address_set_host(&address, host);
   address.port = port;
   net->peer = enet_host_connect(net->client, &address, NET_CHANNELS, 0);
@@ -46,12 +46,13 @@ void net_update(net_t net, player_t players[MAX_PLAYERS], map_t* map, int my_id,
 
   /* receive data from server */
   while (enet_host_service(enet->client, &event, 0) > 0) {
+
     if (event.type == ENET_EVENT_TYPE_RECEIVE) {
       /* position packet */
       if (event.channelID == 0) {
         ptr = (char*) event.packet->data;
         id = *((uint8_t*) ptr); ptr++;
-        if (id != my_id) {
+        if (id != my_id && id < MAX_PLAYERS) {
           players[id].remote.packet_time = current_time;
           players[id].remote.last_position = players[id].object->physics.position;
           players[id].remote.last_rotation = players[id].object->physics.rotation;
@@ -63,14 +64,13 @@ void net_update(net_t net, player_t players[MAX_PLAYERS], map_t* map, int my_id,
           players[id].remote.current_position.z = *((uint8_t*) ptr) / 255.0; ptr++;
         }
       }
+
       /* game packet */
       if (event.channelID == 1) {
         ptr = (char*) event.packet->data;
-        id = *((uint8_t*) ptr); ptr++;
-        if (id != my_id) {
-          game_receive_packet(game, &players[id], event.packet->data, event.packet->dataLength);
-        }
+        game_receive_message(game, ptr);
       }
+
       enet_packet_destroy(event.packet);
     }
   }
@@ -89,12 +89,12 @@ void net_update(net_t net, player_t players[MAX_PLAYERS], map_t* map, int my_id,
   }
 }
 
-void net_send_packet(net_t net, uint8_t* data, int length) {
+void net_send_message(net_t net, const char* msg) {
   ENetPacket* packet;
   enet_net_t* enet;
 
   enet = (enet_net_t*) net;
-  packet = enet_packet_create(data, length, 0);
+  packet = enet_packet_create(msg, strlen(msg) + 1, 0);
   if (packet) {
     enet_peer_send(enet->peer, 1, packet);
     enet_host_flush(enet->client);
