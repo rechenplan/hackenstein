@@ -1,4 +1,3 @@
-
 #include "game.h"
 #include "player.h"
 #include "object.h"
@@ -35,21 +34,12 @@ static int l_map_set_cell(lua_State* state) {
 static int l_map_get_cell(lua_State* state) {
   map_t* map;
   int x, y;
-  cell_t cell;
 
   map = (map_t*) lua_touserdata(state, 1);
   x = luaL_checknumber(state, 2);
   y = luaL_checknumber(state, 3);
   lua_pushnumber(state, map_get_cell(map, x, y));
   return 1;
-}
-
-
-static void game_api_create_object(game_t* game, object_t* blueprint) {
-  object_t* object;
-  object = object_create(game->objects);
-  memcpy(object, blueprint, sizeof(object_t));
-  object->active = 1;
 }
 
 void game_init(game_t* game, player_t* local_player, net_t net, object_bank_t* objects) {
@@ -59,17 +49,17 @@ void game_init(game_t* game, player_t* local_player, net_t net, object_bank_t* o
   game->lua = luaL_newstate();
   luaL_openlibs(game->lua);
   if (luaL_dofile(game->lua, "scripts/init.lua") != LUA_OK) {
-    printf("Error executing init.lua:\n%s", lua_tostring(game->lua, -1));
+    printf("Error executing init.lua:\n%s\n", lua_tostring(game->lua, -1));
   }
 
   lua_pushcfunction(game->lua, l_broadcast);
   lua_setglobal(game->lua, "broadcast");
 
   lua_pushcfunction(game->lua, l_map_set_cell);
-  lua_setglobal(game->lua, "set_map");
+  lua_setglobal(game->lua, "map_set");
 
   lua_pushcfunction(game->lua, l_map_get_cell);
-  lua_setglobal(game->lua, "get_map");
+  lua_setglobal(game->lua, "map_get");
 
   lua_pushlightuserdata(game->lua, game);
   lua_setglobal(game->lua, "_GAME");
@@ -91,13 +81,6 @@ void game_player_collide_with_object(game_t* game, player_t* player, object_t* o
   lua_pushlightuserdata(game->lua, player);
   lua_pushlightuserdata(game->lua, object);
   lua_pcall(game->lua, 2, 0, 0);
-}
-
-void game_player_update(game_t* game, player_t* player, int elapsed_time) {
-  lua_getglobal(game->lua, "update");
-  lua_pushlightuserdata(game->lua, player);
-  lua_pushnumber(game->lua, elapsed_time);
-  lua_pcall(game->lua, 1, 0, 0);
 }
 
 void game_key_down(game_t* game, int key) {

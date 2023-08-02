@@ -41,7 +41,6 @@ void client_init(client_t* client, char* host, int port, int my_id, int start_ti
       map_set_cell(&client->map, i, j, 0);
     }
   }
-  map_set_cell(&client->map, 7, 7, 1);
   game_map_load(&client->game, &client->map);
 
 }
@@ -62,9 +61,6 @@ int client_update(client_t* client, int current_time, int *sleep) {
   if (client->net_frame <= correct_net_frame) {
     if (client->net) {
       net_update(client->net, client->players, &client->map, client->my_id, &client->game, current_time);
-    }
-    for (i = 0; i < MAX_PLAYERS; i++) {
-      game_player_update(&client->game, &client->players[i], 1000 / NET_FRAME_LIMIT);
     }
     client->net_frame++;
     frame_computed = 1;
