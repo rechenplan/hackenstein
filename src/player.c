@@ -41,10 +41,10 @@ void player_update(player_t* player, object_bank_t* objects, game_t* game, int e
     player_net_interpolate(player, elapsed_time);
   }
 
-  /* detect player / object (including other players) collisions */
+  /* detect player / object (excluding other players) collisions */
   for (i = 0; i < objects->size; i++) {
     object = &objects->bank[i];
-    if (!object_is_valid(object) || object_is_exploding(object) || object_is_respawning(object) || object == player->object) {
+    if (!object_is_valid(object) || object_is_exploding(object) || object_is_respawning(object) || object->type == OBJECT_TYPE_PLAYER) {
       continue;
     }
     distance = SQUARED(object->physics.position.x - player->object->physics.position.x) + SQUARED(object->physics.position.y - player->object->physics.position.y);
