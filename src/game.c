@@ -42,9 +42,10 @@ static int l_map_get_cell(lua_State* state) {
   return 1;
 }
 
-void game_init(game_t* game, player_t* local_player, net_t net, object_bank_t* objects) {
-  game->local_player = local_player;
+void game_init(game_t* game, object_t* me, map_t* map, net_t net, object_bank_t* objects) {
   game->net = net;
+  game->me = me;
+  game->map = map;
   game->objects = objects;
   game->lua = luaL_newstate();
   luaL_openlibs(game->lua);
@@ -63,52 +64,53 @@ void game_init(game_t* game, player_t* local_player, net_t net, object_bank_t* o
 
   lua_pushlightuserdata(game->lua, game);
   lua_setglobal(game->lua, "_GAME");
-
+  game_on_load(game);
 }
 
 void game_cleanup(game_t* game) {
   lua_close(game->lua);
 }
 
-void game_map_load(game_t* game, map_t* map) {
-  lua_getglobal(game->lua, "map_load");
-  lua_pushlightuserdata(game->lua, map);
-  lua_pcall(game->lua, 1, 0, 0);
+void game_on_load(game_t* game) {
+  lua_getglobal(game->lua, "on_load");
+  lua_pushlightuserdata(game->lua, game->me);
+  lua_pushlightuserdata(game->lua, game->map);
+  lua_pcall(game->lua, 2, 0, 0);
 }
 
-void game_player_collide_with_object(game_t* game, player_t* player, object_t* object) {
-  lua_getglobal(game->lua, "collision");
+void game_on_collide(game_t* game, object_t* player, object_t* object) {
+  lua_getglobal(game->lua, "on_collide");
   lua_pushlightuserdata(game->lua, player);
   lua_pushlightuserdata(game->lua, object);
   lua_pcall(game->lua, 2, 0, 0);
 }
 
-void game_key_down(game_t* game, int key) {
-  lua_getglobal(game->lua, "key_down");
+void game_on_key_down(game_t* game, int key) {
+  lua_getglobal(game->lua, "on_key_down");
   lua_pushnumber(game->lua, key);
   lua_pcall(game->lua, 1, 0, 0);
 }
 
-void game_key_up(game_t* game, int key) {
-  lua_getglobal(game->lua, "key_up");
+void game_on_key_up(game_t* game, int key) {
+  lua_getglobal(game->lua, "on_key_up");
   lua_pushnumber(game->lua, key);
   lua_pcall(game->lua, 1, 0, 0);
 }
 
-void game_player_init(game_t* game, player_t* player) {
-  lua_getglobal(game->lua, "player_init");
+void game_on_join(game_t* game, object_t* player) {
+  lua_getglobal(game->lua, "on_join");
   lua_pushlightuserdata(game->lua, player);
   lua_pcall(game->lua, 1, 0, 0);
 }
 
-void game_player_cleanup(game_t* game, player_t* player) {
-  lua_getglobal(game->lua, "player_cleanup");
+void game_on_leave(game_t* game, object_t* player) {
+  lua_getglobal(game->lua, "on_leave");
   lua_pushlightuserdata(game->lua, player);
   lua_pcall(game->lua, 1, 0, 0);
 }
 
-void game_receive_message(game_t* game, char* message) {
-  lua_getglobal(game->lua, "receive");
+void game_on_receive(game_t* game, char* message) {
+  lua_getglobal(game->lua, "on_receive");
   lua_pushstring(game->lua, message);
   lua_pcall(game->lua, 1, 0, 0);
 }

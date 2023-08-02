@@ -30,19 +30,19 @@ void client_init(client_t* client, char* host, int port, int my_id, int start_ti
   lfb_init(&client->lfb, LFB_WIDTH, LFB_HEIGHT);
   caster_init(&client->caster, &client->lfb);
   hud_init(&client->hud, 8);
-  game_init(&client->game, &client->players[my_id], client->net, &client->objects);
-  for (i = 0; i < MAX_PLAYERS; i++) {
-    player_init(&client->players[i], &client->objects, i == my_id);
-    game_player_init(&client->game, &client->players[i]);
-  }
   map_init(&client->map, 32, 32, 1);
   for (j = 0; j < client->map.height; j++) {
     for (i = 0; i < client->map.width; i++) {
       map_set_cell(&client->map, i, j, 0);
     }
   }
-  game_map_load(&client->game, &client->map);
-
+  for (i = 0; i < MAX_PLAYERS; i++) {
+    player_init(&client->players[i], &client->objects, i == my_id);
+  }
+  game_init(&client->game, client->players[my_id].object, &client->map, client->net, &client->objects);
+  for (i = 0; i < MAX_PLAYERS; i++) {
+    game_on_join(&client->game, client->players[i].object);
+  }
 }
 
 int client_update(client_t* client, int current_time, int *sleep) {
@@ -101,7 +101,7 @@ void client_cleanup(client_t* client) {
   input_cleanup(&client->input);
   object_cleanup(&client->objects);
   for (i = 0; i < MAX_PLAYERS; i++) {
-    game_player_cleanup(&client->game, &client->players[i]);
+    game_on_leave(&client->game, client->players[i].object);
     player_cleanup(&client->players[i]);
   }
   lfb_cleanup(&client->lfb);

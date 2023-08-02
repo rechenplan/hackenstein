@@ -5,3 +5,6 @@ windows:
 libs:
 	x86_64-w64-mingw32-gcc -c -O2 -Wall lua-5.4.6/src/*.c
 	x86_64-w64-mingw32-gcc -c -O2 -Wall ./enet-1.3.17/callbacks.c ./enet-1.3.17/compress.c ./enet-1.3.17/host.c ./enet-1.3.17/list.c ./enet-1.3.17/packet.c ./enet-1.3.17/peer.c ./enet-1.3.17/protocol.c ./enet-1.3.17/win32.c -I./enet-1.3.17/include
+
+clean:
+	rm -f *.o

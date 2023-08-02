@@ -1,22 +1,22 @@
-function map_load(map)
+function on_load(me, map)
   map_set(map, 8, 8, 1)
 end
 
-function collision(player, object)
+function on_collide(player, object)
 end
 
-function key_down(key)
+function on_key_down(key)
   broadcast(string.char(key))
 end
 
-function key_up(key)
+function on_key_up(key)
 end
 
-function player_init(player)
+function on_join(player)
 end
 
-function player_cleanup(player)
+function on_leave(player)
 end
 
-function receive(message)
+function on_receive(message)
 end

@@ -68,7 +68,7 @@ void net_update(net_t net, player_t players[MAX_PLAYERS], map_t* map, int my_id,
       /* game packet */
       if (event.channelID == 1) {
         ptr = (char*) event.packet->data;
-        game_receive_message(game, ptr);
+        game_on_receive(game, ptr);
       }
 
       enet_packet_destroy(event.packet);

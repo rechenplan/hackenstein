@@ -49,7 +49,7 @@ void player_update(player_t* player, object_bank_t* objects, game_t* game, int e
     }
     distance = SQUARED(object->physics.position.x - player->object->physics.position.x) + SQUARED(object->physics.position.y - player->object->physics.position.y);
     if (distance < object->collision_radius * object->collision_radius) {
-      game_player_collide_with_object(game, player, object);
+      game_on_collide(game, player->object, object);
       object_collide_with_player(object);
     }
   }
@@ -118,13 +118,13 @@ int player_process_input(player_t* player, input_t* input, game_t* game, int ela
 
   for (i = 0; i < INPUT_KEY_SIZE; i++) {
     if (key_down[i]) {
-      game_key_down(game, i);
+      game_on_key_down(game, i);
     }
   }
 
   for (i = 0; i < INPUT_KEY_SIZE; i++) {
     if (key_up[i]) {
-      game_key_up(game, i);
+      game_on_key_up(game, i);
     }
   }
 
