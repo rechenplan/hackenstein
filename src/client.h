@@ -21,6 +21,7 @@ typedef struct _client_t {
   object_bank_t objects;
   input_t input;
   lfb_t lfb;
+  lfb_t game_hud;
   caster_t caster;
   hud_t hud;
   int my_id;

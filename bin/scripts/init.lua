@@ -1,3 +1,4 @@
+printxy("Hello from Lua!", 0, 0)
 set_map(8, 8, 1)
 set_map(9, 9, 1)
 

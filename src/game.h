@@ -6,6 +6,7 @@
 #include "player_struct.h"
 #include "object.h"
 #include "map.h"
+#include "lfb.h"
 #include "net_struct.h"
 #include "game_struct.h"
 
@@ -15,7 +16,7 @@
 #include <lauxlib.h>
 #include <lualib.h>
 
-void game_init(game_t* game, object_t* me, map_t* map, net_t net, object_bank_t* objects);
+void game_init(game_t* game, object_t* me, map_t* map, net_t net, lfb_t* lfb, object_bank_t* objects);
 void game_cleanup(game_t* game);
 
 void game_on_tick(game_t* game, int elapsed_time);

@@ -2,6 +2,7 @@
 #include "player.h"
 #include "object.h"
 #include "net.h"
+#include "lfb.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -22,6 +23,35 @@ static void set_field(lua_State* state, const char* key, double value) {
   lua_pushstring(state, key);
   lua_pushnumber(state, value);
   lua_settable(state, -3);
+}
+
+static int l_printxy(lua_State* state) {
+  game_t* game;
+  const char* str;
+  int x, y;
+
+  lua_getglobal(state, "_GAME");
+  game = (game_t*) lua_touserdata(state, -1);
+  lua_pop(state, 1);
+  str = luaL_checkstring(state, 1);
+  x = luaL_checknumber(state, 2);
+  y = luaL_checknumber(state, 3);
+  lfb_print(game->lfb, str, x, y);
+  return 0;
+}
+
+static int l_cls(lua_State* state) {
+  game_t* game;
+  pixel_t* buffer;
+  int i;
+
+  lua_getglobal(state, "_GAME");
+  game = (game_t*) lua_touserdata(state, -1);
+  buffer = lfb_get_buffer(game->lfb);
+  for (i = 0; i < game->lfb->width * game->lfb->height; i++) {
+    buffer[i] = 0;
+  }
+  return 0;
 }
 
 /* spawn(blueprint, callback) */
@@ -183,10 +213,11 @@ static int l_get_rotation(lua_State* state) {
   return 1;
 }
 
-void game_init(game_t* game, object_t* me, map_t* map, net_t net, object_bank_t* objects) {
+void game_init(game_t* game, object_t* me, map_t* map, net_t net, lfb_t* lfb, object_bank_t* objects) {
   game->net = net;
   game->me = me;
   game->map = map;
+  game->lfb = lfb;
   game->objects = objects;
   game->lua = luaL_newstate();
   luaL_openlibs(game->lua);
@@ -213,6 +244,10 @@ void game_init(game_t* game, object_t* me, map_t* map, net_t net, object_bank_t*
   lua_setglobal(game->lua, "get_rotation");
   lua_pushcfunction(game->lua, l_connect);
   lua_setglobal(game->lua, "connect");
+  lua_pushcfunction(game->lua, l_printxy);
+  lua_setglobal(game->lua, "printxy");
+  lua_pushcfunction(game->lua, l_cls);
+  lua_setglobal(game->lua, "cls");
 
   lua_pushlightuserdata(game->lua, game);
   lua_setglobal(game->lua, "_GAME");

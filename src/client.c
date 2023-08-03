@@ -29,6 +29,7 @@ void client_init(client_t* client, int listen_port, int start_time) {
   input_init(&client->input);
   object_init(&client->objects, MAX_SPRITES);
   lfb_init(&client->lfb, LFB_WIDTH, LFB_HEIGHT);
+  lfb_init(&client->game_hud, LFB_WIDTH, LFB_HEIGHT);
   caster_init(&client->caster, &client->lfb);
   hud_init(&client->hud, 8);
   map_init(&client->map, 32, 32, 1);
@@ -40,7 +41,7 @@ void client_init(client_t* client, int listen_port, int start_time) {
   for (i = 0; i < MAX_PLAYERS; i++) {
     player_init(&client->players[i], &client->objects, (i == client->my_id));
   }
-  game_init(&client->game, client->players[client->my_id].object, &client->map, client->net, &client->objects);
+  game_init(&client->game, client->players[client->my_id].object, &client->map, client->net, &client->game_hud, &client->objects);
 }
 
 int client_update(client_t* client, int current_time, int *sleep) {
@@ -88,7 +89,7 @@ int client_update(client_t* client, int current_time, int *sleep) {
   correct_gfx_frame = (current_time - client->start_time) * GFX_FRAME_LIMIT / 1000;
   if (client->gfx_frame <= correct_gfx_frame) {
     caster_update(&client->caster, &client->map, &client->objects, spec_player);
-    hud_update(&client->hud, 100, &client->lfb);
+    hud_update(&client->hud, 100, &client->lfb, &client->game_hud);
     render_update(client->render, &client->lfb);
     client->gfx_frame++;
     frame_computed = 1;

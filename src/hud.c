@@ -6,11 +6,14 @@ void hud_init(hud_t* hud, int cross_hair_size) {
   return;
 }
 
-void hud_update(hud_t* hud, int health, lfb_t* lfb) {
+void hud_update(hud_t* hud, int health, lfb_t* lfb, lfb_t* game) {
   int center_x, center_y, i, j, health_x;
   pixel_t* buffer;
+  pixel_t* gb;
 
   buffer = lfb_get_buffer(lfb);
+  gb = lfb_get_buffer(game);
+
   center_x = lfb->width / 2;
   center_y = lfb->height / 2;
   for (i = 0; i < hud->cross_hair_size; i++) {
@@ -28,6 +31,10 @@ void hud_update(hud_t* hud, int health, lfb_t* lfb) {
         buffer[i + health_x + j * lfb->width] = 0xffff0000;
       }
     }
+  }
+
+  for (i = 0; i < lfb->height * lfb->width; i++) {
+    buffer[i] = gb[i] ? gb[i] : buffer[i];
   }
 }
 
