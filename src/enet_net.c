@@ -55,6 +55,9 @@ void net_update(net_t net, player_t players[MAX_PLAYERS], map_t* map, int my_id,
           break;
         }
       }
+      if (i == MAX_PLAYERS) {
+        enet_peer_reset(event.peer);
+      }
     }
 
     if (event.type == ENET_EVENT_TYPE_DISCONNECT) {
@@ -116,7 +119,7 @@ int net_connect(net_t net, const char* host, int port) {
   return enet_host_connect(enet->client, &address, 2, 0) != NULL;
 }
 
-void net_send_message(net_t net, const char* msg) {
+void net_broadcast(net_t net, const char* msg) {
   ENetPacket* packet;
   enet_net_t* enet;
 

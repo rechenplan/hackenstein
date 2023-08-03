@@ -90,7 +90,7 @@ static int l_broadcast(lua_State* state) {
   lua_getglobal(state, "_GAME");
   game = (game_t*) lua_touserdata(state, -1);
   str = luaL_checkstring(state, 1);
-  net_send_message(game->net, str);
+  net_broadcast(game->net, str);
   return 0;
 }
 
