@@ -143,6 +143,8 @@ void object_update(object_bank_t* objects, map_t* map, int elapsed_time) {
         object->bounces_left--;
       } else if (!object->bounces_left) {
         object_collide_with_wall(object);
+        /* TODO: get this compiling */
+        /* game_on_wall_collide(game, object); */
       }
     }
   }

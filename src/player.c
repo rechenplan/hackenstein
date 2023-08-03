@@ -50,7 +50,7 @@ void player_update(player_t* player, object_bank_t* objects, game_t* game, int e
     distance = SQUARED(object->physics.position.x - player->object->physics.position.x) + SQUARED(object->physics.position.y - player->object->physics.position.y);
     if (distance < object->collision_radius * object->collision_radius) {
       if (player->local) {
-        game_on_collide(game, object);
+        game_on_player_collide(game, object);
       }
       object_collide_with_player(object);
     }
@@ -73,6 +73,7 @@ void player_init(player_t* player, object_bank_t* objects, int local) {
   player->object->bounces_left = 0;
   player->object->height = 0.8;
   player->object->width = 0.5;
+  player->object->on_collision = LUA_NOREF;
 }
 
 void player_cleanup(player_t* player) {

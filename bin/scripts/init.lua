@@ -62,7 +62,21 @@ end
 
 function on_key_down(key)
   if key == 32 then
-    spawn(function () print("collision (" .. tostring(key) .. ")") end)
+    spawn(
+    -- specify properties of object we're spawning
+    {
+      position_x = 1.5,
+      position_y = 1.5,
+      position_z = 0,
+      height = 0.5,
+      width = 0.5,
+      collision_radius = 1.0,
+      color = 0xff00ff
+    },
+    -- executed when object collides with you
+    function ()
+      print("collision (" .. tostring(key) .. ")")
+    end)
   end
 end
 

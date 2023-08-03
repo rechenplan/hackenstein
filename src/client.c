@@ -23,6 +23,7 @@ void client_init(client_t* client, char* host, int port, int my_id, int start_ti
   client->my_id = my_id;
   client->physics_frame = 0;
   client->gfx_frame = 0;
+  client->game_frame = 0;
   client->render = render_init();
   client->net = net_init(host, port);
   input_init(&client->input);
@@ -43,7 +44,7 @@ void client_init(client_t* client, char* host, int port, int my_id, int start_ti
 }
 
 int client_update(client_t* client, int current_time, int *sleep) {
-  int done, i, correct_net_frame, correct_physics_frame, correct_gfx_frame;
+  int done, i, correct_net_frame, correct_physics_frame, correct_gfx_frame, correct_game_frame;
   int frame_computed;
   player_t* myself;
   player_t* spec_player;
@@ -53,13 +54,20 @@ int client_update(client_t* client, int current_time, int *sleep) {
   frame_computed = 0;
   done = 0;
 
+  /* game frame */
+  correct_game_frame = (current_time - client->start_time) * GAME_FRAME_LIMIT / 1000;
+  if (client->game_frame <= correct_game_frame) {
+    game_on_tick(&client->game, 1000 / GAME_FRAME_LIMIT);
+    client->game_frame++;
+    frame_computed = 1;
+  }
+
   /* net frame */
   correct_net_frame = (current_time - client->start_time) * NET_FRAME_LIMIT / 1000;
   if (client->net_frame <= correct_net_frame) {
     if (client->net) {
       net_update(client->net, client->players, &client->map, client->my_id, &client->game, current_time);
     }
-    game_on_tick(&client->game, 1000 / NET_FRAME_LIMIT);
     client->net_frame++;
     frame_computed = 1;
   }

@@ -7,31 +7,48 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+static double get_field(lua_State* state, const char* key) {
+  double result = 0;
+  lua_pushstring(state, key);
+  lua_gettable(state, -2);
+  if (lua_isnumber(state, -1)) {
+    result = lua_tonumber(state, -1);
+  }
+  lua_pop(state, 1);
+  return result;
+}
+
+static void set_field(lua_State* state, const char* key, double value) {
+  lua_pushstring(state, key);
+  lua_pushnumber(state, value);
+  lua_settable(state, -3);
+}
+
 /* spawn(blueprint, callback) */
 static int l_spawn(lua_State* state) {
   object_t *object;
   game_t* game;
+  int on_collision;
 
   lua_getglobal(state, "_GAME");
   game = (game_t*) lua_touserdata(state, -1);
   lua_pop(state, 1);
 
-  /*
-  get blueprint
-
-  lua_gettable(state, 1);
-  */
-
-  object = object_create(game->objects);
-  object->physics.position.x = 5;
-  object->physics.position.y = 5;
-  object->physics.position.z = 0;
-  object->height = 0.5;
-  object->width = 0.5;
-  object->collision_radius = 1.0;
-  object->color = GRAYSCALE(255);
-  object->type = OBJECT_TYPE_PICKUP;
-  object->on_collision = luaL_ref(state, LUA_REGISTRYINDEX);
+  on_collision = luaL_ref(state, LUA_REGISTRYINDEX);
+  if (lua_istable(state, -1)) {
+    object = object_create(game->objects);
+    object->physics.position.x = get_field(state, "position_x");
+    object->physics.position.y = get_field(state, "position_y");
+    object->physics.position.z = get_field(state, "position_z");
+    object->height = get_field(state, "height");
+    object->width = get_field(state, "width");
+    object->collision_radius = get_field(state, "collision_radius");
+    object->color = get_field(state, "color");
+    object->type = OBJECT_TYPE_PICKUP;
+    object->on_collision = on_collision;
+  } else {
+    luaL_unref(state, LUA_REGISTRYINDEX, on_collision);
+  }
   return 0;
 }
 
@@ -134,13 +151,20 @@ void game_cleanup(game_t* game) {
   lua_close(game->lua);
 }
 
-/* TODO: need to call luaL_unref when being destroyed in general */
-void game_on_collide(game_t* game, object_t* object) {
-  lua_rawgeti(game->lua, LUA_REGISTRYINDEX, object->on_collision);
-  if (lua_pcall(game->lua, 0, 0, 0) != LUA_OK) {
-    printf("Error executing collision callback:\n%s\n", lua_tostring(game->lua, -1));
+void game_on_wall_collide(game_t* game, object_t* object) {
+  if (object->on_collision != LUA_NOREF) {
+    luaL_unref(game->lua, LUA_REGISTRYINDEX, object->on_collision);
   }
-  luaL_unref(game->lua, LUA_REGISTRYINDEX, object->on_collision);
+}
+
+void game_on_player_collide(game_t* game, object_t* object) {
+  if (object->on_collision != LUA_NOREF) {
+    lua_rawgeti(game->lua, LUA_REGISTRYINDEX, object->on_collision);
+    if (lua_pcall(game->lua, 0, 0, 0) != LUA_OK) {
+      printf("Error executing collision callback:\n%s\n", lua_tostring(game->lua, -1));
+    }
+    luaL_unref(game->lua, LUA_REGISTRYINDEX, object->on_collision);
+  }
 }
 
 void game_on_key_down(game_t* game, int key) {

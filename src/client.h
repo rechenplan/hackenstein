@@ -35,6 +35,7 @@ typedef struct _client_t {
   int net_frame;
   int physics_frame;
   int gfx_frame;
+  int game_frame;
 } client_t;
 
 void client_init(client_t* client, char* host, int port, int my_id, int ms_time);
