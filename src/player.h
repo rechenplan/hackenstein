@@ -12,7 +12,7 @@
 #include "player_struct.h"
 
 /* per second */
-#define PLAYER_FRICTION (1.0 / 100000.0)
+#define PLAYER_FRICTION (0.9)
 #define PLAYER_BOUNCY (0.0)
 #define PLAYER_MOVE_SPEED (40.0)
 #define PLAYER_ROT_SPEED (TAU / 4)

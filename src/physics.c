@@ -45,8 +45,8 @@ int physics_update(physics_t* physics, map_t* map, int bounce, double height, in
     collision = 1;
   }
 
-  physics->velocity.x *= pow(physics->friction, time);
-  physics->velocity.y *= pow(physics->friction, time);
+  physics->velocity.x *= physics->friction;
+  physics->velocity.y *= physics->friction;
   physics->velocity.z -= GRAVITY * time;
 
   return collision;

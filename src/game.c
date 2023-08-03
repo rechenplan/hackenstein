@@ -82,50 +82,92 @@ static int l_broadcast(lua_State* state) {
 }
 
 static int l_set_map(lua_State* state) {
-  /* TODO: this should take a 2d array */
-  /*
-  map = (map_t*) lua_touserdata(state, 1);
-  x = luaL_checknumber(state, 2);
-  y = luaL_checknumber(state, 3);
-  cell = luaL_checknumber(state, 4);
-  map_set_cell(map, x, y, cell);
-  */
+  int x, y, c;
+  game_t* game;
+
+  lua_getglobal(state, "_GAME");
+  game = (game_t*) lua_touserdata(state, -1);
+  lua_pop(state, 1);
+  x = luaL_checknumber(state, 1);
+  y = luaL_checknumber(state, 2);
+  c = luaL_checknumber(state, 3);
+  map_set_cell(game->map, x, y, c);
   return 0;
 }
 
 static int l_get_map(lua_State* state) {
-  /* TODO: this should return a 2d array */
-  /*
-  map = (map_t*) lua_touserdata(state, 1);
-  x = luaL_checknumber(state, 2);
-  y = luaL_checknumber(state, 3);
-  lua_pushnumber(state, map_get_cell(map, x, y));
-  */
-  return 0;
+  int x, y;
+  game_t* game;
+
+  lua_getglobal(state, "_GAME");
+  game = (game_t*) lua_touserdata(state, -1);
+  lua_pop(state, 1);
+  x = luaL_checknumber(state, 1);
+  y = luaL_checknumber(state, 2);
+  lua_pushnumber(state, map_get_cell(game->map, x, y));
+  return 1;
 }
 
 static int l_set_position(lua_State* state) {
+  game_t* game;
+  lua_getglobal(state, "_GAME");
+  game = (game_t*) lua_touserdata(state, -1);
+  lua_pop(state, 1);
+  game->me->physics.position.x = get_field(state, "x");
+  game->me->physics.position.y = get_field(state, "y");
+  game->me->physics.position.z = get_field(state, "z");
   return 0;
 }
 
 static int l_get_position(lua_State* state) {
-  return 0;
+  game_t* game;
+  lua_getglobal(state, "_GAME");
+  game = (game_t*) lua_touserdata(state, -1);
+  lua_pop(state, 1);
+  lua_newtable(state);
+  set_field(state, "x", game->me->physics.position.x);
+  set_field(state, "y", game->me->physics.position.y);
+  set_field(state, "z", game->me->physics.position.z);
+  return 1;
 }
 
 static int l_set_velocity(lua_State* state) {
+  game_t* game;
+  lua_getglobal(state, "_GAME");
+  game = (game_t*) lua_touserdata(state, -1);
+  lua_pop(state, 1);
+  game->me->physics.velocity.x = get_field(state, "x");
+  game->me->physics.velocity.y = get_field(state, "y");
+  game->me->physics.velocity.z = get_field(state, "z");
   return 0;
 }
 
 static int l_get_velocity(lua_State* state) {
-  return 0;
+  game_t* game;
+  lua_getglobal(state, "_GAME");
+  game = (game_t*) lua_touserdata(state, -1);
+  lua_pop(state, 1);
+  lua_newtable(state);
+  set_field(state, "x", game->me->physics.velocity.x);
+  set_field(state, "y", game->me->physics.velocity.y);
+  set_field(state, "z", game->me->physics.velocity.z);
+  return 1;
 }
 
 static int l_set_rotation(lua_State* state) {
+  game_t* game;
+  lua_getglobal(state, "_GAME");
+  game = (game_t*) lua_touserdata(state, -1);
+  game->me->physics.rotation = luaL_checknumber(state, 1);
   return 0;
 }
 
 static int l_get_rotation(lua_State* state) {
-  return 0;
+  game_t* game;
+  lua_getglobal(state, "_GAME");
+  game = (game_t*) lua_touserdata(state, -1);
+  lua_pushnumber(state, game->me->physics.rotation);
+  return 1;
 }
 
 void game_init(game_t* game, object_t* me, map_t* map, net_t net, object_bank_t* objects) {
