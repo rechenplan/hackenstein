@@ -48,10 +48,8 @@ void net_update(net_t net, player_t players[MAX_PLAYERS], map_t* map, int my_id,
 
     if (event.type == ENET_EVENT_TYPE_CONNECT) {
       event.peer->data = NULL;
-      printf("connection received\n");
       for (i = 0; i < MAX_PLAYERS; i++) {
         if (!players[i].connected) {
-          printf("assigned id = %d\n", i);
           players[i].connected = 1;
           event.peer->data = &players[i];
           break;
@@ -60,7 +58,6 @@ void net_update(net_t net, player_t players[MAX_PLAYERS], map_t* map, int my_id,
     }
 
     if (event.type == ENET_EVENT_TYPE_DISCONNECT) {
-      printf("connection lost\n");
       player = (player_t*) event.peer->data;
       if (player) {
         player->connected = 0;

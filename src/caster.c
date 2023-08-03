@@ -137,7 +137,7 @@ void caster_draw_objects(caster_t* caster, object_bank_t* objects, player_t* pla
   object_sort_by_dist(objects, pos);
   for (i = 0; i < objects->size; i++) {
     object = &objects->bank[objects->order[i]];
-    if (!object_is_valid(object) || object == player->object) {
+    if (!object_is_valid(object) || object == player->object || !object->owner->connected) {
       continue;
     }
     /* compute */

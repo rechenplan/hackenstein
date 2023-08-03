@@ -14,10 +14,6 @@
 #include "hud.h"
 #include "global.h"
 
-#define MAX_SPRITES (128)
-#define LFB_WIDTH   (512)
-#define LFB_HEIGHT  (288)
-
 typedef struct _client_t {
   player_t players[MAX_PLAYERS];
   render_t render;
