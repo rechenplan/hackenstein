@@ -137,7 +137,7 @@ void caster_draw_objects(caster_t* caster, object_bank_t* objects, player_t* pla
   object_sort_by_dist(objects, pos);
   for (i = 0; i < objects->size; i++) {
     object = &objects->bank[objects->order[i]];
-    if (!object_is_valid(object) || object_is_respawning(object) || object == player->object) {
+    if (!object_is_valid(object) || object == player->object) {
       continue;
     }
     /* compute */
@@ -148,7 +148,7 @@ void caster_draw_objects(caster_t* caster, object_bank_t* objects, player_t* pla
     transform_y = inv_det * (plane.x * object_y - plane.y * object_x);
     screen_x = (lfb->width / 2) * (1 + transform_x / transform_y);
     object_size = WALL_HEIGHT / transform_y;
-    boom = object->type == OBJECT_TYPE_PROJECTILE && object->exploding ? 1.0 + object->boom / 5.0 : 1.0;
+    boom = object->exploding ? 1.0 + object->boom / 5.0 : 1.0;
     draw_end_x = screen_x + object->width * object_size * boom / 2;
     draw_start_x = screen_x - object->width * object_size * boom / 2;
     draw_end_y = (lfb->height + object->height * object_size * boom) / 2 - object_size * (object->physics.position.z - 0.5);

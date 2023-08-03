@@ -1,4 +1,5 @@
 
+
 #ifndef SPRITE_H
 #define SPRITE_H
 
@@ -15,19 +16,17 @@ typedef struct _object_t {
   /* belongs here */
   int                 active;
   struct _player_t*   owner;
-  int                 next_respawn;
   int                 boom;
   int                 exploding;
   physics_t           physics;
   int                 on_collision;
 
   /* belongs on blueprint */
-  int                 type;
+  int                 is_player;
   double              height;
   double              width;
   pixel_t             color;
   double              collision_radius;
-  int                 respawn_time;
   int                 max_boom;
   int                 bounces_left;
 
@@ -40,17 +39,18 @@ typedef struct _object_bank_t {
   int       size;
 } object_bank_t;
 
-void object_collide_with_wall(object_t* object);
-void object_collide_with_player(object_t* object);
+#include "game_struct.h"
+
+void object_collide(object_t* object);
 void object_init(object_bank_t* objects, int size);
 object_t* object_create(object_bank_t* objects);
-void object_destroy(object_t* object);
-void object_update(object_bank_t* objects, map_t* map, int elapsed_time);
+void object_destroy(object_t* object, game_t* game);
+void object_update(object_bank_t* objects, map_t* map, game_t* game, int elapsed_time);
 void object_cleanup(object_bank_t* bank);
 void object_sort_by_dist(object_bank_t* bank, vec3_t pos);
+void object_explode(object_t* object);
 
 int object_is_valid(object_t* object);
 int object_is_exploding(object_t* object);
-int object_is_respawning(object_t* object);
 
 #endif

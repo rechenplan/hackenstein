@@ -36,18 +36,36 @@ static int l_spawn(lua_State* state) {
 
   on_collision = luaL_ref(state, LUA_REGISTRYINDEX);
   if (lua_istable(state, -1)) {
+
     object = object_create(game->objects);
+
     object->physics.position.x = get_field(state, "position_x");
     object->physics.position.y = get_field(state, "position_y");
     object->physics.position.z = get_field(state, "position_z");
+
+    object->physics.velocity.x = get_field(state, "velocity_x");
+    object->physics.velocity.y = get_field(state, "velocity_y");
+    object->physics.velocity.z = get_field(state, "velocity_z");
+
+    object->physics.rotation = get_field(state, "rotation");
+    object->physics.friction = get_field(state, "friction");
+    object->physics.bouncy = get_field(state, "bouncy");
+
+    object->bounces_left = get_field(state, "bounces");
     object->height = get_field(state, "height");
     object->width = get_field(state, "width");
     object->collision_radius = get_field(state, "collision_radius");
     object->color = get_field(state, "color");
-    object->type = OBJECT_TYPE_PICKUP;
+    object->max_boom = get_field(state, "explosion_size");
+
+    object->owner = game->me->owner;
+    object->is_player = 0;
     object->on_collision = on_collision;
+
   } else {
+
     luaL_unref(state, LUA_REGISTRYINDEX, on_collision);
+
   }
   return 0;
 }
@@ -151,19 +169,17 @@ void game_cleanup(game_t* game) {
   lua_close(game->lua);
 }
 
-void game_on_wall_collide(game_t* game, object_t* object) {
-  if (object->on_collision != LUA_NOREF) {
-    luaL_unref(game->lua, LUA_REGISTRYINDEX, object->on_collision);
-  }
-}
-
 void game_on_player_collide(game_t* game, object_t* object) {
   if (object->on_collision != LUA_NOREF) {
     lua_rawgeti(game->lua, LUA_REGISTRYINDEX, object->on_collision);
     if (lua_pcall(game->lua, 0, 0, 0) != LUA_OK) {
       printf("Error executing collision callback:\n%s\n", lua_tostring(game->lua, -1));
     }
+    /* this will be handled in object_destroy */
+    /*
     luaL_unref(game->lua, LUA_REGISTRYINDEX, object->on_collision);
+    object->on_collision = LUA_NOREF;
+    */
   }
 }
 

@@ -67,11 +67,19 @@ function on_key_down(key)
     {
       position_x = 1.5,
       position_y = 1.5,
-      position_z = 0,
+      position_z = 0.5,
+      velocity_x = 0,
+      velocity_y = 0,
+      velocity_z = 0,
+      rotation = 0,
+      friction = 1,
       height = 0.5,
       width = 0.5,
+      color = 0xff00ff,
+      bounces = -1,
+      bouncy = 1,
       collision_radius = 1.0,
-      color = 0xff00ff
+      explosion_size = 0,
     },
     -- executed when object collides with you
     function ()

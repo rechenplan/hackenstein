@@ -79,7 +79,7 @@ int client_update(client_t* client, int current_time, int *sleep) {
     for (i = 0; i < MAX_PLAYERS; i++) {
       player_update(&client->players[i], &client->objects, &client->game, 1000 / PHY_FRAME_LIMIT);
     }
-    object_update(&client->objects, &client->map, 1000 / PHY_FRAME_LIMIT);
+    object_update(&client->objects, &client->map, &client->game, 1000 / PHY_FRAME_LIMIT);
     client->physics_frame++;
     frame_computed = 1;
   }
@@ -107,7 +107,7 @@ void client_cleanup(client_t* client) {
   input_cleanup(&client->input);
   object_cleanup(&client->objects);
   for (i = 0; i < MAX_PLAYERS; i++) {
-    player_cleanup(&client->players[i]);
+    player_cleanup(&client->players[i], &client->game);
   }
   lfb_cleanup(&client->lfb);
   caster_cleanup(&client->caster);

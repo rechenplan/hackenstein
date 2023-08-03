@@ -44,7 +44,7 @@ void player_update(player_t* player, object_bank_t* objects, game_t* game, int e
   /* detect player / object (excluding other players) collisions */
   for (i = 0; i < objects->size; i++) {
     object = &objects->bank[i];
-    if (!object_is_valid(object) || object_is_exploding(object) || object_is_respawning(object) || object->type == OBJECT_TYPE_PLAYER) {
+    if (!object_is_valid(object) || object_is_exploding(object) || object->is_player) {
       continue;
     }
     distance = SQUARED(object->physics.position.x - player->object->physics.position.x) + SQUARED(object->physics.position.y - player->object->physics.position.y);
@@ -52,7 +52,7 @@ void player_update(player_t* player, object_bank_t* objects, game_t* game, int e
       if (player->local) {
         game_on_player_collide(game, object);
       }
-      object_collide_with_player(object);
+      object_explode(object);
     }
   }
 
@@ -69,15 +69,15 @@ void player_init(player_t* player, object_bank_t* objects, int local) {
   player->object->physics.bouncy = PLAYER_BOUNCY;
   player->object->owner = player;
   player->object->color = GRAYSCALE(64);
-  player->object->type = OBJECT_TYPE_PLAYER;
+  player->object->is_player = 1;
   player->object->bounces_left = 0;
   player->object->height = 0.8;
   player->object->width = 0.5;
   player->object->on_collision = LUA_NOREF;
 }
 
-void player_cleanup(player_t* player) {
-  object_destroy(player->object);
+void player_cleanup(player_t* player, game_t* game) {
+  object_destroy(player->object, game);
 }
 
 int player_process_input(player_t* player, input_t* input, game_t* game, int elapsed_time) {
