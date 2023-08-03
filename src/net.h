@@ -9,7 +9,7 @@
 
 net_t net_init(int listen_port);
 void net_update(net_t net, player_t players[], map_t* map, int my_id, game_t* game, int current_time);
-void net_connect(net_t net, const char* host, int port);
+int net_connect(net_t net, const char* host, int port);
 void net_send_message(net_t net, const char* msg);
 void net_cleanup(net_t net);
 

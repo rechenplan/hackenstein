@@ -1,7 +1,7 @@
 set_map(8, 8, 1)
 set_map(9, 9, 1)
 
-has_ball = true
+has_balls = 1
 connected = false
 
 function on_tick(elapsed_time)
@@ -11,7 +11,7 @@ function on_receive(str)
 
   local ball = load("return " .. str)()
   print(serialize_table(ball))
-  spawn(ball, function() has_ball = true end)
+  spawn(ball, function() has_balls = has_balls + 1 end)
 
 end
 
@@ -28,7 +28,7 @@ end
 
 function on_key_down(key)
 
-  if key == 32 and has_ball then
+  if key == 32 and has_balls > 0 then
 
     local pos = get_position()
     local rot = get_rotation()
@@ -51,8 +51,8 @@ function on_key_down(key)
     }
 
     broadcast(serialize_table(ball))
-    spawn(ball, function() has_ball = true end)
-    has_ball = false
+    spawn(ball, function() has_balls = has_balls + 1 end)
+    has_balls = has_balls - 1
 
   end
 

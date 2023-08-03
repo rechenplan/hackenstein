@@ -24,7 +24,7 @@ void* net_init(int listen_port) {
   }
   address.host = ENET_HOST_ANY;
   address.port = listen_port;
-  net->client = enet_host_create(&address, MAX_PLAYERS, 0, 0, 0);
+  net->client = enet_host_create(&address, MAX_PLAYERS, 2, 0, 0);
   if (!net->client) {
     free(net);
     return NULL;
@@ -109,18 +109,14 @@ void net_update(net_t net, player_t players[MAX_PLAYERS], map_t* map, int my_id,
   }
 }
 
-void net_connect(net_t net, const char* host, int port) {
+int net_connect(net_t net, const char* host, int port) {
   ENetAddress address;
   enet_net_t* enet;
 
   enet = (enet_net_t*) net;
   enet_address_set_host(&address, host);
   address.port = port;
-  if (enet_host_connect(enet->client, &address, 0, 0)) {
-    printf("connected to %s:%d\n", host, port);
-  } else {
-    printf("failed to connect to %s:%d\n", host, port);
-  }
+  return enet_host_connect(enet->client, &address, 2, 0) != NULL;
 }
 
 void net_send_message(net_t net, const char* msg) {
