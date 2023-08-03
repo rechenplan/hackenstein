@@ -70,6 +70,19 @@ static int l_spawn(lua_State* state) {
   return 0;
 }
 
+static int l_connect(lua_State* state) {
+  const char* host;
+  int port;
+  game_t* game;
+
+  lua_getglobal(state, "_GAME");
+  game = (game_t*) lua_touserdata(state, -1);
+  lua_pop(state, 1);
+  host = luaL_checkstring(state, 1);
+  port = luaL_checknumber(state, 2);
+  net_connect(game->net, host, port);
+  return 0;
+}
 static int l_broadcast(lua_State* state) {
   const char* str;
   game_t* game;
@@ -198,6 +211,8 @@ void game_init(game_t* game, object_t* me, map_t* map, net_t net, object_bank_t*
   lua_setglobal(game->lua, "set_rotation");
   lua_pushcfunction(game->lua, l_get_rotation);
   lua_setglobal(game->lua, "get_rotation");
+  lua_pushcfunction(game->lua, l_connect);
+  lua_setglobal(game->lua, "connect");
 
   lua_pushlightuserdata(game->lua, game);
   lua_setglobal(game->lua, "_GAME");
@@ -228,23 +243,31 @@ void game_on_player_collide(game_t* game, object_t* object) {
 void game_on_key_down(game_t* game, int key) {
   lua_getglobal(game->lua, "on_key_down");
   lua_pushnumber(game->lua, key);
-  lua_pcall(game->lua, 1, 0, 0);
+  if (lua_pcall(game->lua, 1, 0, 0) != LUA_OK) {
+    printf("Error executing callback:\n%s\n", lua_tostring(game->lua, -1));
+  }
 }
 
 void game_on_key_up(game_t* game, int key) {
   lua_getglobal(game->lua, "on_key_up");
   lua_pushnumber(game->lua, key);
-  lua_pcall(game->lua, 1, 0, 0);
+  if (lua_pcall(game->lua, 1, 0, 0) != LUA_OK) {
+    printf("Error executing callback:\n%s\n", lua_tostring(game->lua, -1));
+  }
 }
 
 void game_on_receive(game_t* game, char* message) {
   lua_getglobal(game->lua, "on_receive");
   lua_pushstring(game->lua, message);
-  lua_pcall(game->lua, 1, 0, 0);
+  if (lua_pcall(game->lua, 1, 0, 0) != LUA_OK) {
+    printf("Error executing callback:\n%s\n", lua_tostring(game->lua, -1));
+  }
 }
 
 void game_on_tick(game_t* game, int elapsed_time) {
   lua_getglobal(game->lua, "on_tick");
   lua_pushnumber(game->lua, elapsed_time);
-  lua_pcall(game->lua, 1, 0, 0);
+  if (lua_pcall(game->lua, 1, 0, 0) != LUA_OK) {
+    printf("Error executing callback:\n%s\n", lua_tostring(game->lua, -1));
+  }
 }

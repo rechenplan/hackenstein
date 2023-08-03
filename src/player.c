@@ -61,6 +61,9 @@ void player_update(player_t* player, object_bank_t* objects, game_t* game, int e
 void player_init(player_t* player, object_bank_t* objects, int local) {
   memset(player, 0, sizeof(player_t));
   player->local = local;
+  if (local) {
+    player->connected = 1;
+  }
   player->object = object_create(objects);
   player->object->physics.position.x = 1.5 + (rand() % 30);
   player->object->physics.position.y = 1.5 + (rand() % 30);

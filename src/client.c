@@ -14,18 +14,18 @@
 #include "map.h"
 #include "hud.h"
 
-void client_init(client_t* client, char* host, int port, int my_id, int start_time) {
+void client_init(client_t* client, int listen_port, int start_time) {
   int i, j;
 
   client->start_time = start_time;
   client->last_time = start_time;
   client->net_frame = 0;
-  client->my_id = my_id;
+  client->my_id = 0;
   client->physics_frame = 0;
   client->gfx_frame = 0;
   client->game_frame = 0;
   client->render = render_init();
-  client->net = net_init(host, port);
+  client->net = net_init(listen_port);
   input_init(&client->input);
   object_init(&client->objects, MAX_SPRITES);
   lfb_init(&client->lfb, LFB_WIDTH, LFB_HEIGHT);
@@ -38,9 +38,9 @@ void client_init(client_t* client, char* host, int port, int my_id, int start_ti
     }
   }
   for (i = 0; i < MAX_PLAYERS; i++) {
-    player_init(&client->players[i], &client->objects, i == my_id);
+    player_init(&client->players[i], &client->objects, (i == client->my_id));
   }
-  game_init(&client->game, client->players[my_id].object, &client->map, client->net, &client->objects);
+  game_init(&client->game, client->players[client->my_id].object, &client->map, client->net, &client->objects);
 }
 
 int client_update(client_t* client, int current_time, int *sleep) {

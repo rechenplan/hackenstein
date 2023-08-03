@@ -8,16 +8,10 @@
 
 int WinMain(HINSTANCE instance, HINSTANCE prev_instance, LPSTR args, int show) {
   client_t client;
-  char* host;
-  char* port;
-  char* id;
   int sleep;
   int start_time, current_time, frame;
-  host = strtok(args, " ");
-  port = strtok(NULL, " ");
-  id = strtok(NULL, " ");
   SDL_Init(SDL_INIT_VIDEO);
-  client_init(&client, host, atoi(port), atoi(id), start_time = SDL_GetTicks());
+  client_init(&client, atoi(args), start_time = SDL_GetTicks());
   frame = 0;
   while (client_update(&client, current_time = SDL_GetTicks(), &sleep) == 0) {
     if (sleep) {

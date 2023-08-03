@@ -21,14 +21,14 @@ void map_cleanup(map_t* map) {
 }
 
 void map_set_cell(map_t* map, int x, int y, cell_t cell) {
-  if (x < 0 || x >= map->width || y < 0 || y >= map->height) {
+  if (x <= 0 || x >= map->width || y <= 0 || y >= map->height) {
     return;
   }
   map->cells[x + y * map->width] = cell;
 }
 
 cell_t map_get_cell(map_t* map, int x, int y) {
-  if (x < 0 || x >= map->width || y < 0 || y >= map->height) {
+  if (x <= 0 || x >= map->width || y <= 0 || y >= map->height) {
     return map->default_cell;
   }
   return map->cells[x + y * map->width];

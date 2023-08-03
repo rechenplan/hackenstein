@@ -38,7 +38,7 @@ typedef struct _client_t {
   int game_frame;
 } client_t;
 
-void client_init(client_t* client, char* host, int port, int my_id, int ms_time);
+void client_init(client_t* client, int listen_port, int ms_time);
 int client_update(client_t* client, int ms_time, int* sleep);
 void client_cleanup(client_t* client);
 
