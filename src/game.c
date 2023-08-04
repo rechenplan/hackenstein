@@ -25,10 +25,28 @@ static void set_field(lua_State* state, const char* key, double value) {
   lua_settable(state, -3);
 }
 
+static int l_rect(lua_State* state) {
+  game_t* game;
+  int start_x, start_y, end_x, end_y;
+  pixel_t col;
+
+  lua_getglobal(state, "_GAME");
+  game = (game_t*) lua_touserdata(state, -1);
+  lua_pop(state, 1);
+  start_x = luaL_checknumber(state, 1);
+  start_y = luaL_checknumber(state, 2);
+  end_x = luaL_checknumber(state, 3);
+  end_y = luaL_checknumber(state, 4);
+  col = luaL_checknumber(state, 5);
+  lfb_rect(game->lfb, start_x, start_y, end_x, end_y, col);
+  return 0;
+}
+
 static int l_printxy(lua_State* state) {
   game_t* game;
   const char* str;
   int x, y;
+  pixel_t col;
 
   lua_getglobal(state, "_GAME");
   game = (game_t*) lua_touserdata(state, -1);
@@ -36,7 +54,8 @@ static int l_printxy(lua_State* state) {
   str = luaL_checkstring(state, 1);
   x = luaL_checknumber(state, 2);
   y = luaL_checknumber(state, 3);
-  lfb_print(game->lfb, str, x, y);
+  col = luaL_checknumber(state, 4);
+  lfb_print(game->lfb, str, x, y, col);
   return 0;
 }
 
@@ -246,6 +265,8 @@ void game_init(game_t* game, object_t* me, map_t* map, net_t net, lfb_t* lfb, ob
   lua_setglobal(game->lua, "connect");
   lua_pushcfunction(game->lua, l_printxy);
   lua_setglobal(game->lua, "printxy");
+  lua_pushcfunction(game->lua, l_rect);
+  lua_setglobal(game->lua, "rect");
   lua_pushcfunction(game->lua, l_cls);
   lua_setglobal(game->lua, "cls");
 
