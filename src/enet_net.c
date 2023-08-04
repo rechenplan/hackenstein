@@ -51,7 +51,9 @@ void net_update(net_t net, player_t players[MAX_PLAYERS], map_t* map, int my_id,
       for (i = 0; i < MAX_PLAYERS; i++) {
         if (!players[i].connected) {
           players[i].connected = 1;
+          players[i].id = i;
           event.peer->data = &players[i];
+          game_on_connect(game, i);
           break;
         }
       }
@@ -64,6 +66,7 @@ void net_update(net_t net, player_t players[MAX_PLAYERS], map_t* map, int my_id,
       player = (player_t*) event.peer->data;
       if (player) {
         player->connected = 0;
+        game_on_disconnect(game, player->id);
       }
     }
 
@@ -89,7 +92,10 @@ void net_update(net_t net, player_t players[MAX_PLAYERS], map_t* map, int my_id,
       /* game packet */
       if (event.channelID == 1) {
         ptr = (char*) event.packet->data;
-        game_on_receive(game, ptr);
+        player = (player_t*) event.peer->data;
+        if (player) {
+          game_on_receive(game, player->id, ptr);
+        }
       }
 
       enet_packet_destroy(event.packet);

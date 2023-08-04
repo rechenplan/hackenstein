@@ -253,7 +253,7 @@ void game_init(game_t* game, object_t* me, map_t* map, net_t net, lfb_t* lfb, ob
   lua_setglobal(game->lua, "_GAME");
 
   if (luaL_dofile(game->lua, "scripts/init.lua") != LUA_OK) {
-    printf("Error executing init.lua:\n%s\n", lua_tostring(game->lua, -1));
+    printf("error init.lua:\n%s\n", lua_tostring(game->lua, -1));
   }
 }
 
@@ -265,7 +265,7 @@ void game_on_player_collide(game_t* game, object_t* object) {
   if (object->on_collision != LUA_NOREF) {
     lua_rawgeti(game->lua, LUA_REGISTRYINDEX, object->on_collision);
     if (lua_pcall(game->lua, 0, 0, 0) != LUA_OK) {
-      printf("Error executing collision callback:\n%s\n", lua_tostring(game->lua, -1));
+      printf("error on_player_collide():\n%s\n", lua_tostring(game->lua, -1));
     }
     /* this will be handled in object_destroy */
     /*
@@ -279,7 +279,7 @@ void game_on_key_down(game_t* game, int key) {
   lua_getglobal(game->lua, "on_key_down");
   lua_pushnumber(game->lua, key);
   if (lua_pcall(game->lua, 1, 0, 0) != LUA_OK) {
-    printf("Error executing callback:\n%s\n", lua_tostring(game->lua, -1));
+    printf("error on_key_down():\n%s\n", lua_tostring(game->lua, -1));
   }
 }
 
@@ -287,15 +287,32 @@ void game_on_key_up(game_t* game, int key) {
   lua_getglobal(game->lua, "on_key_up");
   lua_pushnumber(game->lua, key);
   if (lua_pcall(game->lua, 1, 0, 0) != LUA_OK) {
-    printf("Error executing callback:\n%s\n", lua_tostring(game->lua, -1));
+    printf("error on_key_up():\n%s\n", lua_tostring(game->lua, -1));
   }
 }
 
-void game_on_receive(game_t* game, char* message) {
+void game_on_receive(game_t* game, int id, char* message) {
   lua_getglobal(game->lua, "on_receive");
+  lua_pushnumber(game->lua, id);
   lua_pushstring(game->lua, message);
+  if (lua_pcall(game->lua, 2, 0, 0) != LUA_OK) {
+    printf("error on_receive():\n%s\n", lua_tostring(game->lua, -1));
+  }
+}
+
+void game_on_connect(game_t* game, int id) {
+  lua_getglobal(game->lua, "on_connect");
+  lua_pushnumber(game->lua, id);
   if (lua_pcall(game->lua, 1, 0, 0) != LUA_OK) {
-    printf("Error executing callback:\n%s\n", lua_tostring(game->lua, -1));
+    printf("error on_connect():\n%s\n", lua_tostring(game->lua, -1));
+  }
+}
+
+void game_on_disconnect(game_t* game, int id) {
+  lua_getglobal(game->lua, "on_disconnect");
+  lua_pushnumber(game->lua, id);
+  if (lua_pcall(game->lua, 1, 0, 0) != LUA_OK) {
+    printf("error on_disconnect():\n%s\n", lua_tostring(game->lua, -1));
   }
 }
 
@@ -303,6 +320,6 @@ void game_on_tick(game_t* game, int elapsed_time) {
   lua_getglobal(game->lua, "on_tick");
   lua_pushnumber(game->lua, elapsed_time);
   if (lua_pcall(game->lua, 1, 0, 0) != LUA_OK) {
-    printf("Error executing callback:\n%s\n", lua_tostring(game->lua, -1));
+    printf("rrror on_tick():\n%s\n", lua_tostring(game->lua, -1));
   }
 }

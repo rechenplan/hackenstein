@@ -23,6 +23,7 @@ void game_on_tick(game_t* game, int elapsed_time);
 void game_on_player_collide(game_t* game, object_t* object);
 void game_on_key_down(game_t* game, int key);
 void game_on_key_up(game_t* game, int key);
-void game_on_receive(game_t* game, char* message);
-
+void game_on_receive(game_t* game, int id, char* message);
+void game_on_connect(game_t* game, int id);
+void game_on_disconnect(game_t* game, int id);
 #endif

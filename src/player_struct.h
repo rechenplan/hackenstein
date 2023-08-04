@@ -18,6 +18,7 @@ typedef struct _player_t {
   object_t*       object;
   player_remote_t remote;
   uint8_t         local;
+  int             id;
   int             connected;
 } player_t;
 

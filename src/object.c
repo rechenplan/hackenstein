@@ -32,6 +32,7 @@ object_t* object_create(object_bank_t* objects) {
 void object_destroy(object_t* object, game_t* game) {
   if (object->on_collision != LUA_NOREF) {
     luaL_unref(game->lua, LUA_REGISTRYINDEX, object->on_collision);
+    object->on_collision = LUA_NOREF;
   }
   object->active = 0;
 }
